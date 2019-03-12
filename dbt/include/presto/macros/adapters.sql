@@ -23,14 +23,11 @@
           NULL as numeric_scale
 
       from
-      {{ information_schema_name(relation.database) }}.columns
+      {{ relation.information_schema('columns') }}
 
       where {{ presto_ilike('table_name', relation.identifier) }}
         {% if relation.schema %}
         and {{ presto_ilike('table_schema', relation.schema) }}
-        {% endif %}
-        {% if relation.database %}
-        and {{ presto_ilike('table_catalog', relation.database) }}
         {% endif %}
       order by ordinal_position
 
@@ -41,7 +38,7 @@
 {% endmacro %}
 
 
-{% macro presto__list_relations_without_caching(database, schema) %}
+{% macro presto__list_relations_without_caching(information_schema, schema) %}
   {% call statement('list_relations_without_caching', fetch_result=True) -%}
     select
       table_catalog as database,
@@ -51,9 +48,8 @@
            when table_type = 'VIEW' then 'view'
            else table_type
       end as table_type
-    from {{ information_schema_name(database) }}.tables
+    from {{ information_schema }}.tables
     where {{ presto_ilike('table_schema', schema) }}
-      and {{ presto_ilike('table_catalog', database) }}
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}

@@ -1,8 +1,8 @@
 
-{% macro presto__get_catalog() -%}
+{% macro presto__get_catalog(information_schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
     select * from (
-    {% for database in databases %}
+    {% for information_schema in information_schemas %}
 
         (
             with tables as (
@@ -14,7 +14,7 @@
                     table_type as "table_type",
                     null as "table_owner"
 
-                from {{ information_schema_name(database) }}.tables
+                from {{ information_schema }}.tables
 
             ),
 
@@ -31,15 +31,14 @@
                     data_type as "column_type",
                     null as "column_comment"
 
-                from {{ information_schema_name(database) }}.columns
+                from {{ information_schema }}.columns
 
             )
 
             select *
             from tables
             join columns using ("table_database", "table_schema", "table_name")
-            where "table_schema" != 'INFORMATION_SCHEMA'
-              and "table_database" = {{ adapter.quote_as_configured(database, "database").replace('"', "'") }}
+            where "table_schema" != 'information_schema'
             order by "column_index"
         )
         {% if not loop.last %} union all {% endif %}
