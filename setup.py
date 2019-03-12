@@ -3,7 +3,7 @@ from setuptools import find_packages
 from distutils.core import setup
 
 package_name = "dbt-presto"
-package_version = "0.13.0a1"
+package_version = "0.13.0rc1"
 description = """The presto adpter plugin for dbt (data build tool)"""
 
 setup(
