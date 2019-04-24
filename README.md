@@ -1,4 +1,4 @@
-## dbt-spark
+## dbt-spark ([docs](https://docs.getdbt.com/docs/profile-presto#section-required-configuration))
 
 ### Installation
 This plugin can be installed via pip:
