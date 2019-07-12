@@ -63,6 +63,37 @@ hive.allow-rename-table=true
 
 -   Want to report a bug or request a feature? Let us know on [Slack](http://slack.getdbt.com/), or open [an issue](https://github.com/fishtown-analytics/dbt-spark/issues/new).
 
+### Running tests
+
+Run a Presto server locally:
+
+```
+cd docker/
+./init.bash
+```
+
+If you see errors while about "inconsistent state" while bringing up presto,
+you may need to drop and re-create the `public` schema in the hive metastore:
+```
+# Example error
+
+Initialization script hive-schema-2.3.0.postgres.sql
+Error: ERROR: relation "BUCKETING_COLS" already exists (state=42P07,code=0)
+org.apache.hadoop.hive.metastore.HiveMetaException: Schema initialization FAILED! Metastore state would be inconsistent !!
+Underlying cause: java.io.IOException : Schema script failed, errorcode 2
+Use --verbose for detailed stacktrace.
+*** schemaTool failed ***
+```
+
+Solution:
+```
+# run this against the hive metastore (port forwarded to 10005 by default)
+drop schema public cascade;
+create schema public;
+```
+
+You probably should be slightly less reckless than this.
+
 ## Code of Conduct
 
 Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected to follow the [PyPA Code of Conduct](https://www.pypa.io/en/latest/code-of-conduct/).

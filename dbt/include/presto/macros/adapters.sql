@@ -94,3 +94,23 @@
 {% macro presto__load_csv_rows(model) %}
   {{ return(basic_load_csv_rows(model, 1000)) }}
 {% endmacro %}
+
+
+{% macro presto__list_schemas(database) -%}
+  {% call statement('list_schemas', fetch_result=True, auto_begin=False) %}
+    select distinct schema_name
+    from {{ information_schema_name(database) }}.schemata
+  {% endcall %}
+  {{ return(load_result('list_schemas').table) }}
+{% endmacro %}
+
+
+{% macro presto__check_schema_exists(information_schema, schema) -%}
+  {% call statement('check_schema_exists', fetch_result=True, auto_begin=False) -%}
+        select count(*)
+        from {{ information_schema }}.schemata
+        where {{ presto_ilike('catalog_name', information_schema.database) }}
+          and {{ presto_ilike('schema_name', schema) }}
+  {%- endcall %}
+  {{ return(load_result('check_schema_exists').table) }}
+{% endmacro %}
