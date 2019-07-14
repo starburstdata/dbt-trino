@@ -85,9 +85,11 @@ Use --verbose for detailed stacktrace.
 *** schemaTool failed ***
 ```
 
-Solution:
-```
-# run this against the hive metastore (port forwarded to 10005 by default)
+**Solution:** Drop (or rename) the public schema to allow the init script to recreate the metastore from scratch. **Only run this against a test Presto deployment. Do not run this in production!**
+```sql
+-- run this against the hive metastore (port forwarded to 10005 by default)
+-- DO NOT RUN THIS IN PRODUCTION!
+
 drop schema public cascade;
 create schema public;
 ```
