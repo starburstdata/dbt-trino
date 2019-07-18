@@ -1,4 +1,4 @@
-## dbt-spark ([docs](https://docs.getdbt.com/docs/profile-presto#section-required-configuration))
+## dbt-presto ([docs](https://docs.getdbt.com/docs/profile-presto#section-required-configuration))
 
 ### Installation
 This plugin can be installed via pip:
@@ -61,7 +61,7 @@ hive.allow-rename-table=true
 
 ### Reporting bugs and contributing code
 
--   Want to report a bug or request a feature? Let us know on [Slack](http://slack.getdbt.com/), or open [an issue](https://github.com/fishtown-analytics/dbt-spark/issues/new).
+-   Want to report a bug or request a feature? Let us know on [Slack](http://slack.getdbt.com/), or open [an issue](https://github.com/fishtown-analytics/dbt-presto/issues/new).
 
 ### Running tests
 
