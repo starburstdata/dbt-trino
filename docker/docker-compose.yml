@@ -34,6 +34,8 @@ services:
 
   hive-metastore-db:
     image: postgres
+    ports:
+      - "10005:5432"
     environment:
       POSTGRES_USER: "root"
       POSTGRES_PASSWORD: "password"
