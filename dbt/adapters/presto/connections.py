@@ -145,7 +145,7 @@ class PrestoConnectionManager(SQLConnectionManager):
     TYPE = 'presto'
 
     @contextmanager
-    def exception_handler(self, sql, connection_name='master'):
+    def exception_handler(self, sql):
         try:
             yield
         # TODO: introspect into `DatabaseError`s and expose `errorName`,
@@ -155,14 +155,14 @@ class PrestoConnectionManager(SQLConnectionManager):
             logger.debug(exc)
             raise RuntimeException(to_string(exc))
 
-    def add_begin_query(self, name):
-        connection = self.get(name)
-        with self.exception_handler('handle.start_transaction()', name):
+    def add_begin_query(self):
+        connection = self.get_thread_connection()
+        with self.exception_handler('handle.start_transaction()'):
             connection.handle.start_transaction()
 
-    def add_commit_query(self, name):
-        connection = self.get(name)
-        with self.exception_handler('handle.commit()', name):
+    def add_commit_query(self):
+        connection = self.get_thread_connection()
+        with self.exception_handler('handle.commit()'):
             connection.handle.commit()
 
     @classmethod
@@ -200,7 +200,7 @@ class PrestoConnectionManager(SQLConnectionManager):
     def cancel(self, connection):
         connection.handle.cancel()
 
-    def add_query(self, sql, model_name=None, auto_begin=True,
+    def add_query(self, sql, auto_begin=True,
                   bindings=None, abridge_sql_log=False):
 
         connection = None
@@ -224,7 +224,7 @@ class PrestoConnectionManager(SQLConnectionManager):
 
             parent = super(PrestoConnectionManager, self)
             connection, cursor = parent.add_query(
-                individual_query, model_name, auto_begin, bindings,
+                individual_query, auto_begin, bindings,
                 abridge_sql_log
             )
 
@@ -233,13 +233,12 @@ class PrestoConnectionManager(SQLConnectionManager):
                     "Tried to run an empty query on model '{}'. If you are "
                     "conditionally running\nsql, eg. in a model hook, make "
                     "sure your `else` clause contains valid sql!\n\n"
-                    "Provided SQL:\n{}".format(model_name, sql))
+                    "Provided SQL:\n{}".format(connection.name, sql))
 
         return connection, cursor
 
-    def execute(self, sql, name=None, auto_begin=False, fetch=False):
-        self.get(name)
-        _, cursor = self.add_query(sql, name, auto_begin)
+    def execute(self, sql, auto_begin=False, fetch=False):
+        _, cursor = self.add_query(sql, auto_begin)
         status = self.get_status(cursor)
         table = self.get_result_from_cursor(cursor)
         return status, table
