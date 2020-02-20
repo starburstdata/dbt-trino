@@ -8,7 +8,7 @@ TIMEOUT=${3:-3}
 for (( counter=1; counter<$TIMEOUT; counter++ )); do
     nc -z $HOST $PORT
     [[ $? -eq 0 ]] && exit 0;
-    sleep 1
+    sleep 10
 done
 
 nc -z $HOST $PORT
