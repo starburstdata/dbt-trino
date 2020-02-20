@@ -55,9 +55,9 @@
 {% endmacro %}
 
 
-{% macro presto__reset_csv_table(model, full_refresh, old_relation) %}
+{% macro presto__reset_csv_table(model, full_refresh, old_relation, agate_table) %}
     {{ adapter.drop_relation(old_relation) }}
-    {{ return(create_csv_table(model)) }}
+    {{ return(create_csv_table(model, agate_table)) }}
 {% endmacro %}
 
 
@@ -86,13 +86,13 @@
 
 {% macro presto__rename_relation(from_relation, to_relation) -%}
   {% call statement('rename_relation') -%}
-    alter table {{ from_relation }} rename to {{ to_relation }}
+    alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
 {% endmacro %}
 
 
-{% macro presto__load_csv_rows(model) %}
-  {{ return(basic_load_csv_rows(model, 1000)) }}
+{% macro presto__load_csv_rows(model, agate_table) %}
+  {{ return(basic_load_csv_rows(model, 1000, agate_table)) }}
 {% endmacro %}
 
 
