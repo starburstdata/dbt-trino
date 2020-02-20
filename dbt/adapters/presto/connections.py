@@ -1,56 +1,32 @@
-from collections import Iterable
 from contextlib import contextmanager
-from datetime import datetime
-from getpass import getuser
-import re
 
+import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.compat import basestring, NUMBERS, to_string
-from dbt.exceptions import RuntimeException
 from dbt.logger import GLOBAL_LOGGER as logger
 
+from dataclasses import dataclass
+from typing import Optional, Tuple
+from dbt.helper_types import Port
+
+from datetime import datetime
+from getpass import getuser
+import decimal
+import re
 import prestodb
 from prestodb.transaction import IsolationLevel
 from prestodb.auth import KerberosAuthentication
 import sqlparse
 
-
-PRESTO_CREDENTIALS_CONTRACT = {
-    'type': 'object',
-    'additionalProperties': False,
-    'properties': {
-        'database': {
-            'type': 'string',
-        },
-        'schema': {
-            'type': 'string',
-        },
-        'host': {
-            'type': 'string',
-        },
-        'port': {
-            'type': 'integer',
-            'minimum': 0,
-            'maximum': 65535,
-        },
-        'method': {
-            # TODO: what do most people use? Kerberos is what the official one
-            # implements.
-            'enum': ['none', 'kerberos'],
-        },
-        'userinfo-json': {
-            'type': 'object',
-        },
-    },
-    'required': ['database', 'schema', 'host', 'port'],
-}
-
-
+@dataclass
 class PrestoCredentials(Credentials):
-    SCHEMA = PRESTO_CREDENTIALS_CONTRACT
-    ALIASES = {
-        'catalog': 'database',
+    host: str
+    port: Port
+    user: str
+    password: Optional[str]
+    method: Optional[str]
+    _ALIASES = {
+        'catalog': 'database'
     }
 
     @property
@@ -58,8 +34,7 @@ class PrestoCredentials(Credentials):
         return 'presto'
 
     def _connection_keys(self):
-        return ('host', 'port', 'database', 'username')
-
+        return ('host', 'port', 'user', 'database', 'schema')
 
 class ConnectionWrapper(object):
     """Wrap a Presto connection in a way that accomplishes two tasks:
@@ -128,9 +103,10 @@ class ConnectionWrapper(object):
 
         I think "'" (a single quote) is the only character that matters.
         """
+        NUMBERS = (decimal.Decimal, int, float)
         if value is None:
             return 'NULL'
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return "'{}'".format(value.replace("'", "''"))
         elif isinstance(value, NUMBERS):
             return value
@@ -153,7 +129,7 @@ class PrestoConnectionManager(SQLConnectionManager):
         except Exception as exc:
             logger.debug("Error while running:\n{}".format(sql))
             logger.debug(exc)
-            raise RuntimeException(to_string(exc))
+            raise dbt.exceptions.RuntimeException(str(exc))
 
     def add_begin_query(self):
         connection = self.get_thread_connection()
@@ -172,21 +148,24 @@ class PrestoConnectionManager(SQLConnectionManager):
             return connection
 
         credentials = connection.credentials
-        if credentials.method == 'kerberos':
-            auth = KerberosAuthentication()
+        if credentials.method in ['ldap', 'kerberos']:
+            auth = prestodb.auth.BasicAuthentication(credentials.user, credentials.password)
+            http_scheme = "https"
         else:
             auth = prestodb.constants.DEFAULT_AUTH
+            http_scheme = None
 
         # it's impossible for presto to fail here as 'connections' are actually
         # just cursor factories.
         presto_conn = prestodb.dbapi.connect(
             host=credentials.host,
-            port=credentials.get('port', 8080),
-            user=credentials.get('username', getuser()),
+            port=credentials.port,
+            user=credentials.user,
             catalog=credentials.database,
             schema=credentials.schema,
+            http_scheme=http_scheme,
             auth=auth,
-            isolation_level=IsolationLevel.SERIALIZABLE,
+            isolation_level=IsolationLevel.AUTOCOMMIT
         )
         connection.state = 'open'
         connection.handle = ConnectionWrapper(presto_conn)
@@ -229,7 +208,7 @@ class PrestoConnectionManager(SQLConnectionManager):
             )
 
         if cursor is None:
-            raise RuntimeException(
+            raise dbt.exceptions.RuntimeException(
                     "Tried to run an empty query on model '{}'. If you are "
                     "conditionally running\nsql, eg. in a model hook, make "
                     "sure your `else` clause contains valid sql!\n\n"
