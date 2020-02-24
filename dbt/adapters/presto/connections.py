@@ -103,12 +103,12 @@ class ConnectionWrapper(object):
 
         I think "'" (a single quote) is the only character that matters.
         """
-        NUMBERS = (decimal.Decimal, int, float)
+        numbers = (decimal.Decimal, int, float)
         if value is None:
             return 'NULL'
         elif isinstance(value, str):
             return "'{}'".format(value.replace("'", "''"))
-        elif isinstance(value, NUMBERS):
+        elif isinstance(value, numbers):
             return value
         elif isinstance(value, datetime):
             time_formatted = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
