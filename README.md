@@ -67,14 +67,13 @@ hive.allow-rename-table=true
 Build dbt container locally:
 
 ```
-cd docker/
-./dbt/build.sh
+./docker/dbt/build.sh
 ```
 
 Run a Presto server locally:
 
 ```
-./init.bash
+./docker/init.bash
 ```
 
 If you see errors while about "inconsistent state" while bringing up presto,
@@ -104,7 +103,7 @@ You probably should be slightly less reckless than this.
 Run tests against Presto:
 
 ```
-./run_tests.bash
+./docker/run_tests.bash
 ```
 
 ## Code of Conduct
