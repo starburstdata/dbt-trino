@@ -153,7 +153,7 @@ class PrestoConnectionManager(SQLConnectionManager):
             http_scheme = "https"
         else:
             auth = prestodb.constants.DEFAULT_AUTH
-            http_scheme = None
+            http_scheme = "http"
 
         # it's impossible for presto to fail here as 'connections' are actually
         # just cursor factories.
