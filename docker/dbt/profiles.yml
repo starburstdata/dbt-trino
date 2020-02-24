@@ -9,3 +9,5 @@ default:
       database: memory
       schema: default
   target: dbt_presto
+config:
+    send_anonymous_usage_stats: False
