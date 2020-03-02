@@ -70,6 +70,15 @@
 {% endmacro %}
 
 
+{% macro presto__create_view_as(relation, sql) -%}
+  create or replace view
+    {{ relation }}
+  as (
+    {{ sql }}
+  );
+{% endmacro %}
+
+
 {% macro presto__drop_relation(relation) -%}
   {% call statement('drop_relation', auto_begin=False) -%}
     drop {{ relation.type }} if exists {{ relation }}
@@ -86,7 +95,7 @@
 
 {% macro presto__rename_relation(from_relation, to_relation) -%}
   {% call statement('rename_relation') -%}
-    alter table {{ from_relation }} rename to {{ to_relation }}
+    alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
 {% endmacro %}
 
