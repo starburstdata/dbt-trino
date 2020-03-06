@@ -64,12 +64,16 @@ hive.allow-rename-table=true
 -   Want to report a bug or request a feature? Let us know on [Slack](http://slack.getdbt.com/), or open [an issue](https://github.com/fishtown-analytics/dbt-presto/issues/new).
 
 ### Running tests
+Build dbt container locally:
+
+```
+./docker/dbt/build.sh
+```
 
 Run a Presto server locally:
 
 ```
-cd docker/
-./init.bash
+./docker/init.bash
 ```
 
 If you see errors while about "inconsistent state" while bringing up presto,
@@ -95,6 +99,12 @@ create schema public;
 ```
 
 You probably should be slightly less reckless than this.
+
+Run tests against Presto:
+
+```
+./docker/run_tests.bash
+```
 
 ## Code of Conduct
 
