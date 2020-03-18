@@ -13,9 +13,6 @@
                                                       database=database,
                                                       type='table') -%}
 
-  /*
-      See ../view/view.sql for more information about this relation.
-  */
   {%- set backup_relation_type = 'table' if old_relation is none else old_relation.type -%}
   {%- set backup_relation = api.Relation.create(identifier=backup_identifier,
                                                 schema=schema,
