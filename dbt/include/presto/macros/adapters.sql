@@ -70,6 +70,15 @@
 {% endmacro %}
 
 
+{% macro presto__create_view_as(relation, sql) -%}
+  create or replace view
+    {{ relation }}
+  as
+    {{ sql }}
+  ;
+{% endmacro %}
+
+
 {% macro presto__drop_relation(relation) -%}
   {% call statement('drop_relation', auto_begin=False) -%}
     drop {{ relation.type }} if exists {{ relation }}
