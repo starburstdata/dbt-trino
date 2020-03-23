@@ -1,6 +1,6 @@
 FROM python:3.8.1-slim-buster
 
-ENV DBT_VERSION "0.15.2"
+ENV DBT_VERSION "0.15.3"
 ENV DBT_DIR /opt/dbt-presto
 
 RUN apt-get update && \
