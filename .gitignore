@@ -1,3 +1,9 @@
 *.egg-info
 env/
 __pycache__/
+.tox/
+.idea/
+build/
+dist/
+dbt-integration-tests
+docker/dbt/.user.yml

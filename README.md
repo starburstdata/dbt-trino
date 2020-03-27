@@ -106,6 +106,12 @@ Run tests against Presto:
 ./docker/run_tests.bash
 ```
 
+Run the locally-built docker image (from docker/dbt/build.sh):
+```
+export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
+docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/home/dbt_user/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-presto /bin/bash
+```
+
 ## Code of Conduct
 
 Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected to follow the [PyPA Code of Conduct](https://www.pypa.io/en/latest/code-of-conduct/).

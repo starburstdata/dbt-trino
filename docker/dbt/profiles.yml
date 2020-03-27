@@ -1,4 +1,4 @@
-default:
+presto:
   outputs:
     dbt_presto:
       type: presto
