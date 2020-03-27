@@ -1,0 +1,2 @@
+dbt-core==0.15.3
+presto-python-client==0.7.0

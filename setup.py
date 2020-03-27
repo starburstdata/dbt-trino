@@ -59,6 +59,6 @@ setup(
     },
     install_requires=[
         'dbt-core=={}'.format(dbt_version),
-        'presto-python-client',
+        'presto-python-client==0.7.0',
     ]
 )

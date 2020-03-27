@@ -1,0 +1,40 @@
+version: 2.1
+
+jobs:
+  integration:
+    docker:
+      - image: fishtownanalytics/test-container:6
+        environment:
+          DBT_INVOCATION_ENV: circle
+
+      - image: prestosql/presto:329
+        ports:
+          - "8080:8080"
+        volumes:
+          - ./docker/presto/etc/catalog/memory.properties:/usr/lib/presto/etc/catalog/memory.properties:ro
+          - ./docker/presto/etc/config.properties:/usr/lib/presto/etc/config.properties:ro
+          - ./docker/presto/etc/jvm.config:/usr/lib/presto/etc/jvm.config:ro
+          - ./docker/presto/etc/node.properties:/usr/lib/presto/etc/node.properties:ro
+  steps:
+    - checkout
+    - run:
+        name: Wait for Presto
+        command: dockerize -wait tcp://localhost:8080 -timeout 15m -wait-retry-interval 5s
+      - run:
+          name: Checkout test project
+          command: git clone --branch presto-support https://github.com/fishtown-analytics/dbt-integration-tests.git
+      - run:
+          name: Run integration tests
+          command: tox -e integration-presto
+          no_output_timeout: 1h
+          environment:
+              DBT_PROFILES_DIR: /home/dbt_test_user/project/docker/dbt/
+
+      - store_artifacts:
+          path: ./logs
+
+workflows:
+  version: 2
+  test-everything:
+    jobs:
+      - integration
