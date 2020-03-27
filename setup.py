@@ -2,6 +2,7 @@
 from setuptools import find_packages
 from distutils.core import setup
 import os
+import re
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md')) as f:
@@ -9,8 +10,32 @@ with open(os.path.join(this_directory, 'README.md')) as f:
 
 
 package_name = "dbt-presto"
-package_version = "0.15.3"
+
+
+# get this from a separate file
+def _dbt_presto_version():
+    _version_path = os.path.join(
+        this_directory, 'dbt', 'adapters', 'presto', '__version__.py'
+    )
+    _version_pattern = r'''version\s*=\s*["'](.+)["']'''
+    with open(_version_path) as f:
+        match = re.search(_version_pattern, f.read().strip())
+        if match is None:
+            raise ValueError(f'invalid version at {_version_path}')
+        return match.group(1)
+
+
+package_version = _dbt_presto_version()
 description = """The presto adpter plugin for dbt (data build tool)"""
+
+dbt_version = '0.15.3'
+# the package version should be the dbt version, with maybe some things on the
+# ends of it. (0.15.3 vs 0.15.3a1, 0.15.3.1, ...)
+if not package_version.startswith(dbt_version):
+    raise ValueError(
+        f'Invalid setup.py: package_version={package_version} must start with '
+        f'dbt_version={dbt_version}'
+    )
 
 setup(
     name=package_name,
@@ -33,7 +58,7 @@ setup(
         ]
     },
     install_requires=[
-        'dbt-core=={}'.format(package_version),
+        'dbt-core=={}'.format(dbt_version),
         'presto-python-client',
     ]
 )
