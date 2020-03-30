@@ -1,11 +1,9 @@
-import mock
 import unittest
-import dbt.adapters
 import dbt.flags as flags
 from dbt.adapters.presto import PrestoAdapter
-import agate
 
-from .utils import config_from_parts_or_dicts, inject_adapter
+from .utils import config_from_parts_or_dicts, mock_connection
+
 
 class TestPrestoAdapter(unittest.TestCase):
 
@@ -21,6 +19,7 @@ class TestPrestoAdapter(unittest.TestCase):
                     'port': 5439,
                     'schema': 'dbt_test_schema',
                     'method': 'none',
+                    'user': 'presto_user',
                 }
             },
             'target': 'test'
@@ -49,6 +48,8 @@ class TestPrestoAdapter(unittest.TestCase):
     def test_acquire_connection(self):
         connection = self.adapter.acquire_connection('dummy')
 
+        connection.handle
+
         self.assertEquals(connection.state, 'open')
         self.assertNotEquals(connection.handle, None)
 
@@ -56,5 +57,6 @@ class TestPrestoAdapter(unittest.TestCase):
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
 
     def test_cancel_open_connections_master(self):
-        self.adapter.connections.in_use['master'] = mock.MagicMock()
+        key = self.adapter.connections.get_thread_identifier()
+        self.adapter.connections.thread_connections[key] = mock_connection('master')
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)

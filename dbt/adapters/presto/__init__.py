@@ -1,5 +1,6 @@
 from dbt.adapters.presto.connections import PrestoConnectionManager
 from dbt.adapters.presto.connections import PrestoCredentials
+from dbt.adapters.presto.column import PrestoColumn
 from dbt.adapters.presto.impl import PrestoAdapter
 
 from dbt.adapters.base import AdapterPlugin
