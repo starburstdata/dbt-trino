@@ -6,17 +6,16 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 from dbt.helper_types import Port
 
 from datetime import datetime
-from getpass import getuser
 import decimal
 import re
 import prestodb
 from prestodb.transaction import IsolationLevel
-from prestodb.auth import KerberosAuthentication
 import sqlparse
+
 
 @dataclass
 class PrestoCredentials(Credentials):
@@ -35,6 +34,7 @@ class PrestoCredentials(Credentials):
 
     def _connection_keys(self):
         return ('host', 'port', 'user', 'database', 'schema')
+
 
 class ConnectionWrapper(object):
     """Wrap a Presto connection in a way that accomplishes two tasks:
@@ -149,7 +149,10 @@ class PrestoConnectionManager(SQLConnectionManager):
 
         credentials = connection.credentials
         if credentials.method == 'ldap':
-            auth = prestodb.auth.BasicAuthentication(credentials.user, credentials.password)
+            auth = prestodb.auth.BasicAuthentication(
+                credentials.user,
+                credentials.password,
+            )
             http_scheme = "https"
         elif credentials.method == 'kerberos':
             auth = prestodb.auth.KerberosAuthentication()
@@ -212,10 +215,11 @@ class PrestoConnectionManager(SQLConnectionManager):
 
         if cursor is None:
             raise dbt.exceptions.RuntimeException(
-                    "Tried to run an empty query on model '{}'. If you are "
-                    "conditionally running\nsql, eg. in a model hook, make "
-                    "sure your `else` clause contains valid sql!\n\n"
-                    "Provided SQL:\n{}".format(connection.name, sql))
+                "Tried to run an empty query on model '{}'. If you are "
+                "conditionally running\nsql, eg. in a model hook, make "
+                "sure your `else` clause contains valid sql!\n\n"
+                "Provided SQL:\n{}".format(connection.name, sql)
+            )
 
         return connection, cursor
 
