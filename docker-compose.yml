@@ -3,12 +3,7 @@ services:
   presto:
     ports:
       - "8080:8080"
-    image: prestosql/presto:329
-    volumes:
-      - ./docker/presto/etc/catalog/memory.properties:/usr/lib/presto/etc/catalog/memory.properties:ro
-      - ./docker/presto/etc/config.properties:/usr/lib/presto/etc/config.properties:ro
-      - ./docker/presto/etc/jvm.config:/usr/lib/presto/etc/jvm.config:ro
-      - ./docker/presto/etc/node.properties:/usr/lib/presto/etc/node.properties:ro
+    image: fishtownanalytics/presto:1
 
 networks:
   default:
