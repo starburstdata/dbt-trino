@@ -1,10 +1,11 @@
 from dbt.adapters.sql import SQLAdapter
-from dbt.adapters.presto import PrestoConnectionManager
+from dbt.adapters.presto import PrestoConnectionManager, PrestoColumn
 
 import agate
 
 
 class PrestoAdapter(SQLAdapter):
+    Column = PrestoColumn
     ConnectionManager = PrestoConnectionManager
 
     @classmethod

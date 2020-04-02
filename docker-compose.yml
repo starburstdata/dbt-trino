@@ -1,0 +1,11 @@
+version: '3.5'
+services:
+  presto:
+    ports:
+      - "8080:8080"
+    image: fishtownanalytics/presto:1
+
+networks:
+  default:
+    external:
+      name: dbt-net
