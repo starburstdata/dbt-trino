@@ -86,6 +86,16 @@
 {% endmacro %}
 
 
+{# see this issue: https://github.com/fishtown-analytics/dbt/issues/2267 #}
+{% macro presto__information_schema_name(database) -%}
+  {%- if database -%}
+    {{ database }}.INFORMATION_SCHEMA
+  {%- else -%}
+    INFORMATION_SCHEMA
+  {%- endif -%}
+{%- endmacro %}
+
+
 {% macro presto__drop_schema(database_name, schema_name) -%}
   {%- call statement('drop_schema') -%}
     drop schema if exists {{database_name}}.{{schema_name}}
