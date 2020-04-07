@@ -1,4 +1,8 @@
-## dbt-presto ([docs](https://docs.getdbt.com/docs/profile-presto#section-required-configuration))
+## dbt-presto
+
+### Documentation
+For more information on using Spark with dbt, consult the dbt documentation:
+- [Presto profile](https://docs.getdbt.com/docs/profile-presto)
 
 ### Installation
 This plugin can be installed via pip:
@@ -12,7 +16,9 @@ A dbt profile can be configured to run against Presto using the following config
 
 | Option  | Description                                        | Required?               | Example                  |
 |---------|----------------------------------------------------|-------------------------|--------------------------|
-| method  | The Presto authentication method to use | Optional(default=`none`)  | `none`|`kerberos` |
+| method  | The Presto authentication method to use | Optional (default=`none`)  | `none`|`kerberos` |
+| user  | Username for authentication | Required  | `none`|`drew` |
+| password  | Password for authentication | Optional (required if `method` is `ldap|kerberos`)  | `none`|`abc123` |
 | database  | Specify the database to build models into | Required  | `analytics` |
 | schema  | Specify the schema to build models into | Required | `dbt_drew` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |
@@ -28,11 +34,11 @@ my-presto-db:
   outputs:
     dev:
       type: presto
-      method: none
+      user: drew
       host: 127.0.0.1
       port: 8080
       database: analytics
-      schema: dbt_dbanin
+      schema: dbt_drew
       threads: 8
 ```
 
