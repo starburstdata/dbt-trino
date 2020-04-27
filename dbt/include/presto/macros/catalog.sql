@@ -1,8 +1,7 @@
 
-{% macro presto__get_catalog(information_schemas) -%}
+{% macro presto__get_catalog(information_schema, schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
     select * from (
-    {% for information_schema in information_schemas %}
 
         (
             with tables as (
@@ -39,11 +38,14 @@
             from tables
             join columns using ("table_database", "table_schema", "table_name")
             where "table_schema" != 'information_schema'
+            and (
+            {%- for schema in schemas -%}
+              upper("table_schema") = upper('{{ schema }}'){%- if not loop.last %} or {% endif -%}
+            {%- endfor -%}
+            )
             order by "column_index"
         )
-        {% if not loop.last %} union all {% endif %}
 
-    {% endfor %}
     )
   {%- endcall -%}
 
