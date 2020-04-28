@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-from setuptools import find_packages
-from distutils.core import setup
+from setuptools import find_namespace_packages, setup
 import os
 import re
 
@@ -49,7 +48,7 @@ setup(
     author_email='info@fishtownanalytics.com',
     url='https://github.com/fishtown-analytics/dbt',
 
-    packages=find_packages(),
+    packages=find_namespace_packages(include=['dbt', 'dbt.*']),
     package_data={
         'dbt': [
             'include/presto/dbt_project.yml',
