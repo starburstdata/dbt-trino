@@ -38,7 +38,7 @@
 {% endmacro %}
 
 
-{% macro presto__list_relations_without_caching(information_schema, schema) %}
+{% macro presto__list_relations_without_caching(relation) %}
   {% call statement('list_relations_without_caching', fetch_result=True) -%}
     select
       table_catalog as database,
@@ -48,8 +48,8 @@
            when table_type = 'VIEW' then 'view'
            else table_type
       end as table_type
-    from {{ information_schema }}.tables
-    where {{ presto_ilike('table_schema', schema) }}
+    from {{ relation.information_schema() }}.tables
+    where {{ presto_ilike('table_schema', relation.schema) }}
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
@@ -96,9 +96,13 @@
 {%- endmacro %}
 
 
-{% macro presto__drop_schema(database_name, schema_name) -%}
+{# On Presto, 'cascade' isn't supported so we have to manually cascade. #}
+{% macro presto__drop_schema(relation) -%}
+  {% for relation in adapter.list_relations(relation.database, relation.schema) %}
+    {% do drop_relation(relation) %}
+  {% endfor %}
   {%- call statement('drop_schema') -%}
-    drop schema if exists {{database_name}}.{{schema_name}}
+    drop schema if exists {{ relation }}
   {% endcall %}
 {% endmacro %}
 
