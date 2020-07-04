@@ -1,6 +1,6 @@
-my-presto-db:
-  target: dev
+default:
   outputs:
+
     dev:
       type: presto
       method: none  # optional, one of {none | ldap | kerberos}
@@ -11,3 +11,5 @@ my-presto-db:
       port: [port number]
       schema: [your dbt schema]
       threads: [1 or more]
+  
+  target: dev
