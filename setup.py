@@ -52,6 +52,7 @@ setup(
     package_data={
         'dbt': [
             'include/presto/dbt_project.yml',
+            'include/presto/sample_profiles.yml',
             'include/presto/macros/*.sql',
             'include/presto/macros/*/*.sql',
         ]

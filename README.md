@@ -1,7 +1,7 @@
 ## dbt-presto
 
 ### Documentation
-For more information on using Spark with dbt, consult the dbt documentation:
+For more information on using Presto with dbt, consult the dbt documentation:
 - [Presto profile](https://docs.getdbt.com/docs/profile-presto)
 
 ### Installation
