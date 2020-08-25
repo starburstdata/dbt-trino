@@ -98,7 +98,7 @@
 
 {# On Presto, 'cascade' isn't supported so we have to manually cascade. #}
 {% macro presto__drop_schema(relation) -%}
-  {% for relation in adapter.list_relations(relation.database, relation.schema) %}
+  {% for relation in list_relations_without_caching(relation) %}
     {% do drop_relation(relation) %}
   {% endfor %}
   {%- call statement('drop_schema') -%}
