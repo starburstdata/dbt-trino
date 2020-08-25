@@ -98,8 +98,13 @@
 
 {# On Presto, 'cascade' isn't supported so we have to manually cascade. #}
 {% macro presto__drop_schema(relation) -%}
-  {% for relation in list_relations_without_caching(relation) %}
-    {% do drop_relation(relation) %}
+  {% for row in list_relations_without_caching(relation) %}
+    {% set rel_db = row[0] %}
+    {% set rel_identifier = row[1] %}
+    {% set rel_schema = row[2] %}
+    {% set rel_type = api.Relation.get_relation_type(row[3]) %}
+    {% set existing = api.Relation.create(database=rel_db, schema=rel_schema, identifier=rel_identifier, type=rel_type) %}
+    {% do drop_relation(existing) %}
   {% endfor %}
   {%- call statement('drop_schema') -%}
     drop schema if exists {{ relation }}
