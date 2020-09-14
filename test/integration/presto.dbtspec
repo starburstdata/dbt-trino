@@ -1,0 +1,30 @@
+target:
+  type: presto
+  threads: 4
+  host: "{{ env_var('DBT_TEST_PRESTO_HOST', 'localhost') }}"
+  port: 8080
+  user: presto
+  database: memory
+  schema: default
+projects:
+  # incremental models aren't allowed
+  - overrides: base
+    paths:
+      models/swappable.sql: |
+        {% set materialized_var = "table" %}
+        {% if var("materialized_var", "table") == "view" %}
+          {% set materialized_var = "view" %}
+        {% endif %}
+        {{ config(materialized=materialized_var) }}
+        select * from {{ source('raw', 'seed') }}
+sequences:
+  test_dbt_empty: empty
+  test_dbt_base: base
+  test_dbt_ephemeral: ephemeral
+  # no incrementals, no snapshots
+  # test_dbt_incremental: incremental
+  # test_dbt_snapshot_strategy_timestamp: snapshot_strategy_timestamp
+  # test_dbt_snapshot_strategy_check_cols: snapshot_strategy_check_cols
+  test_dbt_data_test: data_test
+  test_dbt_schema_test: schema_test
+  test_dbt_ephemeral_data_tests: data_test_ephemeral_models
