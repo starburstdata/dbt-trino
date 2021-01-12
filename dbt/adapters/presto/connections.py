@@ -44,6 +44,7 @@ class ConnectionWrapper(object):
         - provide `cancel()` on the same object as `commit()`/`rollback()`/...
 
     """
+
     def __init__(self, handle):
         self.handle = handle
         self._cursor = None
@@ -178,7 +179,7 @@ class PrestoConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_status(cls, cursor):
+    def get_response(cls, cursor):
         # this is lame, but the cursor doesn't give us anything useful.
         return 'OK'
 
@@ -225,6 +226,6 @@ class PrestoConnectionManager(SQLConnectionManager):
 
     def execute(self, sql, auto_begin=False, fetch=False):
         _, cursor = self.add_query(sql, auto_begin)
-        status = self.get_status(cursor)
+        status = self.get_response(cursor)
         table = self.get_result_from_cursor(cursor)
         return status, table

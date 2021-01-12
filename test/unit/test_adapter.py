@@ -33,7 +33,8 @@ class TestPrestoAdapter(unittest.TestCase):
             'quoting': {
                 'identifier': False,
                 'schema': True,
-            }
+            },
+            'config-version': 2
         }
 
         self.config = config_from_parts_or_dicts(project_cfg, profile_cfg)
@@ -58,5 +59,6 @@ class TestPrestoAdapter(unittest.TestCase):
 
     def test_cancel_open_connections_master(self):
         key = self.adapter.connections.get_thread_identifier()
-        self.adapter.connections.thread_connections[key] = mock_connection('master')
+        self.adapter.connections.thread_connections[key] = mock_connection(
+            'master')
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
