@@ -22,8 +22,8 @@ class PrestoCredentials(Credentials):
     host: str
     port: Port
     user: str
-    password: Optional[str]
-    method: Optional[str]
+    password: Optional[str] = None
+    method: Optional[str] = None
     _ALIASES = {
         'catalog': 'database'
     }
