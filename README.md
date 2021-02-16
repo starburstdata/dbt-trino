@@ -14,16 +14,16 @@ $ pip install dbt-presto
 
 A dbt profile can be configured to run against Presto using the following configuration:
 
-| Option   | Description                               | Required?                                          | Example            |
-| -------- | ----------------------------------------- | -------------------------------------------------- | ------------------ |
-| method   | The Presto authentication method to use   | Optional (default=`none`)                          | `none`\|`kerberos` |
-| user     | Username for authentication               | Required                                           | `drew`             |
-| password | Password for authentication               | Optional (required if `method` is `ldap|kerberos`) | `none`\|`abc123`   |
-| database | Specify the database to build models into | Required                                           | `analytics`        |
-| schema   | Specify the schema to build models into   | Required                                           | `dbt_drew`         |
-| host     | The hostname to connect to                | Required                                           | `127.0.0.1`        |
-| port     | The port to connect to the host on        | Required                                           | `8080`             |
-| threads  | How many threads dbt should use           | Optional(default=`1`)                              | `8`                |
+| Option  | Description                                        | Required?               | Example                  |
+|---------|----------------------------------------------------|-------------------------|--------------------------|
+| method  | The Presto authentication method to use | Optional (default is `none`)  | `none` or `kerberos` |
+| user  | Username for authentication | Required  | `drew` |
+| password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
+| database  | Specify the database to build models into | Required  | `analytics` |
+| schema  | Specify the schema to build models into | Required | `dbt_drew` |
+| host    | The hostname to connect to | Required | `127.0.0.1`  |
+| port    | The port to connect to the host on | Required | `8080` |
+| threads    | How many threads dbt should use | Optional (default is `1`) | `8` |
 
 
 
