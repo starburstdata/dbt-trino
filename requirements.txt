@@ -1,2 +1,2 @@
-dbt-core==0.19.1rc1
+dbt-core==0.19.1
 presto-python-client==0.7.0
