@@ -3,11 +3,6 @@
 -- - list_relations_without_caching
 -- - get_columns_in_relation
 
-{% macro presto_ilike(column, value) -%}
-	regexp_like({{ column }}, '(?i)\A{{ value }}\Z')
-{%- endmacro %}
-
-
 {% macro presto__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
@@ -28,7 +23,7 @@
       where
         table_name = '{{ relation.name }}'
         {% if relation.schema %}
-        and table_schema = '{{ relation.schema }}'
+        and table_schema = '{{ relation.schema | lower }}'
         {% endif %}
       order by ordinal_position
 
@@ -50,7 +45,7 @@
            else table_type
       end as table_type
     from {{ relation.information_schema() }}.tables
-    where table_schema = '{{ relation.schema }}'
+    where table_schema = '{{ relation.schema | lower }}'
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
@@ -139,7 +134,7 @@
         select count(*)
         from {{ information_schema }}.schemata
         where catalog_name = '{{ information_schema.database }}'
-          and schema_name = '{{ schema }}'
+          and schema_name = '{{ schema | lower }}'
   {%- endcall %}
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
