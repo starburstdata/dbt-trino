@@ -20,7 +20,7 @@ A dbt profile can be configured to run against Presto using the following config
 | user  | Username for authentication | Required  | `drew` |
 | password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
 | database  | Specify the database to build models into | Required  | `analytics` |
-| schema  | Specify the schema to build models into | Required | `dbt_drew` |
+| schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `dbt_drew` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |
 | port    | The port to connect to the host on | Required | `8080` |
 | threads    | How many threads dbt should use | Optional (default is `1`) | `8` |
@@ -50,6 +50,7 @@ The following features of dbt are not implemented on Presto:
 - Archival
 - Incremental models
 
+Also, note that upper or mixed case schema names will cause catalog queries to fail. Please only use lower case schema names with this adapter.
 
 If you are interested in helping to add support for this functionality in dbt on Presto, please [open an issue](https://github.com/fishtown-analytics/dbt-presto/issues/new)!
 
