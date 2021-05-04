@@ -25,9 +25,10 @@
       from
       {{ relation.information_schema('columns') }}
 
-      where {{ presto_ilike('table_name', relation.identifier) }}
+      where
+        table_name = '{{ relation.name }}'
         {% if relation.schema %}
-        and {{ presto_ilike('table_schema', relation.schema) }}
+        and table_schema = '{{ relation.schema }}'
         {% endif %}
       order by ordinal_position
 
@@ -49,7 +50,7 @@
            else table_type
       end as table_type
     from {{ relation.information_schema() }}.tables
-    where {{ presto_ilike('table_schema', relation.schema) }}
+    where table_schema = '{{ relation.schema }}'
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
@@ -137,8 +138,8 @@
   {% call statement('check_schema_exists', fetch_result=True, auto_begin=False) -%}
         select count(*)
         from {{ information_schema }}.schemata
-        where {{ presto_ilike('catalog_name', information_schema.database) }}
-          and {{ presto_ilike('schema_name', schema) }}
+        where catalog_name = '{{ information_schema.database }}'
+          and schema_name = '{{ schema }}'
   {%- endcall %}
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
