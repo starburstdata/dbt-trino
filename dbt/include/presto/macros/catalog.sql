@@ -14,6 +14,10 @@
                     null as "table_owner"
 
                 from {{ information_schema }}.tables
+                where
+                    table_schema != 'information_schema'
+                    and
+                    table_schema in ('{{ schemas | join("','") | lower }}')
 
             ),
 
@@ -31,18 +35,16 @@
                     null as "column_comment"
 
                 from {{ information_schema }}.columns
+                where
+                    table_schema != 'information_schema'
+                    and
+                    table_schema in ('{{ schemas | join("','") | lower }}')
 
             )
 
             select *
             from tables
             join columns using ("table_database", "table_schema", "table_name")
-            where "table_schema" != 'information_schema'
-            and (
-            {%- for schema in schemas -%}
-              upper("table_schema") = upper('{{ schema }}'){%- if not loop.last %} or {% endif -%}
-            {%- endfor -%}
-            )
             order by "column_index"
         )
 
