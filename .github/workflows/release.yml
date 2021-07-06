@@ -77,7 +77,7 @@ jobs:
           release_name: dbt-presto v${{env.version_number}}
           prerelease: ${{ steps.release_type.outputs.isPrerelease }}
           body: |
-            This is a patch release tracking [dbt-core v${{env.version_number}}](https://github.com/fishtown-analytics/dbt/releases/tag/v${{env.version_number}}).
+            Tracking [dbt-core v${{env.version_number}}](https://github.com/dbt-labs/dbt/releases/tag/v${{env.version_number}}).
 
             ```sh
             $ pip install dbt-presto==${{env.version_number}}
