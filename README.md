@@ -16,6 +16,10 @@ The creators of the `dbt` tool have added however support for handling such scen
 This repository represents a fork of the [dbt-presto](https://github.com/dbt-labs/dbt-presto) with slight
 adaptations to make it work with [Trino](https://trino.io/) SQL compute engine.
 
+### Compatibility
+
+This dbt plugin has been tested against `dbt` version `0.20.0` and `trino`  version `359`.
+
 ### Installation
 This is not yet an official plugin so it needs to be installed for now from source.
 
