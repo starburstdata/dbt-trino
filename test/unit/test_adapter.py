@@ -1,11 +1,11 @@
 import unittest
 import dbt.flags as flags
-from dbt.adapters.presto import PrestoAdapter
+from dbt.adapters.trino import TrinoAdapter
 
 from .utils import config_from_parts_or_dicts, mock_connection
 
 
-class TestPrestoAdapter(unittest.TestCase):
+class TestTrinoAdapter(unittest.TestCase):
 
     def setUp(self):
         flags.STRICT_MODE = True
@@ -13,13 +13,13 @@ class TestPrestoAdapter(unittest.TestCase):
         profile_cfg = {
             'outputs': {
                 'test': {
-                    'type': 'presto',
-                    'catalog': 'prestodb',
+                    'type': 'trino',
+                    'catalog': 'trinodb',
                     'host': 'database',
                     'port': 5439,
                     'schema': 'dbt_test_schema',
                     'method': 'none',
-                    'user': 'presto_user',
+                    'user': 'trino_user',
                 }
             },
             'target': 'test'
@@ -43,7 +43,7 @@ class TestPrestoAdapter(unittest.TestCase):
     @property
     def adapter(self):
         if self._adapter is None:
-            self._adapter = PrestoAdapter(self.config)
+            self._adapter = TrinoAdapter(self.config)
         return self._adapter
 
     def test_acquire_connection(self):

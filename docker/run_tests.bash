@@ -7,5 +7,5 @@ set -exo pipefail
 docker run \
     --network="dbt-net" \
     -v $PWD/dbt:/root/.dbt \
-    dbt-presto \
-    sh -c "dbt init test && cd test && dbt run"
+    dbt-trino \
+    "dbt init test --adapter trino&& cd test && dbt run"

@@ -1,12 +1,12 @@
 from dbt.adapters.sql import SQLAdapter
-from dbt.adapters.presto import PrestoConnectionManager, PrestoColumn
+from dbt.adapters.trino import TrinoConnectionManager, TrinoColumn
 
 import agate
 
 
-class PrestoAdapter(SQLAdapter):
-    Column = PrestoColumn
-    ConnectionManager = PrestoConnectionManager
+class TrinoAdapter(SQLAdapter):
+    Column = TrinoColumn
+    ConnectionManager = TrinoConnectionManager
 
     @classmethod
     def date_function(cls):

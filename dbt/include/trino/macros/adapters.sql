@@ -3,7 +3,7 @@
 -- - list_relations_without_caching
 -- - get_columns_in_relation
 
-{% macro presto__get_columns_in_relation(relation) -%}
+{% macro trino__get_columns_in_relation(relation) -%}
   {% call statement('get_columns_in_relation', fetch_result=True) %}
       select
           column_name,
@@ -34,7 +34,7 @@
 {% endmacro %}
 
 
-{% macro presto__list_relations_without_caching(relation) %}
+{% macro trino__list_relations_without_caching(relation) %}
   {% call statement('list_relations_without_caching', fetch_result=True) -%}
     select
       table_catalog as database,
@@ -51,13 +51,13 @@
 {% endmacro %}
 
 
-{% macro presto__reset_csv_table(model, full_refresh, old_relation, agate_table) %}
+{% macro trino__reset_csv_table(model, full_refresh, old_relation, agate_table) %}
     {{ adapter.drop_relation(old_relation) }}
     {{ return(create_csv_table(model, agate_table)) }}
 {% endmacro %}
 
 
-{% macro presto__create_table_as(temporary, relation, sql) -%}
+{% macro trino__create_table_as(temporary, relation, sql) -%}
   create table
     {{ relation }}
   as (
@@ -66,7 +66,7 @@
 {% endmacro %}
 
 
-{% macro presto__create_view_as(relation, sql) -%}
+{% macro trino__create_view_as(relation, sql) -%}
   create or replace view
     {{ relation }}
   as
@@ -75,15 +75,15 @@
 {% endmacro %}
 
 
-{% macro presto__drop_relation(relation) -%}
+{% macro trino__drop_relation(relation) -%}
   {% call statement('drop_relation', auto_begin=False) -%}
     drop {{ relation.type }} if exists {{ relation }}
   {%- endcall %}
 {% endmacro %}
 
 
-{# see this issue: https://github.com/fishtown-analytics/dbt/issues/2267 #}
-{% macro presto__information_schema_name(database) -%}
+{# see this issue: https://github.com/dbt-labs/dbt/issues/2267 #}
+{% macro trino__information_schema_name(database) -%}
   {%- if database -%}
     {{ database }}.INFORMATION_SCHEMA
   {%- else -%}
@@ -92,8 +92,8 @@
 {%- endmacro %}
 
 
-{# On Presto, 'cascade' isn't supported so we have to manually cascade. #}
-{% macro presto__drop_schema(relation) -%}
+{# On Trino, 'cascade' isn't supported so we have to manually cascade. #}
+{% macro trino__drop_schema(relation) -%}
   {% for row in list_relations_without_caching(relation) %}
     {% set rel_db = row[0] %}
     {% set rel_identifier = row[1] %}
@@ -108,19 +108,19 @@
 {% endmacro %}
 
 
-{% macro presto__rename_relation(from_relation, to_relation) -%}
+{% macro trino__rename_relation(from_relation, to_relation) -%}
   {% call statement('rename_relation') -%}
     alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
 {% endmacro %}
 
 
-{% macro presto__load_csv_rows(model, agate_table) %}
+{% macro trino__load_csv_rows(model, agate_table) %}
   {{ return(basic_load_csv_rows(model, 1000, agate_table)) }}
 {% endmacro %}
 
 
-{% macro presto__list_schemas(database) -%}
+{% macro trino__list_schemas(database) -%}
   {% call statement('list_schemas', fetch_result=True, auto_begin=False) %}
     select distinct schema_name
     from {{ information_schema_name(database) }}.schemata
@@ -129,7 +129,7 @@
 {% endmacro %}
 
 
-{% macro presto__check_schema_exists(information_schema, schema) -%}
+{% macro trino__check_schema_exists(information_schema, schema) -%}
   {% call statement('check_schema_exists', fetch_result=True, auto_begin=False) -%}
         select count(*)
         from {{ information_schema }}.schemata

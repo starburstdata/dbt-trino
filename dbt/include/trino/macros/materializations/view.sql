@@ -1,3 +1,3 @@
-{% materialization view, adapter='presto' -%}
+{% materialization view, adapter='trino' -%}
     {{ return(create_or_replace_view()) }}
 {%- endmaterialization %}

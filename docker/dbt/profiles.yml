@@ -1,13 +1,15 @@
-presto:
+default:
+  target: dev
   outputs:
-    dbt_presto:
-      type: presto
-      threads: 4
-      host: presto
+    dev:
+      type: trino
+      method: none
+      user: admin
+      password:
+      catalog: memory
+      host: trino
       port: 8080
-      user: presto
-      database: memory
       schema: default
-  target: dbt_presto
+      threads: 1
 config:
     send_anonymous_usage_stats: False

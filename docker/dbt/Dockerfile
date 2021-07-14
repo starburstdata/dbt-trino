@@ -1,7 +1,7 @@
-FROM fishtownanalytics/dbt:0.15.3
+FROM fishtownanalytics/dbt:0.19.2
 USER root
 
-ENV DBT_DIR /opt/dbt-presto
+ENV DBT_DIR /opt/dbt-trino
 
 RUN apt-get update && \
     apt-get dist-upgrade -y && \
@@ -17,7 +17,6 @@ ADD README.md ${DBT_DIR}
 WORKDIR ${DBT_DIR}
 RUN python3 setup.py install
 
-USER dbt_user
 WORKDIR /usr/app
 
-CMD ["dbt"]
+ENTRYPOINT ["/bin/sh", "-c"]

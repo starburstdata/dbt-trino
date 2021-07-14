@@ -12,13 +12,13 @@ from dbt.helper_types import Port
 from datetime import datetime
 import decimal
 import re
-import prestodb
-from prestodb.transaction import IsolationLevel
+import trino
+from trino.transaction import IsolationLevel
 import sqlparse
 
 
 @dataclass
-class PrestoCredentials(Credentials):
+class TrinoCredentials(Credentials):
     host: str
     port: Port
     user: str
@@ -30,16 +30,16 @@ class PrestoCredentials(Credentials):
 
     @property
     def type(self):
-        return 'presto'
+        return 'trino'
 
     def _connection_keys(self):
         return ('host', 'port', 'user', 'database', 'schema')
 
 
 class ConnectionWrapper(object):
-    """Wrap a Presto connection in a way that accomplishes two tasks:
+    """Wrap a Trino connection in a way that accomplishes two tasks:
 
-        - prefetch results from execute() calls so that presto calls actually
+        - prefetch results from execute() calls so that trino calls actually
             persist to the db but then present the usual cursor interface
         - provide `cancel()` on the same object as `commit()`/`rollback()`/...
 
@@ -59,7 +59,7 @@ class ConnectionWrapper(object):
             self._cursor.cancel()
 
     def close(self):
-        # this is a noop on presto, but pass it through anyway
+        # this is a noop on trino, but pass it through anyway
         self.handle.close()
 
     def commit(self):
@@ -85,7 +85,7 @@ class ConnectionWrapper(object):
     def execute(self, sql, bindings=None):
 
         if bindings is not None:
-            # presto doesn't actually pass bindings along so we have to do the
+            # trino doesn't actually pass bindings along so we have to do the
             # escaping and formatting ourselves
             bindings = tuple(self._escape_value(b) for b in bindings)
             sql = sql % bindings
@@ -118,8 +118,8 @@ class ConnectionWrapper(object):
             raise ValueError('Cannot escape {}'.format(type(value)))
 
 
-class PrestoConnectionManager(SQLConnectionManager):
-    TYPE = 'presto'
+class TrinoConnectionManager(SQLConnectionManager):
+    TYPE = 'trino'
 
     @contextmanager
     def exception_handler(self, sql):
@@ -150,21 +150,21 @@ class PrestoConnectionManager(SQLConnectionManager):
 
         credentials = connection.credentials
         if credentials.method == 'ldap':
-            auth = prestodb.auth.BasicAuthentication(
+            auth = trino.auth.BasicAuthentication(
                 credentials.user,
                 credentials.password,
             )
             http_scheme = "https"
         elif credentials.method == 'kerberos':
-            auth = prestodb.auth.KerberosAuthentication()
+            auth = trino.auth.KerberosAuthentication()
             http_scheme = "https"
         else:
-            auth = prestodb.constants.DEFAULT_AUTH
+            auth = trino.constants.DEFAULT_AUTH
             http_scheme = "http"
 
-        # it's impossible for presto to fail here as 'connections' are actually
+        # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.
-        presto_conn = prestodb.dbapi.connect(
+        trino_conn = trino.dbapi.connect(
             host=credentials.host,
             port=credentials.port,
             user=credentials.user,
@@ -175,7 +175,7 @@ class PrestoConnectionManager(SQLConnectionManager):
             isolation_level=IsolationLevel.AUTOCOMMIT
         )
         connection.state = 'open'
-        connection.handle = ConnectionWrapper(presto_conn)
+        connection.handle = ConnectionWrapper(trino_conn)
         return connection
 
     @classmethod
@@ -208,7 +208,7 @@ class PrestoConnectionManager(SQLConnectionManager):
             if without_comments == "":
                 continue
 
-            parent = super(PrestoConnectionManager, self)
+            parent = super(TrinoConnectionManager, self)
             connection, cursor = parent.add_query(
                 individual_query, auto_begin, bindings,
                 abridge_sql_log
