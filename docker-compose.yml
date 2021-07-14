@@ -1,9 +1,12 @@
 version: '3.5'
 services:
-  presto:
+  trino:
     ports:
       - "8080:8080"
-    image: fishtownanalytics/presto:1
+    image: 'trinodb/trino:359'
+    volumes:
+      - ./docker/trino/etc:/usr/lib/trino/etc:ro
+      - ./docker/trino/catalog:/etc/trino/catalog
 
 networks:
   default:

@@ -8,5 +8,5 @@ set -exo pipefail
 
 docker-compose build
 docker-compose -f docker/util.yml build
-docker-compose up -d presto
-docker-compose -f docker/util.yml run --rm util wait_for_up presto 8080
+docker-compose up -d trino
+docker-compose -f docker/util.yml run --rm util wait_for_up trino 8080
