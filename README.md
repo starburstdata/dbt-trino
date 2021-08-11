@@ -65,6 +65,23 @@ hive.allow-drop-table=true
 hive.allow-rename-table=true
 ```
 
+#### Use table properties to configure connector specifics
+
+Trino/Presto connectors use table properties to configure connector specifics.
+
+Check the Presto/Trino connector documentation for more information.
+
+```
+{{
+  config(
+    materialized='table',
+    properties={
+      "format": "'PARQUET'",
+      "partitioning": "ARRAY['bucket(id, 2)']",
+    }
+  )
+}}
+```
 
 ### Reporting bugs and contributing code
 
