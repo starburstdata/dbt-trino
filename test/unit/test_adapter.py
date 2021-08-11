@@ -51,8 +51,8 @@ class TestPrestoAdapter(unittest.TestCase):
 
         connection.handle
 
-        self.assertEquals(connection.state, 'open')
-        self.assertNotEquals(connection.handle, None)
+        self.assertEqual(connection.state, 'open')
+        self.assertNotEqual(connection.handle, None)
 
     def test_cancel_open_connections_empty(self):
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
