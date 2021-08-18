@@ -44,9 +44,13 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
 
+    platforms='any',
+    license='Apache License 2.0',
+    license_files = ('LICENSE.txt',),
+
     author='findinpath',
     author_email='findinpath@gmail.com',
-    url='https://github.com/dbt-labs/dbt',
+    url='https://github.com/findinpath/dbt-trino',
 
     packages=find_namespace_packages(include=['dbt', 'dbt.*']),
     package_data={
