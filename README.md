@@ -21,11 +21,11 @@ adaptations to make it work with [Trino](https://trino.io/) SQL compute engine.
 This dbt plugin has been tested against `dbt` version `0.20.0` and `trino`  version `359`.
 
 ### Installation
-This is not yet an official plugin so it needs to be installed for now from source.
 
-Checkout the project locally and run the following command in the base directory of the `dbt-trino` project:
+This dbt adapter can be installed via pip:
+
 ```
-$ pip install .
+$ pip install dbt-trino
 ```
 
 ### Configuring your profile
