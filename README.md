@@ -18,7 +18,7 @@ adaptations to make it work with [Trino](https://trino.io/) SQL compute engine.
 
 ### Compatibility
 
-This dbt plugin has been tested against `dbt` version `0.20.0` and `trino`  version `359`.
+This dbt plugin has been tested against `dbt` version `0.20.1` and `trino`  version `360`.
 
 ### Installation
 
