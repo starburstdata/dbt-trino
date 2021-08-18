@@ -25,7 +25,7 @@ def _dbt_trino_version():
 
 
 package_version = _dbt_trino_version()
-description = """The trino adpter plugin for dbt (data build tool)"""
+description = """The trino adapter plugin for dbt (data build tool)"""
 
 dbt_version = '0.20.0'
 # the package version should be the dbt version, with maybe some things on the
@@ -44,8 +44,8 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
 
-    author='Fishtown Analytics',
-    author_email='info@fishtownanalytics.com',
+    author='findinpath',
+    author_email='findinpath@gmail.com',
     url='https://github.com/dbt-labs/dbt',
 
     packages=find_namespace_packages(include=['dbt', 'dbt.*']),
