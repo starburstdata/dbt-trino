@@ -1,12 +1,21 @@
+from dataclasses import dataclass
+from typing import Dict, Optional
 from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.trino import TrinoConnectionManager, TrinoColumn
+from dbt.adapters.base.impl import AdapterConfig
 
 import agate
+
+
+@dataclass
+class TrinoConfig(AdapterConfig):
+    properties: Optional[Dict[str, str]] = None
 
 
 class TrinoAdapter(SQLAdapter):
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
+    AdapterSpecificConfigs = TrinoConfig
 
     @classmethod
     def date_function(cls):
