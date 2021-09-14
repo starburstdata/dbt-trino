@@ -32,6 +32,10 @@ class PrestoCredentials(Credentials):
     def type(self):
         return 'presto'
 
+    @property
+    def unique_field(self):
+        return self.host
+
     def _connection_keys(self):
         return ('host', 'port', 'user', 'database', 'schema')
 
