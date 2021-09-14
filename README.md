@@ -19,6 +19,8 @@ A dbt profile can be configured to run against Presto using the following config
 | method  | The Presto authentication method to use | Optional (default is `none`)  | `none` or `kerberos` |
 | user  | Username for authentication | Required  | `drew` |
 | password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
+| http_headers | HTTP Headers to send alongside requests to Presto, specified as a yaml dictionary of (header, value) pairs. | Optional |  `X-Presto-Routing-Group: my-cluster`|
+| http_scheme | The HTTP scheme to use for requests to Presto | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`
 | database  | Specify the database to build models into | Required  | `analytics` |
 | schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `dbt_drew` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |

@@ -6,7 +6,7 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
 from dbt.helper_types import Port
 
 from datetime import datetime
@@ -24,6 +24,8 @@ class PrestoCredentials(Credentials):
     user: str
     password: Optional[str] = None
     method: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    http_scheme: Optional[str] = None
     _ALIASES = {
         'catalog': 'database'
     }
@@ -158,13 +160,21 @@ class PrestoConnectionManager(SQLConnectionManager):
                 credentials.user,
                 credentials.password,
             )
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'ldap' method."
+                )
             http_scheme = "https"
         elif credentials.method == 'kerberos':
             auth = prestodb.auth.KerberosAuthentication()
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'kerberos' method."
+                )
             http_scheme = "https"
         else:
             auth = prestodb.constants.DEFAULT_AUTH
-            http_scheme = "http"
+            http_scheme = credentials.http_scheme or "http"
 
         # it's impossible for presto to fail here as 'connections' are actually
         # just cursor factories.
@@ -175,6 +185,7 @@ class PrestoConnectionManager(SQLConnectionManager):
             catalog=credentials.database,
             schema=credentials.schema,
             http_scheme=http_scheme,
+            http_headers=credentials.http_headers,
             auth=auth,
             isolation_level=IsolationLevel.AUTOCOMMIT
         )
