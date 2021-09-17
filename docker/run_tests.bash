@@ -8,4 +8,4 @@ docker run \
     --network="dbt-net" \
     -v $PWD/dbt:/root/.dbt \
     dbt-trino \
-    "dbt init test --adapter trino&& cd test && dbt run"
+    "cd /jaffle_shop && dbt seed && dbt run && dbt test"
