@@ -6,7 +6,7 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
 from dbt.helper_types import Port
 
 from datetime import date, datetime
@@ -24,6 +24,8 @@ class TrinoCredentials(Credentials):
     user: str
     password: Optional[str] = None
     method: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    http_scheme: Optional[str] = None
     _ALIASES = {
         'catalog': 'database'
     }
@@ -31,6 +33,10 @@ class TrinoCredentials(Credentials):
     @property
     def type(self):
         return 'trino'
+
+    @property
+    def unique_field(self):
+        return self.host
 
     def _connection_keys(self):
         return ('host', 'port', 'user', 'database', 'schema')
@@ -157,13 +163,21 @@ class TrinoConnectionManager(SQLConnectionManager):
                 credentials.user,
                 credentials.password,
             )
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'ldap' method."
+                )
             http_scheme = "https"
         elif credentials.method == 'kerberos':
             auth = trino.auth.KerberosAuthentication()
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'kerberos' method."
+                )
             http_scheme = "https"
         else:
             auth = trino.constants.DEFAULT_AUTH
-            http_scheme = "http"
+            http_scheme = credentials.http_scheme or "http"
 
         # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.
@@ -174,6 +188,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             catalog=credentials.database,
             schema=credentials.schema,
             http_scheme=http_scheme,
+            http_headers=credentials.http_headers,
             auth=auth,
             isolation_level=IsolationLevel.AUTOCOMMIT
         )
