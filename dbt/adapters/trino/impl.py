@@ -24,3 +24,7 @@ class TrinoAdapter(SQLAdapter):
     @classmethod
     def convert_datetime_type(cls, agate_table, col_idx):
         return "TIMESTAMP"
+
+    @classmethod
+    def convert_date_type(cls, agate_table: agate.Table, col_idx: int) -> str:
+        return "DATE"
