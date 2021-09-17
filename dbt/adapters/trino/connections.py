@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Optional
 from dbt.helper_types import Port
 
-from datetime import datetime
+from datetime import date, datetime
 import decimal
 import re
 import trino
@@ -114,6 +114,9 @@ class ConnectionWrapper(object):
         elif isinstance(value, datetime):
             time_formatted = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             return "TIMESTAMP '{}'".format(time_formatted)
+        elif isinstance(value, date):
+            date_formatted = value.strftime('%Y-%m-%d')
+            return "DATE '{}'".format(date_formatted)
         else:
             raise ValueError('Cannot escape {}'.format(type(value)))
 
