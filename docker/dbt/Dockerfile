@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.20.1
+FROM fishtownanalytics/dbt:0.20.2
 USER root
 
 ENV DBT_DIR /opt/dbt-trino

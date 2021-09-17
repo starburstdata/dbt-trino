@@ -37,6 +37,8 @@ A dbt profile can be configured to run against Trino using the following configu
 | method  | The Trino authentication method to use | Optional (default is `none`)  | `none` or `kerberos` |
 | user  | Username for authentication | Required  | `commander` |
 | password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
+| http_headers | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs. | Optional |  |
+| http_scheme | The HTTP scheme to use for requests to Trino | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`
 | database  | Specify the database to build models into | Required  | `analytics` |
 | schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `public` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |
@@ -83,6 +85,23 @@ hive.allow-drop-table=true
 hive.allow-rename-table=true
 ```
 
+#### Use table properties to configure connector specifics
+
+Trino connectors use table properties to configure connector specifics.
+
+Check the Trino connector documentation for more information.
+
+```
+{{
+  config(
+    materialized='table',
+    properties={
+      "format": "'PARQUET'",
+      "partitioning": "ARRAY['bucket(id, 2)']",
+    }
+  )
+}}
+```
 
 
 ### Running tests
@@ -98,30 +117,6 @@ Run a Trino server locally:
 ./docker/init.bash
 ```
 
-If you see errors while about "inconsistent state" while bringing up Trino,
-you may need to drop and re-create the `public` schema in the hive metastore:
-```
-# Example error
-
-Initialization script hive-schema-2.3.0.postgres.sql
-Error: ERROR: relation "BUCKETING_COLS" already exists (state=42P07,code=0)
-org.apache.hadoop.hive.metastore.HiveMetaException: Schema initialization FAILED! Metastore state would be inconsistent !!
-Underlying cause: java.io.IOException : Schema script failed, errorcode 2
-Use --verbose for detailed stacktrace.
-*** schemaTool failed ***
-```
-
-**Solution:** Drop (or rename) the public schema to allow the init script to recreate the metastore from scratch. **Only run this against a test Trino deployment. Do not run this in production!**
-```sql
--- run this against the hive metastore (port forwarded to 10005 by default)
--- DO NOT RUN THIS IN PRODUCTION!
-
-drop schema public cascade;
-create schema public;
-```
-
-You probably should be slightly less reckless than this.
-
 Run tests against Trino:
 
 ```
@@ -136,13 +131,19 @@ docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/home/dbt_user/.dbt"
 
 ### Running integration tests
 
-Install [dbt-adapter-tests](https://github.com/dbt-labs/dbt-adapter-tests) library to be able to run the dbt tests:
+Install the libraries required for development in order to be able to run the dbt tests:
 
 ```
-pip install pytest-dbt-adapter
+pip install -r dev_requirements.txt
 ```
 
 Run from the base directory of the project the command:
+
+```
+tox
+```
+
+or 
 
 ```
 pytest test/integration/trino.dbtspec
