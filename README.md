@@ -39,6 +39,7 @@ A dbt profile can be configured to run against Trino using the following configu
 | password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
 | http_headers | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs. | Optional |  |
 | http_scheme | The HTTP scheme to use for requests to Trino | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`
+| session_properties | Sets Trino session properties used in the connection | Optional | `query_max_run_time: 5d`
 | database  | Specify the database to build models into | Required  | `analytics` |
 | schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `public` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |
@@ -60,6 +61,9 @@ my-trino-db:
       database: analytics
       schema: public
       threads: 8
+      session_properties:
+        query_max_run_time: 5d
+        exchange_compression: True
 ```
 
 ### Usage Notes
