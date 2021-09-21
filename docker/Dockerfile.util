@@ -1,4 +1,4 @@
-FROM openjdk:16-ea-17
+FROM openjdk:17-ea-22-jdk-oracle
 
 RUN apt-get update && \
   apt-get install -yf postgresql-client netcat && \
