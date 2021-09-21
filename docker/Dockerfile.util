@@ -1,9 +1,7 @@
-FROM openjdk:16-ea-17
+FROM alpine:3.14
 
-RUN apt-get update && \
-  apt-get install -yf postgresql-client netcat && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apk add --update netcat-openbsd && \
+  rm -rf /var/cache/apk/*
 
 COPY wait_for_up.bash /bin/wait_for_up
 RUN chmod +x /bin/wait_for_up
