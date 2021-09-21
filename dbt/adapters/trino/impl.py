@@ -8,14 +8,14 @@ import agate
 
 
 @dataclass
-class PrestoConfig(AdapterConfig):
+class TrinoConfig(AdapterConfig):
     properties: Optional[Dict[str, str]] = None
 
 
 class TrinoAdapter(SQLAdapter):
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
-    AdapterSpecificConfigs = PrestoConfig
+    AdapterSpecificConfigs = TrinoConfig
 
     @classmethod
     def date_function(cls):
