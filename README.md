@@ -126,7 +126,7 @@ Run tests against Trino:
 Run the locally-built docker image (from docker/dbt/build.sh):
 ```
 export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
-docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/home/dbt_user/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
+docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
 ```
 
 ### Running integration tests
