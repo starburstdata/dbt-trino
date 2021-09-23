@@ -37,8 +37,9 @@ A dbt profile can be configured to run against Trino using the following configu
 | method  | The Trino authentication method to use | Optional (default is `none`)  | `none` or `kerberos` |
 | user  | Username for authentication | Required  | `commander` |
 | password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
-| http_headers | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs. | Optional |  |
+| http_headers | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs. | Optional | `X-Trino-Client-Info: dbt-trino` |
 | http_scheme | The HTTP scheme to use for requests to Trino | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`
+| session_properties | Sets Trino session properties used in the connection | Optional | `query_max_run_time: 5d`
 | database  | Specify the database to build models into | Required  | `analytics` |
 | schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `public` |
 | host    | The hostname to connect to | Required | `127.0.0.1`  |
@@ -60,6 +61,12 @@ my-trino-db:
       database: analytics
       schema: public
       threads: 8
+      http_headers:
+	X-Trino-Client-Info: dbt-trino
+      http_scheme: http
+      session_properties:
+        query_max_run_time: 5d
+        exchange_compression: True
 ```
 
 ### Usage Notes
@@ -126,7 +133,7 @@ Run tests against Trino:
 Run the locally-built docker image (from docker/dbt/build.sh):
 ```
 export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
-docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/home/dbt_user/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
+docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
 ```
 
 ### Running integration tests
