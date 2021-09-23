@@ -6,7 +6,7 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.logger import GLOBAL_LOGGER as logger
 
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Any, Optional, Dict
 from dbt.helper_types import Port
 
 from datetime import date, datetime
@@ -26,6 +26,7 @@ class TrinoCredentials(Credentials):
     method: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     http_scheme: Optional[str] = None
+    session_properties: Optional[Dict[str, Any]] = None
     _ALIASES = {
         'catalog': 'database'
     }
@@ -189,6 +190,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             schema=credentials.schema,
             http_scheme=http_scheme,
             http_headers=credentials.http_headers,
+            session_properties=credentials.session_properties,
             auth=auth,
             isolation_level=IsolationLevel.AUTOCOMMIT
         )
