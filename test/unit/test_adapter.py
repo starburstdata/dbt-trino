@@ -24,6 +24,8 @@ class TestTrinoAdapter(unittest.TestCase):
                     "schema": "dbt_test_schema",
                     "method": "none",
                     "user": "trino_user",
+                    "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                    "http_scheme": "http",
                     "session_properties": {
                         "query_max_run_time": "5d",
                         "exchange_compression": True,
@@ -63,6 +65,10 @@ class TestTrinoAdapter(unittest.TestCase):
         connection = self.adapter.acquire_connection("dummy")
         connection.handle
 
+        self.assertEqual(
+            connection.credentials.http_headers, {"X-Trino-Client-Info": "dbt-trino"}
+        )
+        self.assertEqual(connection.credentials.http_scheme, "http")
         self.assertEqual(
             connection.credentials.session_properties,
             {"query_max_run_time": "5d", "exchange_compression": True},
