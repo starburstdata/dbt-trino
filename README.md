@@ -49,6 +49,7 @@ A dbt profile can be configured to run against Trino using the following configu
 
 
 **Example profiles.yml entry:**
+
 ```
 my-trino-db:
   target: dev
@@ -61,13 +62,20 @@ my-trino-db:
       database: analytics
       schema: public
       threads: 8
-      http_headers:
-	X-Trino-Client-Info: dbt-trino
       http_scheme: http
       session_properties:
         query_max_run_time: 5d
         exchange_compression: True
 ```
+
+
+For reference on which session properties can be set on the the dbt profile do execute
+
+```sql
+SHOW SESSION;
+```
+
+on your Trino instance.
 
 ### Usage Notes
 
