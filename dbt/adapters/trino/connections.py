@@ -192,7 +192,8 @@ class TrinoConnectionManager(SQLConnectionManager):
             http_headers=credentials.http_headers,
             session_properties=credentials.session_properties,
             auth=auth,
-            isolation_level=IsolationLevel.AUTOCOMMIT
+            isolation_level=IsolationLevel.AUTOCOMMIT,
+            source='dbt-trino'
         )
         connection.state = 'open'
         connection.handle = ConnectionWrapper(trino_conn)
