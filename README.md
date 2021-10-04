@@ -2,19 +2,19 @@
 
 ### Introduction
 
+[dbt](https://docs.getdbt.com/docs/introduction) is a data transformation workflow tool that lets teams quickly and collaboratively deploy analytics code, following software engineering best practices like modularity, CI/CD, testing, and documentation. It enables anyone who knows SQL to build production-grade data pipelines.
+
 One frequently asked question in the context of using `dbt` tool is:
 
 > Can I connect my dbt project to two databases?
 
 (see the answered [question](https://docs.getdbt.com/faqs/connecting-to-two-dbs-not-allowed) on the dbt website).
 
-**tldr;** `dbt` stands for transformation as in `T` within `ELT`  pipelines, it doesn't move data from source to a warehouse.
+**tldr;** `dbt` stands for transformation as in `T` within `ELT` pipelines, it doesn't move data from source to a warehouse.
 
-The creators of the `dbt` tool have added however support for handling such scenarios via
-[dbt-presto](https://github.com/dbt-labs/dbt-presto) plugin.
+`dbt-trino` adapter uses [Trino](https://trino.io/) as a underlying query engine to perform query federation across disperse data sources. Trino connects to multiple and diverse data sources ([available connectors](https://trino.io/docs/current/connector.html)) via one dbt connection and process SQL queries at scale. Transformations defined in dbt are passed to Trino which handles these SQL transformation queries and translates them to queries specific to the systems it connects to create tables or views and manipulate data.
 
-This repository represents a fork of the [dbt-presto](https://github.com/dbt-labs/dbt-presto) with slight
-adaptations to make it work with [Trino](https://trino.io/) SQL compute engine.
+This repository represents a fork of the [dbt-presto](https://github.com/dbt-labs/dbt-presto) with adaptations to make it work with Trino.
 
 ### Compatibility
 
@@ -81,8 +81,8 @@ on your Trino instance.
 
 #### Supported Functionality
 Due to the nature of Trino, not all core `dbt` functionality is supported.
-The following features of dbt are not implemented on Trino:
-- Archival
+The following features of dbt are not implemented in `dbt-trino`:
+- Snapshot
 - Incremental models
 
 Also, note that upper or mixed case schema names will cause catalog queries to fail. 
@@ -118,6 +118,14 @@ Check the Trino connector documentation for more information.
 }}
 ```
 
+#### Generating lineage flow in docs
+
+In order to generate lineage flow in docs use `ref` function in the place of table names in the query. It builts dependencies between models and allows to create DAG with data flow. Refer to examples [here](https://docs.getdbt.com/docs/building-a-dbt-project/building-models#building-dependencies-between-models).
+
+```sh
+dbt docs generate          # generate docs 
+dbt docs serve --port 8081 # starts local server (by default docs server runs on 8080 port, it may cause conflict with Trino in case of local development)
+```
 
 ### Running tests
 Build dbt container locally:
@@ -139,7 +147,7 @@ Run tests against Trino:
 ```
 
 Run the locally-built docker image (from docker/dbt/build.sh):
-```
+```sh
 export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
 docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
 ```
