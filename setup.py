@@ -50,7 +50,7 @@ setup(
 
     author='findinpath',
     author_email='findinpath@gmail.com',
-    url='https://github.com/findinpath/dbt-trino',
+    url='https://github.com/starburstdata/dbt-trino',
 
     packages=find_namespace_packages(include=['dbt', 'dbt.*']),
     package_data={
