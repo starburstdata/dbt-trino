@@ -32,6 +32,16 @@ models:
       - name: total_order_amount
         description: Total value (AUD) of a customer's orders
 
+  - name: dim_order_dates
+    description: This table is built in an incremental fashion and contains all the dates on which orders have been placed.
+
+    columns:
+      - name: order_date
+        description: A unique order date
+        tests:
+          - unique
+          - not_null
+
   - name: fct_orders
     description: This table has basic information about orders, as well as some derived facts based on payments
 

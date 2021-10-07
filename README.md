@@ -83,7 +83,6 @@ on your Trino instance.
 Due to the nature of Trino, not all core `dbt` functionality is supported.
 The following features of dbt are not implemented in `dbt-trino`:
 - Snapshot
-- Incremental models
 
 Also, note that upper or mixed case schema names will cause catalog queries to fail. 
 Please only use lower case schema names with this adapter.
@@ -98,6 +97,17 @@ hive.metastore-cache-ttl=0s
 hive.metastore-refresh-interval = 5s
 hive.allow-drop-table=true
 hive.allow-rename-table=true
+```
+
+#### Incremental models
+
+The incremental strategy currently supported by this adapter is to append new records
+without updating/overwriting any existing data from the target model.
+
+```
+{{
+    config(materialized = 'incremental')
+}}
 ```
 
 #### Use table properties to configure connector specifics
