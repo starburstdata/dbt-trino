@@ -21,8 +21,8 @@ sequences:
   test_dbt_empty: empty
   test_dbt_base: base
   test_dbt_ephemeral: ephemeral
-  # no incrementals, no snapshots
-  # test_dbt_incremental: incremental
+  test_dbt_incremental: incremental
+  # no snapshots
   # test_dbt_snapshot_strategy_timestamp: snapshot_strategy_timestamp
   # test_dbt_snapshot_strategy_check_cols: snapshot_strategy_check_cols
   test_dbt_data_test: data_test
