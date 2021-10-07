@@ -18,7 +18,7 @@ This repository represents a fork of the [dbt-presto](https://github.com/dbt-lab
 
 ### Compatibility
 
-This dbt plugin has been tested against `trino` version `362`.
+This dbt plugin has been tested against `trino` version `363`.
 
 ### Installation
 
