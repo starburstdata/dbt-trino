@@ -27,7 +27,7 @@ def _dbt_trino_version():
 package_version = _dbt_trino_version()
 description = """The trino adapter plugin for dbt (data build tool)"""
 
-dbt_version = '0.20.2'
+dbt_version = '0.21.0'
 # the package version should be the dbt version, with maybe some things on the
 # ends of it. (0.19.1 vs 0.19.1a1, 0.19.1.1, ...)
 if not package_version.startswith(dbt_version):
@@ -50,7 +50,7 @@ setup(
 
     author='findinpath',
     author_email='findinpath@gmail.com',
-    url='https://github.com/findinpath/dbt-trino',
+    url='https://github.com/starburstdata/dbt-trino',
 
     packages=find_namespace_packages(include=['dbt', 'dbt.*']),
     package_data={

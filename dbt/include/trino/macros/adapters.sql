@@ -128,7 +128,7 @@
 {%- endmacro %}
 
 
-{# On Trino, 'cascade' isn't supported so we have to manually cascade. #}
+{# On Trino, 'cascade' is not supported so we have to manually cascade. #}
 {% macro trino__drop_schema(relation) -%}
   {% for row in list_relations_without_caching(relation) %}
     {% set rel_db = row[0] %}
@@ -148,11 +148,6 @@
   {% call statement('rename_relation') -%}
     alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
-{% endmacro %}
-
-
-{% macro trino__load_csv_rows(model, agate_table) %}
-  {{ return(basic_load_csv_rows(model, 1000, agate_table)) }}
 {% endmacro %}
 
 
