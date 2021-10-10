@@ -110,6 +110,57 @@ without updating/overwriting any existing data from the target model.
 }}
 ```
 
+#### Incremental overwrite on hive models
+
+In case that the target incremental model is being accessed with 
+[hive](https://trino.io/docs/current/connector/hive.html) Trino connector,  an `insert overwrite` 
+functionality can be achieved when using:
+
+```
+<hive-catalog-name>.insert-existing-partitions-behavior=OVERWRITE
+```
+
+setting on the Trino hive connector configuration.
+
+Below is a sample hive profile entry to deal with `OVERWRITE` functionality for the hive connector called `minio`:
+
+```
+trino-incremental-hive:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: admin
+      password:
+      catalog: minio
+      schema: tiny
+      host: localhost
+      port: 8080
+      http_scheme: http
+      session_properties:
+         minio.insert_existing_partitions_behavior: OVERWRITE
+      threads: 1
+```
+
+
+Existing partitions in the target model that match the staged data will be overwritten. 
+The rest of the partitions will be simply appended to the target model.
+
+NOTE that this functionality works on incremental models that use partitioning:
+
+```
+{{
+    config(
+        materialized = 'incremental',
+        properties={
+          "format": "'PARQUET'",
+          "partitioned_by": "ARRAY['day']",
+        }
+    )
+}}
+```
+
 #### Use table properties to configure connector specifics
 
 Trino connectors use table properties to configure connector specifics.
