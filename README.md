@@ -32,21 +32,19 @@ $ pip install dbt-trino
 
 A dbt profile can be configured to run against Trino using the following configuration:
 
-| Option  | Description                                        | Required?               | Example                  |
-|---------|----------------------------------------------------|-------------------------|--------------------------|
-| method  | The Trino authentication method to use | Optional (default is `none`)  | `none` or `kerberos` |
-| user  | Username for authentication | Required  | `commander` |
-| password  | Password for authentication | Optional (required if `method` is `ldap` or `kerberos`)  | `none` or `abc123` |
-| http_headers | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs. | Optional | `X-Trino-Client-Info: dbt-trino` |
-| http_scheme | The HTTP scheme to use for requests to Trino | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`
-| session_properties | Sets Trino session properties used in the connection | Optional | `query_max_run_time: 5d`
-| database  | Specify the database to build models into | Required  | `analytics` |
-| schema  | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required | `public` |
-| host    | The hostname to connect to | Required | `127.0.0.1`  |
-| port    | The port to connect to the host on | Required | `8080` |
-| threads    | How many threads dbt should use | Optional (default is `1`) | `8` |
-
-
+| Option             | Description                                                                                                  | Required?                                                                          | Example                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | -------------------------------- |
+| method             | The Trino authentication method to use                                                                       | Optional (default is `none`)                                                       | `none` or `kerberos`             |
+| user               | Username for authentication                                                                                  | Required                                                                           | `commander`                      |
+| password           | Password for authentication                                                                                  | Optional (required if `method` is `ldap` or `kerberos`)                            | `none` or `abc123`               |
+| http_headers       | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs.   | Optional                                                                           | `X-Trino-Client-Info: dbt-trino` |
+| http_scheme        | The HTTP scheme to use for requests to Trino                                                                 | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`                |
+| session_properties | Sets Trino session properties used in the connection                                                         | Optional                                                                           | `query_max_run_time: 5d`         |
+| database           | Specify the database to build models into                                                                    | Required                                                                           | `analytics`                      |
+| schema             | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required                                                                           | `public`                         |
+| host               | The hostname to connect to                                                                                   | Required                                                                           | `127.0.0.1`                      |
+| port               | The port to connect to the host on                                                                           | Required                                                                           | `8080`                           |
+| threads            | How many threads dbt should use                                                                              | Optional (default is `1`)                                                          | `8`                              |
 
 **Example profiles.yml entry:**
 
@@ -68,7 +66,6 @@ my-trino-db:
         exchange_compression: True
 ```
 
-
 For reference on which session properties can be set on the the dbt profile do execute
 
 ```sql
@@ -80,15 +77,17 @@ on your Trino instance.
 ### Usage Notes
 
 #### Supported Functionality
+
 Due to the nature of Trino, not all core `dbt` functionality is supported.
 The following features of dbt are not implemented in `dbt-trino`:
+
 - Snapshot
 
-Also, note that upper or mixed case schema names will cause catalog queries to fail. 
+Also, note that upper or mixed case schema names will cause catalog queries to fail.
 Please only use lower case schema names with this adapter.
 
-
 #### Required configuration
+
 dbt fundamentally works by dropping and creating tables and views in databases.
 As such, the following Trino configs must be set for dbt to work properly on Trino:
 
@@ -112,8 +111,8 @@ without updating/overwriting any existing data from the target model.
 
 #### Incremental overwrite on hive models
 
-In case that the target incremental model is being accessed with 
-[hive](https://trino.io/docs/current/connector/hive.html) Trino connector,  an `insert overwrite` 
+In case that the target incremental model is being accessed with
+[hive](https://trino.io/docs/current/connector/hive.html) Trino connector, an `insert overwrite`
 functionality can be achieved when using:
 
 ```
@@ -143,8 +142,7 @@ trino-incremental-hive:
       threads: 1
 ```
 
-
-Existing partitions in the target model that match the staged data will be overwritten. 
+Existing partitions in the target model that match the staged data will be overwritten.
 The rest of the partitions will be simply appended to the target model.
 
 NOTE that this functionality works on incremental models that use partitioning:
@@ -184,30 +182,40 @@ Check the Trino connector documentation for more information.
 In order to generate lineage flow in docs use `ref` function in the place of table names in the query. It builts dependencies between models and allows to create DAG with data flow. Refer to examples [here](https://docs.getdbt.com/docs/building-a-dbt-project/building-models#building-dependencies-between-models).
 
 ```sh
-dbt docs generate          # generate docs 
+dbt docs generate          # generate docs
 dbt docs serve --port 8081 # starts local server (by default docs server runs on 8080 port, it may cause conflict with Trino in case of local development)
 ```
 
 ### Running tests
+
+Tests can be executed against Trino or Starburst server. To run all tests alongside with building required docker images and server initialization run:
+
+```
+make dbt-trino-tests
+make dbt-starburst-tests
+```
+
 Build dbt container locally:
 
 ```
 ./docker/dbt/build.sh
 ```
 
-Run a Trino server locally:
+Run Trino or Starburst server locally:
 
 ```
-./docker/init.bash
+./docker/init_trino.bash
+./docker/init_starburst.bash
 ```
 
-Run tests against Trino:
+Run tests against Trino or Starburst:
 
 ```
 ./docker/run_tests.bash
 ```
 
 Run the locally-built docker image (from docker/dbt/build.sh):
+
 ```sh
 export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
 docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
@@ -227,7 +235,7 @@ Run from the base directory of the project the command:
 tox
 ```
 
-or 
+or
 
 ```
 pytest test/integration/trino.dbtspec
@@ -235,5 +243,5 @@ pytest test/integration/trino.dbtspec
 
 ## Code of Conduct
 
-Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected 
+Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected
 to follow the [PyPA Code of Conduct](https://www.pypa.io/en/latest/code-of-conduct/).
