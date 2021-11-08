@@ -2,4 +2,5 @@
 
 # move to wherever we are so docker things work
 cd "$(dirname "${BASH_SOURCE[0]}")"
-docker-compose down
+cd ..
+docker-compose -f docker-compose-trino.yml down

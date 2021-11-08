@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+  trino:
+    ports:
+      - "8080:8080"
+    image: "starburstdata/starburst-enterprise:364-e.0"
+    volumes:
+      - ./docker/starburst/etc:/etc/starburst
+      - ./docker/starburst/catalog:/etc/starburst/catalog
+
+networks:
+  default:
+    external:
+      name: dbt-net
