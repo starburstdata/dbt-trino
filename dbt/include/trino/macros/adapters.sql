@@ -169,3 +169,7 @@
   {%- endcall %}
   {{ return(load_result('check_schema_exists').table) }}
 {% endmacro %}
+
+{% macro trino__current_timestamp() -%}
+    CURRENT_TIMESTAMP
+{%- endmacro %}

@@ -42,6 +42,14 @@ models:
           - unique
           - not_null
 
+  - name: dim_current_timestamp
+    description: This table is used just for checking the functionality of the `current_timestamp()` dbt macro
+    columns:
+      - name: tstmp
+        description: Represents the timestamp during the last dbt run
+        tests:
+          - not_null
+
   - name: fct_orders
     description: This table has basic information about orders, as well as some derived facts based on payments
 
