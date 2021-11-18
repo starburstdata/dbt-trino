@@ -151,6 +151,11 @@
 {% endmacro %}
 
 
+{% macro trino__get_batch_size() %}
+  {{ return(1000) }}
+{% endmacro %}
+
+
 {% macro trino__list_schemas(database) -%}
   {% call statement('list_schemas', fetch_result=True, auto_begin=False) %}
     select distinct schema_name
