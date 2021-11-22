@@ -177,6 +177,19 @@ Check the Trino connector documentation for more information.
 }}
 ```
 
+#### Seeds
+
+Seeds are CSV files in your dbt project (typically in your data directory), that dbt can load into your data warehouse using the dbt seed command.
+
+For dbt-trino batch_size is defined in macro `trino__get_batch_size()` and default value is `1000`.
+In order to override default value define within your project a macro like the following:
+
+```
+{% macro default__get_batch_size() %}
+  {{ return(10000) }}
+{% endmacro %}
+```
+
 #### Generating lineage flow in docs
 
 In order to generate lineage flow in docs use `ref` function in the place of table names in the query. It builts dependencies between models and allows to create DAG with data flow. Refer to examples [here](https://docs.getdbt.com/docs/building-a-dbt-project/building-models#building-dependencies-between-models).
