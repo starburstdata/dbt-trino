@@ -254,6 +254,22 @@ or
 pytest test/integration/trino.dbtspec
 ```
 
+### Release process
+
+Before doing a release dbt's version requires updating.
+In order to bump dbt-trino and dbt-core version run:
+
+```sh
+bumpversion --config-file .bumpversion-dbt.cfg patch --new-version <new-version>
+bumpversion --config-file .bumpversion.cfg patch --new-version <new-version> --allow-dirty
+```
+
+Additionally bump dbt-core version in dbt testing image `docker/dbt/Dockerfile`.
+
+Next step is to merge bump commit and making sure that test suite pass.
+
+Finally to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
+
 ## Code of Conduct
 
 Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected
