@@ -1,0 +1,94 @@
+name: dbt-trino release
+
+on:
+  workflow_dispatch:
+
+env:
+  version_number: 'cat .bumpversion.cfg | grep current_version | cut -d " " -f3'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.5"
+
+      - name: Test release
+        run: |
+          python3 -m venv env
+          source env/bin/activate
+          pip install -r dev_requirements.txt
+          pip install twine wheel setuptools
+          python setup.py sdist bdist_wheel
+          pip install dist/dbt-trino-*.tar.gz
+          pip install dist/dbt_trino-*-py3-none-any.whl
+          twine check dist/dbt_trino-*-py3-none-any.whl dist/dbt-trino-*.tar.gz
+
+  github-release:
+    name: GitHub release
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.5"
+
+      # Need to set an output variable because env variables can't be taken as input
+      # This is needed for the next step with releasing to GitHub
+      - name: Find release type
+        id: release_type
+        env:
+          IS_PRERELEASE: ${{ contains(env.version_number, 'rc') ||  contains(env.version_number, 'b') }}
+        run: |
+          echo ::set-output name=isPrerelease::$IS_PRERELEASE
+
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{env.version_number}}
+          release_name: v${{env.version_number}}
+          prerelease: ${{ steps.release_type.outputs.isPrerelease }}
+          body: |
+            Tracking [dbt-core v${{env.version_number}}](https://github.com/dbt-labs/dbt/releases/tag/v${{env.version_number}}).
+            ```sh
+            $ pip install dbt-trino==${{env.version_number}}
+            ```
+
+  pypi-release:
+    name: Pypi release
+    runs-on: ubuntu-latest
+    needs: github-release
+    environment: PypiProd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: v${{env.version_number}}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9.5"
+
+      - name: Release to pypi
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python3 -m venv env
+          source env/bin/activate
+          pip install -r dev_requirements.txt
+          pip install twine wheel setuptools
+          python setup.py sdist bdist_wheel
+          twine upload --non-interactive dist/dbt_trino-${{env.version_number}}-py3-none-any.whl dist/dbt-trino-${{env.version_number}}.tar.gz
