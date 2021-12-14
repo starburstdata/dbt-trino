@@ -24,6 +24,7 @@ class TrinoCredentials(Credentials):
     user: str
     password: Optional[str] = None
     method: Optional[str] = None
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     http_scheme: Optional[str] = None
     session_properties: Optional[Dict[str, Any]] = None
@@ -40,7 +41,7 @@ class TrinoCredentials(Credentials):
         return self.host
 
     def _connection_keys(self):
-        return ('host', 'port', 'user', 'database', 'schema')
+        return ('host', 'port', 'user', 'database', 'schema', 'cert')
 
 
 class ConnectionWrapper(object):
@@ -195,6 +196,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source='dbt-trino'
         )
+        trino_conn._http_session.verify = credentials.cert
         connection.state = 'open'
         connection.handle = ConnectionWrapper(trino_conn)
         return connection
