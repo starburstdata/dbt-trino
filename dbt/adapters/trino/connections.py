@@ -3,7 +3,7 @@ from contextlib import contextmanager
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.events import AdapterLogger
 
 from dataclasses import dataclass
 from typing import Any, Optional, Dict
@@ -15,6 +15,9 @@ import re
 import trino
 from trino.transaction import IsolationLevel
 import sqlparse
+
+
+logger = AdapterLogger("Trino")
 
 
 @dataclass
