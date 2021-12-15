@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
+from dbt.contracts.connection import AdapterResponse
 from dbt.events import AdapterLogger
 
 from dataclasses import dataclass
@@ -203,9 +204,11 @@ class TrinoConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_response(cls, cursor):
-        # this is lame, but the cursor doesn't give us anything useful.
-        return 'OK'
+    def get_response(cls, cursor) -> AdapterResponse:
+        message = 'SUCCESS'
+        return AdapterResponse(
+            _message=message
+        )
 
     def cancel(self, connection):
         connection.handle.cancel()
