@@ -45,8 +45,8 @@ setup(
     platforms="any",
     license="Apache License 2.0",
     license_files=("LICENSE.txt",),
-    author="findinpath",
-    author_email="findinpath@gmail.com",
+    author="Starburst Data",
+    author_email="info@starburstdata.com",
     url="https://github.com/starburstdata/dbt-trino",
     packages=find_namespace_packages(include=["dbt", "dbt.*"]),
     package_data={
