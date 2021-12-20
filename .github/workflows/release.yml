@@ -3,9 +3,6 @@ name: dbt-trino release
 on:
   workflow_dispatch:
 
-env:
-  version_number: 'cat .bumpversion.cfg | grep current_version | cut -d " " -f3'
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -41,6 +38,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.9.5"
+
+      - name: Get dbt-trino version
+        run: echo "version_number=$(cat .bumpversion.cfg | grep current_version | cut -d " " -f3)" >> $GITHUB_ENV
 
       # Need to set an output variable because env variables can't be taken as input
       # This is needed for the next step with releasing to GitHub
@@ -80,6 +80,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.9.5"
+
+      - name: Get dbt-trino version
+        run: echo "version_number=$(cat .bumpversion.cfg | grep current_version | cut -d " " -f3)" >> $GITHUB_ENV
 
       - name: Release to pypi
         env:
