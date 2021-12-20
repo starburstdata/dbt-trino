@@ -1,6 +1,13 @@
-## dbt-trino
+<p float="left">
+  <img src="https://raw.githubusercontent.com/dbt-labs/dbt/ec7dee39f793aa4f7dd3dae37282cc87664813e4/etc/dbt-logo-full.svg" width="45%" />
+  <img src="https://trino.io/assets/trino-og.png" width="50%" />
+</p>
 
-### Introduction
+[![Build Status](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml/badge.svg)](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml?query=workflow%3A%22dbt-trino+tests%22+branch%3Amaster+event%3Apush) [![Trino Slack](https://img.shields.io/static/v1?logo=slack&logoColor=959DA5&label=Slack&labelColor=333a41&message=join%20conversation&color=3AC358)](https://trino.io/slack.html)
+
+# dbt-trino
+
+## Introduction
 
 [dbt](https://docs.getdbt.com/docs/introduction) is a data transformation workflow tool that lets teams quickly and collaboratively deploy analytics code, following software engineering best practices like modularity, CI/CD, testing, and documentation. It enables anyone who knows SQL to build production-grade data pipelines.
 
@@ -10,7 +17,7 @@ One frequently asked question in the context of using `dbt` tool is:
 
 (see the answered [question](https://docs.getdbt.com/faqs/connecting-to-two-dbs-not-allowed) on the dbt website).
 
-**tldr;** `dbt` stands for transformation as in `T` within `ELT` pipelines, it doesn't move data from source to a warehouse.
+**TL;DR** `dbt` stands for transformation as in `T` within `ELT` pipelines, it doesn't move data from source to a warehouse.
 
 `dbt-trino` adapter uses [Trino](https://trino.io/) as a underlying query engine to perform query federation across disperse data sources. Trino connects to multiple and diverse data sources ([available connectors](https://trino.io/docs/current/connector.html)) via one dbt connection and process SQL queries at scale. Transformations defined in dbt are passed to Trino which handles these SQL transformation queries and translates them to queries specific to the systems it connects to create tables or views and manipulate data.
 
@@ -18,13 +25,13 @@ This repository represents a fork of the [dbt-presto](https://github.com/dbt-lab
 
 ### Compatibility
 
-This dbt plugin has been tested against `Trino` version `364` and `Starburst Enterprise` version `364-e`.
+This dbt plugin has been tested against `Trino` version `366` and `Starburst Enterprise` version `365-e`.
 
-### Installation
+## Installation
 
 This dbt adapter can be installed via pip:
 
-```
+```sh
 $ pip install dbt-trino
 ```
 
@@ -48,7 +55,7 @@ A dbt profile can be configured to run against Trino using the following configu
 
 **Example profiles.yml entry:**
 
-```
+```yaml
 my-trino-db:
   target: dev
   outputs:
@@ -74,7 +81,7 @@ SHOW SESSION;
 
 on your Trino instance.
 
-### Usage Notes
+## Usage Notes
 
 #### Supported Functionality
 
@@ -91,7 +98,7 @@ Please only use lower case schema names with this adapter.
 dbt fundamentally works by dropping and creating tables and views in databases.
 As such, the following Trino configs must be set for dbt to work properly on Trino:
 
-```
+```properties
 hive.metastore-cache-ttl=0s
 hive.metastore-refresh-interval = 5s
 hive.allow-drop-table=true
@@ -103,7 +110,7 @@ hive.allow-rename-table=true
 The incremental strategy currently supported by this adapter is to append new records
 without updating/overwriting any existing data from the target model.
 
-```
+```jinja2
 {{
     config(materialized = 'incremental')
 }}
@@ -123,7 +130,7 @@ setting on the Trino hive connector configuration.
 
 Below is a sample hive profile entry to deal with `OVERWRITE` functionality for the hive connector called `minio`:
 
-```
+```yaml
 trino-incremental-hive:
   target: dev
   outputs:
@@ -138,7 +145,7 @@ trino-incremental-hive:
       port: 8080
       http_scheme: http
       session_properties:
-         minio.insert_existing_partitions_behavior: OVERWRITE
+        minio.insert_existing_partitions_behavior: OVERWRITE
       threads: 1
 ```
 
@@ -147,7 +154,7 @@ The rest of the partitions will be simply appended to the target model.
 
 NOTE that this functionality works on incremental models that use partitioning:
 
-```
+```jinja2
 {{
     config(
         materialized = 'incremental',
@@ -165,7 +172,7 @@ Trino connectors use table properties to configure connector specifics.
 
 Check the Trino connector documentation for more information.
 
-```
+```jinja2
 {{
   config(
     materialized='table',
@@ -184,7 +191,7 @@ Seeds are CSV files in your dbt project (typically in your data directory), that
 For dbt-trino batch_size is defined in macro `trino__get_batch_size()` and default value is `1000`.
 In order to override default value define within your project a macro like the following:
 
-```
+```jinja2
 {% macro default__get_batch_size() %}
   {{ return(10000) }}
 {% endmacro %}
@@ -199,31 +206,33 @@ dbt docs generate          # generate docs
 dbt docs serve --port 8081 # starts local server (by default docs server runs on 8080 port, it may cause conflict with Trino in case of local development)
 ```
 
+## Development
+
 ### Running tests
 
 Tests can be executed against Trino or Starburst server. To run all tests alongside with building required docker images and server initialization run:
 
-```
+```sh
 make dbt-trino-tests
 make dbt-starburst-tests
 ```
 
 Build dbt container locally:
 
-```
+```sh
 ./docker/dbt/build.sh
 ```
 
 Run Trino or Starburst server locally:
 
-```
+```sh
 ./docker/init_trino.bash
 ./docker/init_starburst.bash
 ```
 
 Run tests against Trino or Starburst:
 
-```
+```sh
 ./docker/run_tests.bash
 ```
 
@@ -238,19 +247,19 @@ docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount=
 
 Install the libraries required for development in order to be able to run the dbt tests:
 
-```
+```sh
 pip install -r dev_requirements.txt
 ```
 
 Run from the base directory of the project the command:
 
-```
+```sh
 tox
 ```
 
 or
 
-```
+```sh
 pytest test/integration/trino.dbtspec
 ```
 
