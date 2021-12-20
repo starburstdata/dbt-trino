@@ -73,8 +73,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          ref: v${{env.version_number}}
 
       - name: Setup Python
         uses: actions/setup-python@v2
