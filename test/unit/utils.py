@@ -8,6 +8,7 @@ from unittest import mock
 from unittest import TestCase
 
 from hologram import ValidationError
+from dbt.config.project import PartialProject
 
 
 def normalize(path):
@@ -24,7 +25,7 @@ def normalize(path):
 
 
 class Obj:
-    which = 'blah'
+    which = "blah"
     single_threaded = False
 
 
@@ -34,15 +35,16 @@ def mock_connection(name):
     return conn
 
 
-def profile_from_dict(profile, profile_name, cli_vars='{}'):
+def profile_from_dict(profile, profile_name, cli_vars="{}"):
     from dbt.config import Profile
     from dbt.config.renderer import ProfileRenderer
     from dbt.context.base import generate_base_context
     from dbt.config.utils import parse_cli_vars
+
     if not isinstance(cli_vars, dict):
         cli_vars = parse_cli_vars(cli_vars)
 
-    renderer = ProfileRenderer(generate_base_context(cli_vars))
+    renderer = ProfileRenderer(cli_vars)
     return Profile.from_raw_profile_info(
         profile,
         profile_name,
@@ -50,31 +52,38 @@ def profile_from_dict(profile, profile_name, cli_vars='{}'):
     )
 
 
-def project_from_dict(project, profile, packages=None, selectors=None, cli_vars='{}'):
+def project_from_dict(project, profile, packages=None, selectors=None, cli_vars="{}"):
     from dbt.context.target import generate_target_context
     from dbt.config import Project
     from dbt.config.renderer import DbtProjectYamlRenderer
     from dbt.config.utils import parse_cli_vars
+
     if not isinstance(cli_vars, dict):
         cli_vars = parse_cli_vars(cli_vars)
 
-    renderer = DbtProjectYamlRenderer(generate_target_context(profile, cli_vars))
+    renderer = DbtProjectYamlRenderer(profile, cli_vars)
 
-    project_root = project.pop('project-root', os.getcwd())
+    project_root = project.pop("project-root", os.getcwd())
 
-    return Project.render_from_dict(
-            project_root, project, packages, selectors, renderer
-        )
+    partial = PartialProject.from_dicts(
+        project_root=project_root,
+        project_dict=project,
+        packages_dict=packages,
+        selectors_dict=selectors,
+    )
+    return partial.render(renderer)
 
 
-def config_from_parts_or_dicts(project, profile, packages=None, selectors=None, cli_vars='{}'):
+def config_from_parts_or_dicts(
+    project, profile, packages=None, selectors=None, cli_vars="{}"
+):
     from dbt.config import Project, Profile, RuntimeConfig
     from copy import deepcopy
 
     if isinstance(project, Project):
         profile_name = project.profile_name
     else:
-        profile_name = project.get('profile')
+        profile_name = project.get("profile")
 
     if not isinstance(profile, Profile):
         profile = profile_from_dict(
@@ -94,16 +103,13 @@ def config_from_parts_or_dicts(project, profile, packages=None, selectors=None, 
 
     args = Obj()
     args.vars = cli_vars
-    args.profile_dir = '/dev/null'
-    return RuntimeConfig.from_parts(
-        project=project,
-        profile=profile,
-        args=args
-    )
+    args.profile_dir = "/dev/null"
+    return RuntimeConfig.from_parts(project=project, profile=profile, args=args)
 
 
 def inject_plugin(plugin):
     from dbt.adapters.factory import FACTORY
+
     key = plugin.adapter.type()
     FACTORY.plugins[key] = plugin
 
@@ -114,6 +120,7 @@ def inject_adapter(value, plugin):
     """
     inject_plugin(plugin)
     from dbt.adapters.factory import FACTORY
+
     key = value.type()
     FACTORY.adapters[key] = value
 
@@ -131,7 +138,7 @@ class ContractTestCase(TestCase):
     def assert_from_dict(self, obj, dct, cls=None):
         if cls is None:
             cls = self.ContractType
-        self.assertEqual(cls.from_dict(dct),  obj)
+        self.assertEqual(cls.from_dict(dct), obj)
 
     def assert_symmetric(self, obj, dct, cls=None):
         self.assert_to_dict(obj, dct)
@@ -148,26 +155,27 @@ class ContractTestCase(TestCase):
 def generate_name_macros(package):
     from dbt.contracts.graph.parsed import ParsedMacro
     from dbt.node_types import NodeType
+
     name_sql = {}
-    for component in ('database', 'schema', 'alias'):
-        if component == 'alias':
-            source = 'node.name'
+    for component in ("database", "schema", "alias"):
+        if component == "alias":
+            source = "node.name"
         else:
-            source = f'target.{component}'
-        name = f'generate_{component}_name'
-        sql = f'{{% macro {name}(value, node) %}} {{% if value %}} {{{{ value }}}} {{% else %}} {{{{ {source} }}}} {{% endif %}} {{% endmacro %}}'
+            source = f"target.{component}"
+        name = f"generate_{component}_name"
+        sql = f"{{% macro {name}(value, node) %}} {{% if value %}} {{{{ value }}}} {{% else %}} {{{{ {source} }}}} {{% endif %}} {{% endmacro %}}"
         name_sql[name] = sql
 
-    all_sql = '\n'.join(name_sql.values())
+    all_sql = "\n".join(name_sql.values())
     for name, sql in name_sql.items():
         pm = ParsedMacro(
             name=name,
             resource_type=NodeType.Macro,
-            unique_id=f'macro.{package}.{name}',
+            unique_id=f"macro.{package}.{name}",
             package_name=package,
-            original_file_path=normalize('macros/macro.sql'),
-            root_path='./dbt_modules/root',
-            path=normalize('macros/macro.sql'),
+            original_file_path=normalize("macros/macro.sql"),
+            root_path="./dbt_modules/root",
+            path=normalize("macros/macro.sql"),
             raw_sql=all_sql,
             macro_sql=sql,
         )

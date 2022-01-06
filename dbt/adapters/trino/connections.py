@@ -3,7 +3,8 @@ from contextlib import contextmanager
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.contracts.connection import AdapterResponse
+from dbt.events import AdapterLogger
 
 from dataclasses import dataclass
 from typing import Any, Optional, Dict
@@ -17,6 +18,9 @@ from trino.transaction import IsolationLevel
 import sqlparse
 
 
+logger = AdapterLogger("Trino")
+
+
 @dataclass
 class TrinoCredentials(Credentials):
     host: str
@@ -28,13 +32,11 @@ class TrinoCredentials(Credentials):
     http_headers: Optional[Dict[str, str]] = None
     http_scheme: Optional[str] = None
     session_properties: Optional[Dict[str, Any]] = None
-    _ALIASES = {
-        'catalog': 'database'
-    }
+    _ALIASES = {"catalog": "database"}
 
     @property
     def type(self):
-        return 'trino'
+        return "trino"
 
     @property
     def unique_field(self):
@@ -47,9 +49,9 @@ class TrinoCredentials(Credentials):
 class ConnectionWrapper(object):
     """Wrap a Trino connection in a way that accomplishes two tasks:
 
-        - prefetch results from execute() calls so that trino calls actually
-            persist to the db but then present the usual cursor interface
-        - provide `cancel()` on the same object as `commit()`/`rollback()`/...
+    - prefetch results from execute() calls so that trino calls actually
+        persist to the db but then present the usual cursor interface
+    - provide `cancel()` on the same object as `commit()`/`rollback()`/...
 
     """
 
@@ -71,13 +73,13 @@ class ConnectionWrapper(object):
         self.handle.close()
 
     def commit(self):
-        self.handle.commit()
+        pass
 
     def rollback(self):
-        self.handle.rollback()
+        pass
 
     def start_transaction(self):
-        self.handle.start_transaction()
+        pass
 
     def fetchall(self):
         if self._cursor is None:
@@ -114,23 +116,23 @@ class ConnectionWrapper(object):
         """
         numbers = (decimal.Decimal, int, float)
         if value is None:
-            return 'NULL'
+            return "NULL"
         elif isinstance(value, str):
             return "'{}'".format(value.replace("'", "''"))
         elif isinstance(value, numbers):
             return value
         elif isinstance(value, datetime):
-            time_formatted = value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            time_formatted = value.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
             return "TIMESTAMP '{}'".format(time_formatted)
         elif isinstance(value, date):
-            date_formatted = value.strftime('%Y-%m-%d')
+            date_formatted = value.strftime("%Y-%m-%d")
             return "DATE '{}'".format(date_formatted)
         else:
-            raise ValueError('Cannot escape {}'.format(type(value)))
+            raise ValueError("Cannot escape {}".format(type(value)))
 
 
 class TrinoConnectionManager(SQLConnectionManager):
-    TYPE = 'trino'
+    TYPE = "trino"
 
     @contextmanager
     def exception_handler(self, sql):
@@ -143,24 +145,23 @@ class TrinoConnectionManager(SQLConnectionManager):
             logger.debug(exc)
             raise dbt.exceptions.RuntimeException(str(exc))
 
+    # For connection in auto-commit mode there is no need to start
+    # separate transaction. If using auto-commit, the client will
+    # create a new transaction and commit/rollback for each query
     def add_begin_query(self):
-        connection = self.get_thread_connection()
-        with self.exception_handler('handle.start_transaction()'):
-            connection.handle.start_transaction()
+        pass
 
     def add_commit_query(self):
-        connection = self.get_thread_connection()
-        with self.exception_handler('handle.commit()'):
-            connection.handle.commit()
+        pass
 
     @classmethod
     def open(cls, connection):
-        if connection.state == 'open':
-            logger.debug('Connection is already open, skipping open.')
+        if connection.state == "open":
+            logger.debug("Connection is already open, skipping open.")
             return connection
 
         credentials = connection.credentials
-        if credentials.method == 'ldap':
+        if credentials.method == "ldap":
             auth = trino.auth.BasicAuthentication(
                 credentials.user,
                 credentials.password,
@@ -170,7 +171,7 @@ class TrinoConnectionManager(SQLConnectionManager):
                     "http_scheme must be set to 'https' for 'ldap' method."
                 )
             http_scheme = "https"
-        elif credentials.method == 'kerberos':
+        elif credentials.method == "kerberos":
             auth = trino.auth.KerberosAuthentication()
             if credentials.http_scheme and credentials.http_scheme != "https":
                 raise dbt.exceptions.RuntimeException(
@@ -194,7 +195,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             session_properties=credentials.session_properties,
             auth=auth,
             isolation_level=IsolationLevel.AUTOCOMMIT,
-            source='dbt-trino'
+            source="dbt-trino",
         )
         trino_conn._http_session.verify = credentials.cert
         connection.state = 'open'
@@ -202,9 +203,9 @@ class TrinoConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_response(cls, cursor):
-        # this is lame, but the cursor doesn't give us anything useful.
-        return 'OK'
+    def get_response(cls, cursor) -> AdapterResponse:
+        message = "SUCCESS"
+        return AdapterResponse(_message=message)
 
     def cancel(self, connection):
         connection.handle.cancel()
@@ -218,23 +219,22 @@ class TrinoConnectionManager(SQLConnectionManager):
         # TODO: is this sufficient? Largely copy+pasted from snowflake, so
         # there's some common behavior here we can maybe factor out into the
         # SQLAdapter?
-        queries = [q.rstrip(';') for q in sqlparse.split(sql)]
+        queries = [q.rstrip(";") for q in sqlparse.split(sql)]
 
         for individual_query in queries:
             # hack -- after the last ';', remove comments and don't run
             # empty queries. this avoids using exceptions as flow control,
             # and also allows us to return the status of the last cursor
             without_comments = re.sub(
-                re.compile('^.*(--.*)$', re.MULTILINE),
-                '', individual_query).strip()
+                re.compile("^.*(--.*)$", re.MULTILINE), "", individual_query
+            ).strip()
 
             if without_comments == "":
                 continue
 
             parent = super(TrinoConnectionManager, self)
             connection, cursor = parent.add_query(
-                individual_query, auto_begin, bindings,
-                abridge_sql_log
+                individual_query, auto_begin, bindings, abridge_sql_log
             )
 
         if cursor is None:

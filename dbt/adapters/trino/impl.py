@@ -19,7 +19,7 @@ class TrinoAdapter(SQLAdapter):
 
     @classmethod
     def date_function(cls):
-        return 'datenow()'
+        return "datenow()"
 
     @classmethod
     def convert_text_type(cls, agate_table, col_idx):
