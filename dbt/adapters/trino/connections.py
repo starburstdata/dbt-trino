@@ -27,6 +27,7 @@ class TrinoCredentials(Credentials):
     port: Port
     user: str
     password: Optional[str] = None
+    jwt_token: Optional[str] = None
     method: Optional[str] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -176,6 +177,17 @@ class TrinoConnectionManager(SQLConnectionManager):
             if credentials.http_scheme and credentials.http_scheme != "https":
                 raise dbt.exceptions.RuntimeException(
                     "http_scheme must be set to 'https' for 'kerberos' method."
+                )
+            http_scheme = "https"
+        elif credentials.method == "jwt":
+            auth = trino.auth.JWTAuthentication(credentials.jwt_token)
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'jwt' method."
+                )
+            if credentials.jwt_token is None:
+                raise dbt.exceptions.RuntimeException(
+                    "jwt_token must be set for 'jwt' method."
                 )
             http_scheme = "https"
         else:
