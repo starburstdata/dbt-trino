@@ -39,20 +39,21 @@ $ pip install dbt-trino
 
 A dbt profile can be configured to run against Trino using the following configuration:
 
-| Option             | Description                                                                                                  | Required?                                                                          | Example                          |
-| ------------------ | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | -------------------------------- |
-| method             | The Trino authentication method to use                                                                       | Optional (default is `none`)                                                       | `none` or `kerberos`             |
-| user               | Username for authentication                                                                                  | Required                                                                           | `commander`                      |
-| password           | Password for authentication                                                                                  | Optional (required if `method` is `ldap` or `kerberos`)                            | `none` or `abc123`               |
-| http_headers       | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs.   | Optional                                                                           | `X-Trino-Client-Info: dbt-trino` |
-| http_scheme        | The HTTP scheme to use for requests to Trino                                                                 | Optional (default is `http`, or `https` for `method: kerberos` and `method: ldap`) | `https` or `http`                |
-| cert               | The full path to a certificate file for authentication with trino          | Optional  |                 |
-| session_properties | Sets Trino session properties used in the connection                                                         | Optional                                                                           | `query_max_run_time: 5d`         |
-| database           | Specify the database to build models into                                                                    | Required                                                                           | `analytics`                      |
-| schema             | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required                                                                           | `public`                         |
-| host               | The hostname to connect to                                                                                   | Required                                                                           | `127.0.0.1`                      |
-| port               | The port to connect to the host on                                                                           | Required                                                                           | `8080`                           |
-| threads            | How many threads dbt should use                                                                              | Optional (default is `1`)                                                          | `8`                              |
+| Option            | Description                                                                                                   | Required?                                                                        | Example                          |
+|-------------------|---------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|----------------------------------|
+| method            | The Trino authentication method to use                                                                        | Optional (default is `none`, supported methods are `ldap`, `kerberos` or `jwt`)  | `none` or `kerberos`             |
+| user              | Username for authentication                                                                                   | Required                                                                         | `commander`                      |
+| password          | Password for authentication                                                                                   | Optional (required if `method` is `ldap` or `kerberos`)                          | `none` or `abc123`               |
+| jwt_token         | JWT token for authentication                                                                                  | Optional (required if `method` is `jwt`)                                         | `none` or `abc123`               |
+| http_headers      | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs.    | Optional                                                                         | `X-Trino-Client-Info: dbt-trino` |
+| http_scheme       | The HTTP scheme to use for requests to Trino                                                                  | Optional (default is `http`, or `https` for `method: kerberos`, `ldap` or `jwt`) | `https` or `http`                |
+| cert               | The full path to a certificate file for authentication with trino                                            | Optional                                                                         |                                  |
+| session_properties | Sets Trino session properties used in the connection                                                         | Optional                                                                         | `query_max_run_time: 5d`         |
+| database          | Specify the database to build models into                                                                     | Required                                                                         | `analytics`                      |
+| schema            | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names  | Required                                                                         | `public`                         |
+| host              | The hostname to connect to                                                                                    | Required                                                                         | `127.0.0.1`                      |
+| port              | The port to connect to the host on                                                                            | Required                                                                         | `8080`                           |
+| threads           | How many threads dbt should use                                                                               | Optional (default is `1`)                                                        | `8`                              |
 
 **Example profiles.yml entry:**
 
@@ -93,6 +94,15 @@ The following features of dbt are not implemented in `dbt-trino`:
 
 Also, note that upper or mixed case schema names will cause catalog queries to fail.
 Please only use lower case schema names with this adapter.
+
+#### Supported authentication types
+
+- none - No authentication
+- [ldap](https://trino.io/docs/current/security/authentication-types.html) - Specify username in `user` and password in `password`
+- [kerberos](https://trino.io/docs/current/security/kerberos.html) - Specify username in `user`
+- [jwt](https://trino.io/docs/current/security/jwt.html) - Specify JWT token in `jwt_token`
+
+See also: https://trino.io/docs/current/security/authentication-types.html
 
 #### Required configuration
 
