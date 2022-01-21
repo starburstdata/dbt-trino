@@ -284,8 +284,6 @@ bumpversion --config-file .bumpversion-dbt.cfg patch --new-version <new-version>
 bumpversion --config-file .bumpversion.cfg patch --new-version <new-version> --allow-dirty
 ```
 
-Additionally bump dbt-core version in dbt testing image `docker/dbt/Dockerfile`.
-
 Next step is to merge bump commit and making sure that test suite pass.
 
 Finally to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
