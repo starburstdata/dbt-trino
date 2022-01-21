@@ -178,3 +178,7 @@
 {% macro trino__current_timestamp() -%}
     CURRENT_TIMESTAMP
 {%- endmacro %}
+
+{% macro trino__type_string() %}
+    varchar
+{% endmacro %}
