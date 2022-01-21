@@ -265,7 +265,7 @@ pip install -r dev_requirements.txt
 Run from the base directory of the project the command:
 
 ```sh
-tox
+tox -r
 ```
 
 or
