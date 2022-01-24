@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:1.0.0
+FROM python:3.9.9-slim-bullseye
 USER root
 
 ENV DBT_DIR /opt/dbt-trino
