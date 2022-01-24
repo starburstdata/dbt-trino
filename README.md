@@ -25,7 +25,7 @@ This repository represents a fork of the [dbt-presto](https://github.com/dbt-lab
 
 ### Compatibility
 
-This dbt plugin has been tested against `Trino` version `366` and `Starburst Enterprise` version `365-e`.
+This dbt plugin has been tested against `Trino` version `368` and `Starburst Enterprise` version `368-e`.
 
 ## Installation
 
@@ -265,7 +265,7 @@ pip install -r dev_requirements.txt
 Run from the base directory of the project the command:
 
 ```sh
-tox
+tox -r
 ```
 
 or
@@ -283,8 +283,6 @@ In order to bump dbt-trino and dbt-core version run:
 bumpversion --config-file .bumpversion-dbt.cfg patch --new-version <new-version>
 bumpversion --config-file .bumpversion.cfg patch --new-version <new-version> --allow-dirty
 ```
-
-Additionally bump dbt-core version in dbt testing image `docker/dbt/Dockerfile`.
 
 Next step is to merge bump commit and making sure that test suite pass.
 
