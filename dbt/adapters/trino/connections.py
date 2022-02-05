@@ -136,6 +136,9 @@ class ConnectionWrapper(object):
 
 class TrinoConnectionManager(SQLConnectionManager):
     TYPE = "trino"
+    OAUTH = trino.auth.OAuth2Authentication(
+        redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
+    )
 
     @contextmanager
     def exception_handler(self, sql):
@@ -202,6 +205,12 @@ class TrinoConnectionManager(SQLConnectionManager):
                     "http_scheme must be set to 'https' "
                     "for 'certificate' method."
                 ))
+        elif credentials.method == "oauth":
+            auth = cls.OAUTH
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException(
+                    "http_scheme must be set to 'https' for 'oauth' method."
+                )
             http_scheme = "https"
         else:
             auth = trino.constants.DEFAULT_AUTH

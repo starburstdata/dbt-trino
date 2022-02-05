@@ -2,6 +2,7 @@
 
 ### Features
 - Add support for `on_table_exists` in table materialization ([#26](https://github.com/starburstdata/dbt-trino/issues/26), [#54](https://github.com/starburstdata/dbt-trino/pull/54))
+- Adds support for OAuth2 authentication using web browser ([#40](https://github.com/starburstdata/dbt-trino/issues/40), [#41](https://github.com/starburstdata/dbt-trino/pull/41))
 
 ### Fixes
 
@@ -10,6 +11,7 @@
 
 Contributors:
 * [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
+* [@mdesmet](https://github.com/mdesmet) ([#41](https://github.com/starburstdata/dbt-trino/pull/41))
 
 ## dbt-trino 1.0.3 (March 2, 2022)
 
