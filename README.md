@@ -104,6 +104,7 @@ Please only use lower case schema names with this adapter.
 - [kerberos](https://trino.io/docs/current/security/kerberos.html) - Specify username in `user`
 - [jwt](https://trino.io/docs/current/security/jwt.html) - Specify JWT token in `jwt_token`
 - [certificate](https://trino.io/docs/current/security/certificate.html) - Specify a client certificate in `client_certificate` and private key in `client_private_key`
+- [oauth](https://trino.io/docs/current/security/oauth2.html) - It is recommended to install keyring to cache the OAuth2 token over multiple dbt invocations by running `pip install 'trino[external-authentication-token-cache]'`, keyring is not installed by default.
 
 See also: https://trino.io/docs/current/security/authentication-types.html
 
