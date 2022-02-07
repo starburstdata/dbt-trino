@@ -4,6 +4,7 @@ dbt-trino-tests:
 	./docker/init_trino.bash
 	pip install -r dev_requirements.txt
 	tox -r  || ./docker/remove_trino.bash
+	./docker/run_tests.bash
 	./docker/remove_trino.bash
 
 dbt-starburst-tests:
@@ -12,4 +13,5 @@ dbt-starburst-tests:
 	./docker/init_starburst.bash
 	pip install -r dev_requirements.txt
 	tox -r || ./docker/remove_starburst.bash
+	./docker/run_tests.bash
 	./docker/remove_starburst.bash
