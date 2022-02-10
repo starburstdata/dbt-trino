@@ -28,6 +28,8 @@ class TrinoCredentials(Credentials):
     user: str
     password: Optional[str] = None
     jwt_token: Optional[str] = None
+    client_certificate: Optional[str] = None
+    client_private_key: Optional[str] = None
     method: Optional[str] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -189,6 +191,17 @@ class TrinoConnectionManager(SQLConnectionManager):
                 raise dbt.exceptions.RuntimeException(
                     "jwt_token must be set for 'jwt' method."
                 )
+            http_scheme = "https"
+        elif credentials.method == "certificate":
+            auth = trino.auth.CertificateAuthentication(
+                credentials.client_certificate,
+                credentials.client_private_key,
+            )
+            if credentials.http_scheme and credentials.http_scheme != "https":
+                raise dbt.exceptions.RuntimeException((
+                    "http_scheme must be set to 'https' "
+                    "for 'certificate' method."
+                ))
             http_scheme = "https"
         else:
             auth = trino.constants.DEFAULT_AUTH
