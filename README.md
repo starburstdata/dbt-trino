@@ -41,10 +41,12 @@ A dbt profile can be configured to run against Trino using the following configu
 
 | Option            | Description                                                                                                   | Required?                                                                        | Example                          |
 |-------------------|---------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|----------------------------------|
-| method            | The Trino authentication method to use                                                                        | Optional (default is `none`, supported methods are `ldap`, `kerberos` or `jwt`)  | `none` or `kerberos`             |
+| method            | The Trino authentication method to use                                                                        | Optional (default is `none`, supported methods are `ldap`, `kerberos`, `jwt`, or `certificate`)  | `none` or `kerberos`             |
 | user              | Username for authentication                                                                                   | Required                                                                         | `commander`                      |
 | password          | Password for authentication                                                                                   | Optional (required if `method` is `ldap` or `kerberos`)                          | `none` or `abc123`               |
 | jwt_token         | JWT token for authentication                                                                                  | Optional (required if `method` is `jwt`)                                         | `none` or `abc123`               |
+| client_certificate         | Path to client certificate to be used for certificate based authentication                                                                                  | Optional (required if `method` is `certificate`)                                         | `/tmp/tls.crt`               |
+| client_private_key         | Path to client private key to be used for certificate based authentication                                                                                  | Optional (required if `method` is `certificate`)                                         | `/tmp/tls.key`               |
 | http_headers      | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs.    | Optional                                                                         | `X-Trino-Client-Info: dbt-trino` |
 | http_scheme       | The HTTP scheme to use for requests to Trino                                                                  | Optional (default is `http`, or `https` for `method: kerberos`, `ldap` or `jwt`) | `https` or `http`                |
 | cert               | The full path to a certificate file for authentication with trino                                            | Optional                                                                         |                                  |
@@ -101,6 +103,7 @@ Please only use lower case schema names with this adapter.
 - [ldap](https://trino.io/docs/current/security/authentication-types.html) - Specify username in `user` and password in `password`
 - [kerberos](https://trino.io/docs/current/security/kerberos.html) - Specify username in `user`
 - [jwt](https://trino.io/docs/current/security/jwt.html) - Specify JWT token in `jwt_token`
+- [certificate](https://trino.io/docs/current/security/certificate.html) - Specify a client certificate in `client_certificate` and private key in `client_private_key`
 
 See also: https://trino.io/docs/current/security/authentication-types.html
 
