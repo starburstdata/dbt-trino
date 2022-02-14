@@ -55,6 +55,7 @@ setup(
             "include/trino/sample_profiles.yml",
             "include/trino/macros/*.sql",
             "include/trino/macros/*/*.sql",
+            "include/trino/macros/*/*/*.sql",
         ]
     },
     install_requires=[
