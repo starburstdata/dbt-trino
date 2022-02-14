@@ -1,0 +1,135 @@
+version: 2
+
+seeds:
+  - name: boolean_type
+    columns:
+      - name: boolean_example
+        tests:
+          - column_data_type:
+              expected_type: boolean
+          - unique
+  - name: datetime_type
+    columns:
+      - name: date_example
+        tests:
+          - column_data_type:
+              expected_type: date
+          - unique
+      - name: time_example
+        tests:
+          - column_data_type:
+              expected_type: time(_)
+          - unique
+      - name: time_p_example
+        tests: 
+          - column_data_type:
+              expected_type: time(6)
+          - unique
+      - name: time_tz_example
+        tests:
+          - column_data_type:
+              expected_type: time(_) with time zone
+          - unique
+      - name: timestamp_example
+        tests: 
+          - column_data_type:
+              expected_type: timestamp(_)
+          - unique
+      - name: timestamp_p_example
+        tests:
+          - column_data_type:
+              expected_type: timestamp(6)
+          - unique
+      - name: timestamp_tz_example
+        tests:
+          - column_data_type:
+              expected_type: timestamp(3) with time zone
+          - unique
+      - name: timestamp_p_tz_example
+        tests:
+          - column_data_type:
+              expected_type: timestamp(_) with time zone
+      - name: interval_ym_example
+        tests:
+          - column_data_type:
+              expected_type: interval year to month
+          - unique
+      - name: interval_ds_example
+        tests:
+          - column_data_type:
+              expected_type: interval day to second
+          - unique
+  - name: number_type
+    columns:
+      - name: integer_example
+        tests:
+          - column_data_type:
+              expected_type: integer
+          - unique
+      - name: tinyint_example
+        tests:
+          - column_data_type:
+              expected_type: tinyint
+          - unique
+      - name: smallint_example
+        tests:
+          - column_data_type:
+              expected_type: smallint
+          - unique
+      - name: bigint_example
+        tests:
+          - column_data_type:
+              expected_type: bigint
+          - unique
+      - name: real_example
+        tests:
+          - column_data_type:
+              expected_type: real
+          - unique
+      - name: double_example
+        tests:
+          - column_data_type:
+              expected_type: double
+          - unique
+      - name: decimal_example
+        tests:
+          - column_data_type:
+              expected_type: decimal(__,_)
+          - unique
+      - name: decimal_p_example
+        tests:
+          - column_data_type:
+              expected_type: decimal(3,2)
+          - unique
+  - name: string_type
+    columns:
+      - name: varchar_example
+        tests:
+          - column_data_type:
+              expected_type: varchar
+          - unique
+      - name: varchar_n_example
+        tests:
+          - column_data_type:
+              expected_type: varchar(10)
+          - unique
+      - name: char_example
+        tests:
+          - column_data_type:
+              expected_type: char(_)
+          - unique
+      - name: char_n_example
+        tests:
+          - column_data_type:
+              expected_type: char(10)
+          - unique
+      - name: varbinary_example
+        tests:
+          - column_data_type:
+              expected_type: varbinary
+          - unique
+      - name: json_example
+        tests:
+          - column_data_type:
+              expected_type: json
+          - unique

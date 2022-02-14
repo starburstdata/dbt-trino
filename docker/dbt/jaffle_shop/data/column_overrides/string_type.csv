@@ -1,0 +1,3 @@
+varchar_example,varchar_n_example,char_example,char_n_example,varbinary_example,json_example
+test,abc,d,ghi,65683F,"{""k1"":1,""k2"":23,""k3"":456}"
+,,,,,
