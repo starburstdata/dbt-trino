@@ -1,8 +1,8 @@
 {% macro dbt_trino_get_append_sql(tmp_relation, target_relation) %}
 
-    {%- set dest_columns = adapter.get_columns_in_relation(target_relation) -%}
+    {%- set dest_columns = adapter.get_columns_in_relation(tmp_relation) -%}
     {%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
-    insert into {{ target_relation }}
+    insert into {{ target_relation }} ({{ dest_cols_csv }})
     select {{dest_cols_csv}} from {{ tmp_relation.include(database=true, schema=true) }};
 
     drop table if exists {{ tmp_relation }};
