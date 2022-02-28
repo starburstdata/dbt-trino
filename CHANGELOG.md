@@ -6,7 +6,7 @@
 ### Fixes
 - Supporting custom schemas in incremental models ([#17](https://github.com/starburstdata/dbt-trino/issues/17), [#39](https://github.com/starburstdata/dbt-trino/pull/39))
 - Supporting column type overrides in seeds ([#42](https://github.com/starburstdata/dbt-trino/issues/42)), ([#44])(https://github.com/starburstdata/dbt-trino/pull/44))
-- Supporting partial column matching in incremental models. ([#48] https://github.com/starburstdata/dbt-trino/issues/48))
+- Supporting partial column matching in incremental models. ([#48](https://github.com/starburstdata/dbt-trino/issues/48))
 
 ### Under the hood
 - Add missing tests to Makefile ([#43](https://github.com/starburstdata/dbt-trino/pull/43))
