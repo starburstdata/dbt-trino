@@ -1,6 +1,16 @@
 ## dbt-trino TBD (TBD)
 
 ### Features
+
+### Fixes
+
+### Under the hood
+
+Contributors:
+
+## dbt-trino 1.0.3 (March 2, 2022)
+
+### Features
 - Adds support for Trino certificate authentication ([#45](https://github.com/starburstdata/dbt-trino/pull/45))
 
 ### Fixes
