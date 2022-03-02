@@ -60,7 +60,7 @@ jobs:
           release_name: v${{env.version_number}}
           prerelease: ${{ steps.release_type.outputs.isPrerelease }}
           body: |
-            [Release notes](https://github.com/starburstdata/dbt-trino/blob/main/CHANGELOG.md)
+            [Release notes](https://github.com/starburstdata/dbt-trino/blob/master/CHANGELOG.md)
             Tracking [dbt-core v${{env.version_number}}](https://github.com/dbt-labs/dbt/releases/tag/v${{env.version_number}}).
             ```sh
             $ pip install dbt-trino==${{env.version_number}}
