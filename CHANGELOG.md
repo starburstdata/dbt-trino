@@ -1,12 +1,14 @@
 ## dbt-trino TBD (TBD)
 
 ### Features
+- Add support for `on_table_exists` in table materialization ([#26](https://github.com/starburstdata/dbt-trino/issues/26), [#54](https://github.com/starburstdata/dbt-trino/pull/54))
 
 ### Fixes
 
 ### Under the hood
 
 Contributors:
+* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54))
 
 ## dbt-trino 1.0.3 (March 2, 2022)
 
