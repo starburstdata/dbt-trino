@@ -5,7 +5,7 @@
 ### Fixes
 
 ### Under the hood
-- Add support for future versions of dbt-core
+- Add support for future versions of dbt-core ([#56](https://github.com/starburstdata/dbt-trino/pull/56))
   
 Contributors:
 
