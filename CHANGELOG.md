@@ -5,7 +5,8 @@
 ### Fixes
 
 ### Under the hood
-
+- Add support for future versions of dbt-core
+  
 Contributors:
 
 ## dbt-trino 1.0.3 (March 2, 2022)
