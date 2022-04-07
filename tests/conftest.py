@@ -27,6 +27,12 @@ def dbt_profile_target(request):
             'prepared_statements_enabled': False
         })
 
+    marker = request.node.get_closest_marker("postgresql")
+    if marker:
+        target.update({
+            'catalog': 'postgresql'
+        })
+
     return target
 
 @pytest.fixture(scope="class")
