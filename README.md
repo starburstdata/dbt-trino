@@ -161,13 +161,52 @@ may come to the rescue:
 
 #### Incremental models
 
-The incremental strategy currently supported by this adapter is to append new records
-without updating/overwriting any existing data from the target model.
+Using an incremental model limits the amount of data that needs to be transformed, vastly reducing the runtime of your transformations. This improves performance and reduces compute costs.
 
 ```jinja2
 {{
-    config(materialized = 'incremental')
+    config(
+      materialized = 'incremental', 
+      unique_key='<optional>',
+      incremental_strategy='<optional>',)
 }}
+select * from {{ ref('events') }}
+{% if is_incremental() %}
+  where event_ts > (select max(event_ts) from {{ this }})
+{% endif %}
+```
+
+##### `append` (default)
+
+The default incremental strategy is `append`. `append` only adds the new records based on the condition specified in the `is_incremental()` conditional block.
+
+```jinja2
+{{
+    config(
+      materialized = 'incremental')
+}}
+select * from {{ ref('events') }}
+{% if is_incremental() %}
+  where event_ts > (select max(event_ts) from {{ this }})
+{% endif %}
+```
+
+##### `delete+insert`
+
+Through the `delete+insert` incremental strategy, you can instruct dbt to use a two-step incremental approach. It will first delete the records detected through the configured `is_incremental()` block and re-insert them.
+
+```jinja2
+{{
+    config(
+      materialized = 'incremental',
+      unique_key='user_id',
+      incremental_strategy='delete+insert',
+      )
+}}
+select * from {{ ref('users') }}
+{% if is_incremental() %}
+  where updated_ts > (select max(updated_ts) from {{ this }})
+{% endif %}
 ```
 
 #### Incremental overwrite on hive models
