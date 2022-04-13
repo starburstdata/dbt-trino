@@ -1,12 +1,25 @@
 ## dbt-trino TBD (TBD)
 
 ### Features
+- Add support for `on_table_exists` in table materialization ([#26](https://github.com/starburstdata/dbt-trino/issues/26), [#54](https://github.com/starburstdata/dbt-trino/pull/54))
+
+### Fixes
+
+### Under the hood
+
+Contributors:
+* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54))
+
+## dbt-trino 1.0.3 (March 2, 2022)
+
+### Features
 - Adds support for Trino certificate authentication ([#45](https://github.com/starburstdata/dbt-trino/pull/45))
 
 ### Fixes
 - Supporting custom schemas in incremental models ([#17](https://github.com/starburstdata/dbt-trino/issues/17), [#39](https://github.com/starburstdata/dbt-trino/pull/39))
 - Supporting column type overrides in seeds ([#42](https://github.com/starburstdata/dbt-trino/issues/42)), ([#44])(https://github.com/starburstdata/dbt-trino/pull/44))
 - Supporting partial column matching in incremental models. ([#48](https://github.com/starburstdata/dbt-trino/issues/48))
+- Supporting column type overrides in seeds ([#42](https://github.com/starburstdata/dbt-trino/issues/42)), ([#44](https://github.com/starburstdata/dbt-trino/pull/44))
 
 ### Under the hood
 - Add missing tests to Makefile ([#43](https://github.com/starburstdata/dbt-trino/pull/43))
@@ -16,9 +29,10 @@ Contributors:
 * [@hovaesco](https://github.com/hovaesco) ([#43](https://github.com/starburstdata/dbt-trino/pull/43), [#47](https://github.com/starburstdata/dbt-trino/pull/47))
 * [@austenLacy](https://github.com/austenLacy) ([#45](https://github.com/starburstdata/dbt-trino/pull/45))
 * [@rahulj51](https://github.com/rahulj51) ([#39](https://github.com/starburstdata/dbt-trino/pull/39))
+
 * [@mdesmet](https://github.com/mdesmet) ([#44])(https://github.com/starburstdata/dbt-trino/pull/44))
 * [@prgx-aeveri01](https://github.com/prgx-aeveri01) ([#51](https://github.com/starburstdata/dbt-trino/pull/51))
-
+* [@mdesmet](https://github.com/mdesmet) ([#44](https://github.com/starburstdata/dbt-trino/pull/44))
 
 ## dbt-trino 1.0.1 (January 24, 2022)
 
