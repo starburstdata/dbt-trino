@@ -318,7 +318,7 @@ tox -r
 or
 
 ```sh
-pytest test/integration/trino.dbtspec
+pytest tests/functional
 ```
 
 ### Release process

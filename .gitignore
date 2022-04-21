@@ -9,3 +9,4 @@ dbt-integration-tests
 docker/dbt/.user.yml
 .DS_Store
 .vscode/
+logs/
