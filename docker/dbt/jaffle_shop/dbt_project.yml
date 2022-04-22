@@ -22,9 +22,6 @@ models:
     materialized: table
     staging:
       materialized: view
-    table_drop:
-      materialized: table
-      +on_table_exists: drop 
 
 seeds: 
   jaffle_shop:
