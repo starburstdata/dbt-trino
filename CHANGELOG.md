@@ -5,6 +5,7 @@
 - Adds support for OAuth2 authentication using web browser ([#40](https://github.com/starburstdata/dbt-trino/issues/40), [#41](https://github.com/starburstdata/dbt-trino/pull/41))
 
 ### Fixes
+- Add support for future versions of dbt-core ([#55](https://github.com/starburstdata/dbt-trino/issues/55), [#65](https://github.com/starburstdata/dbt-trino/pull/65))
 
 ### Under the hood
 - Add PostgreSQL docker container for testing ([#66](https://github.com/starburstdata/dbt-trino/issues/66), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
@@ -12,6 +13,7 @@
 
 Contributors:
 * [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54), [#65](https://github.com/starburstdata/dbt-trino/pull/65), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
+* [@smith-m](https://github.com/smith-m) ([#65](https://github.com/starburstdata/dbt-trino/pull/65))
 * [@mdesmet](https://github.com/mdesmet) ([#41](https://github.com/starburstdata/dbt-trino/pull/41))
 
 ## dbt-trino 1.0.3 (March 2, 2022)
