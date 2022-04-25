@@ -33,7 +33,9 @@
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute='name')) -%}
 
     insert into {{ target_relation }}
-    select {{dest_cols_csv}} from {{ source_relation.include(database=false, schema=false) }}
+    select {{dest_cols_csv}} from {{ source_relation.include(database=false, schema=false) }};
+
+    drop table if exists {{ source_relation }};
 
 {% endmacro %}
 
@@ -86,6 +88,7 @@
     {% set drop_tmp_relation_sql = "drop table if exists " ~  tmp_relation %}
     {% do run_query(drop_tmp_relation_sql) %}
     {% do run_query(create_table_as(True, tmp_relation, sql)) %}
+    {#-- Process schema changes. Returns dict of changes if successful. Use source columns for upserting/merging --#}
     {% set dest_columns = process_schema_changes(on_schema_change, tmp_relation, existing_relation) %}
 
     {% if not dest_columns %}
