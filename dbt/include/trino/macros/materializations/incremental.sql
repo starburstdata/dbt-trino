@@ -33,9 +33,9 @@
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute='name')) -%}
 
     insert into {{ target_relation }}
-    select {{dest_cols_csv}} from {{ source_relation.include(database=false, schema=false) }};
+    select {{dest_cols_csv}} from {{ source_relation.include(database=true, schema=true) }};
 
-    drop table if exists {{ source_relation }};
+    drop table if exists {{ source_relation.include(database=true, schema=true) }};
 
 {% endmacro %}
 
