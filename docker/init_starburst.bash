@@ -8,5 +8,5 @@ set -exo pipefail
 
 docker-compose -f docker-compose-starburst.yml build
 docker-compose -f docker/util.yml build
-docker-compose -f docker-compose-starburst.yml up -d trino
+docker-compose -f docker-compose-starburst.yml up -d
 docker-compose -f docker/util.yml run --rm util wait_for_up trino 8080 10
