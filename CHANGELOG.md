@@ -6,9 +6,10 @@
 ### Fixes
 
 ### Under the hood
+- Add PostgreSQL docker container for testing ([#66](https://github.com/starburstdata/dbt-trino/issues/66), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
 
 Contributors:
-* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54))
+* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
 
 ## dbt-trino 1.0.3 (March 2, 2022)
 

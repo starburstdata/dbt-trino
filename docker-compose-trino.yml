@@ -8,6 +8,15 @@ services:
       - ./docker/trino/etc:/usr/lib/trino/etc:ro
       - ./docker/trino/catalog:/etc/trino/catalog
 
+  postgres:
+    ports:
+      - "5432:5432"
+    image: postgres:11
+    container_name: postgres
+    environment:
+      POSTGRES_USER: dbt-trino
+      POSTGRES_PASSWORD: dbt-trino
+
 networks:
   default:
     external:

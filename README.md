@@ -266,7 +266,8 @@ By default, all dbt models are built in the schema specified in your target. But
 
 ### Running tests
 
-Tests can be executed against Trino or Starburst server. To run all tests alongside with building required docker images and server initialization run:
+Tests can be executed against Trino or Starburst server. Docker compose creates PostgreSQL instance which can be used in tests by pointing to `postgresql` catalog.
+To run all tests alongside with building required docker images and server initialization run:
 
 ```sh
 make dbt-trino-tests
