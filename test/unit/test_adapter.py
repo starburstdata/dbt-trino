@@ -7,6 +7,15 @@ import dbt.flags as flags
 from dbt.clients import agate_helper
 
 from dbt.adapters.trino import TrinoAdapter
+from dbt.adapters.trino.connections import (
+    HttpScheme,
+    TrinoCertificateCredentials,
+    TrinoKerberosCredentials,
+    TrinoNoneCredentials,
+    TrinoJwtCredentials,
+    TrinoLdapCredentials,
+    TrinoOauthCredentials,
+)
 from .utils import config_from_parts_or_dicts, mock_connection
 
 
@@ -27,9 +36,6 @@ class TestTrinoAdapter(unittest.TestCase):
                     "cert": "/path/to/cert",
                     "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                     "http_scheme": "http",
-                    "client_certificate": "/dummy/path.crt",
-                    "client_private_key": "/dummy/path.key",
-                    "jwt_token": "dummy-token",
                     "session_properties": {
                         "query_max_run_time": "5d",
                         "exchange_compression": True,
@@ -65,23 +71,6 @@ class TestTrinoAdapter(unittest.TestCase):
         self.assertEqual(connection.state, "open")
         self.assertIsNotNone(connection.handle)
 
-    def test_connection_credentials(self):
-        connection = self.adapter.acquire_connection("dummy")
-        connection.handle
-
-        self.assertEqual(
-            connection.credentials.http_headers, {"X-Trino-Client-Info": "dbt-trino"}
-        )
-        self.assertEqual(connection.credentials.http_scheme, "http")
-        self.assertEqual(connection.credentials.jwt_token, "dummy-token")
-        self.assertEqual(connection.credentials.cert, "/path/to/cert")
-        self.assertEqual(connection.credentials.client_certificate, "/dummy/path.crt")
-        self.assertEqual(connection.credentials.client_private_key, "/dummy/path.key")
-        self.assertEqual(
-            connection.credentials.session_properties,
-            {"query_max_run_time": "5d", "exchange_compression": True},
-        )
-
     def test_cancel_open_connections_empty(self):
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
 
@@ -89,6 +78,240 @@ class TestTrinoAdapter(unittest.TestCase):
         key = self.adapter.connections.get_thread_identifier()
         self.adapter.connections.thread_connections[key] = mock_connection("master")
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
+
+
+class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
+    def setUp(self):
+        flags.STRICT_MODE = True
+
+    def acquire_connetion_with_profile(self, profile):
+        profile_cfg = {
+            "outputs": {"test": profile},
+            "target": "test",
+        }
+
+        project_cfg = {
+            "name": "X",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "quoting": {
+                "identifier": False,
+                "schema": True,
+            },
+            "config-version": 2,
+        }
+
+        config = config_from_parts_or_dicts(project_cfg, profile_cfg)
+
+        return TrinoAdapter(config).acquire_connection("dummy")
+
+    def assert_default_connection_credentials(self, credentials):
+        self.assertEqual(credentials.type, "trino")
+        self.assertEqual(credentials.database, "trinodb")
+        self.assertEqual(credentials.host, "database")
+        self.assertEqual(credentials.port, 5439)
+        self.assertEqual(credentials.schema, "dbt_test_schema")
+        self.assertEqual(credentials.http_headers, {"X-Trino-Client-Info": "dbt-trino"})
+        self.assertEqual(
+            credentials.session_properties,
+            {"query_max_run_time": "5d", "exchange_compression": True},
+        )
+
+    def test_none_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "http_scheme": "https",
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assert_default_connection_credentials(credentials)
+        self.assertIsInstance(credentials, TrinoNoneCredentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_none_authentication_with_method(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "none",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "http_scheme": "https",
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assert_default_connection_credentials(credentials)
+        self.assertIsInstance(credentials, TrinoNoneCredentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_none_authentication_without_http_scheme(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "none",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assert_default_connection_credentials(credentials)
+        self.assertIsInstance(credentials, TrinoNoneCredentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTP)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_ldap_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "ldap",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "password": "trino_password",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoLdapCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_kerberos_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "kerberos",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "password": "trino_password",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoKerberosCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_certificate_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "certificate",
+                "schema": "dbt_test_schema",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "client_certificate": "/path/to/client_cert",
+                "client_private_key": "password",
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoCertificateCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_jwt_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "jwt",
+                "schema": "dbt_test_schema",
+                "cert": "/path/to/cert",
+                "jwt_token": "aabbccddeeff",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoJwtCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+
+    def test_oauth_authentication(self):
+        connection = self.acquire_connetion_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "oauth",
+                "schema": "dbt_test_schema",
+                "cert": "/path/to/cert",
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "5d",
+                    "exchange_compression": True,
+                },
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoOauthCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
 
 
 class TestAdapterConversions(TestCase):

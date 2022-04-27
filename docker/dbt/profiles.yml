@@ -5,7 +5,6 @@ default:
       type: trino
       method: none
       user: admin
-      password:
       catalog: memory
       host: trino
       port: 8080
