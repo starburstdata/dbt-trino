@@ -1,4 +1,6 @@
+from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
+from enum import Enum
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
@@ -21,20 +23,47 @@ import sqlparse
 logger = AdapterLogger("Trino")
 
 
-@dataclass
-class TrinoCredentials(Credentials):
-    host: str
-    port: Port
-    user: str
-    password: Optional[str] = None
-    jwt_token: Optional[str] = None
-    client_certificate: Optional[str] = None
-    client_private_key: Optional[str] = None
-    method: Optional[str] = None
-    cert: Optional[str] = None
-    http_headers: Optional[Dict[str, str]] = None
-    http_scheme: Optional[str] = None
-    session_properties: Optional[Dict[str, Any]] = None
+class HttpScheme(Enum):
+    HTTP = "http"
+    HTTPS = "https"
+
+
+class TrinoCredentialsFactory:
+    @classmethod
+    def _create_trino_profile(cls, profile):
+        if "method" in profile:
+            method = profile["method"]
+            if method == "ldap":
+                return TrinoLdapCredentials
+            elif method == "certificate":
+                return TrinoCertificateCredentials
+            elif method == "kerberos":
+                return TrinoKerberosCredentials
+            elif method == "jwt":
+                return TrinoJwtCredentials
+            elif method == "oauth":
+                return TrinoOauthCredentials
+        return TrinoNoneCredentials
+
+    @classmethod
+    def translate_aliases(
+        cls, kwargs: Dict[str, Any], recurse: bool = False
+    ) -> Dict[str, Any]:
+        klazz = cls._create_trino_profile(kwargs)
+        return klazz.translate_aliases(kwargs, recurse)
+
+    @classmethod
+    def validate(cls, data: Any):
+        klazz = cls._create_trino_profile(data)
+        return klazz.validate(data)
+
+    @classmethod
+    def from_dict(cls, data: Any):
+        klazz = cls._create_trino_profile(data)
+        return klazz.from_dict(data)
+
+
+class TrinoCredentials(Credentials, metaclass=ABCMeta):
     _ALIASES = {"catalog": "database"}
 
     @property
@@ -46,7 +75,157 @@ class TrinoCredentials(Credentials):
         return self.host
 
     def _connection_keys(self):
-        return ('host', 'port', 'user', 'database', 'schema', 'cert')
+        return ("method", "host", "port", "user", "database", "schema", "cert")
+
+    @abstractmethod
+    def trino_auth() -> Optional[trino.auth.Authentication]:
+        pass
+
+
+@dataclass
+class TrinoNoneCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: str
+    cert: Optional[str] = None
+    http_scheme: HttpScheme = HttpScheme.HTTP
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+
+    @property
+    def method(self):
+        return "none"
+
+    def trino_auth(self):
+        return trino.constants.DEFAULT_AUTH
+
+
+@dataclass
+class TrinoCertificateCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    client_certificate: str
+    client_private_key: str
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "certificate"
+
+    @property
+    def user(self):
+        return None
+
+    def trino_auth(self):
+        return trino.auth.CertificateAuthentication(
+            client_certificate=self.client_certificate,
+            client_private_key=self.client_private_key,
+        )
+
+
+@dataclass
+class TrinoLdapCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: str
+    password: str
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "ldap"
+
+    def trino_auth(self):
+        return trino.auth.BasicAuthentication(
+            username=self.user,
+            password=self.password
+        )
+
+
+@dataclass
+class TrinoKerberosCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: str
+    password: str
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "kerberos"
+
+    def trino_auth():
+        return trino.auth.KerberosAuthentication()
+
+
+@dataclass
+class TrinoJwtCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    jwt_token: str
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "jwt"
+
+    @property
+    def user(self):
+        return None
+
+    def trino_auth(self):
+        return trino.auth.JWTAuthentication(self.jwt_token)
+
+
+@dataclass
+class TrinoOauthCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Optional[Dict[str, Any]] = None
+    OAUTH = trino.auth.OAuth2Authentication(
+        redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
+    )
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "oauth"
+
+    @property
+    def user(self):
+        return None
+
+    def trino_auth(self):
+        return self.OAUTH
 
 
 class ConnectionWrapper(object):
@@ -164,48 +343,6 @@ class TrinoConnectionManager(SQLConnectionManager):
             return connection
 
         credentials = connection.credentials
-        if credentials.method == "ldap":
-            auth = trino.auth.BasicAuthentication(
-                credentials.user,
-                credentials.password,
-            )
-            if credentials.http_scheme and credentials.http_scheme != "https":
-                raise dbt.exceptions.RuntimeException(
-                    "http_scheme must be set to 'https' for 'ldap' method."
-                )
-            http_scheme = "https"
-        elif credentials.method == "kerberos":
-            auth = trino.auth.KerberosAuthentication()
-            if credentials.http_scheme and credentials.http_scheme != "https":
-                raise dbt.exceptions.RuntimeException(
-                    "http_scheme must be set to 'https' for 'kerberos' method."
-                )
-            http_scheme = "https"
-        elif credentials.method == "jwt":
-            auth = trino.auth.JWTAuthentication(credentials.jwt_token)
-            if credentials.http_scheme and credentials.http_scheme != "https":
-                raise dbt.exceptions.RuntimeException(
-                    "http_scheme must be set to 'https' for 'jwt' method."
-                )
-            if credentials.jwt_token is None:
-                raise dbt.exceptions.RuntimeException(
-                    "jwt_token must be set for 'jwt' method."
-                )
-            http_scheme = "https"
-        elif credentials.method == "certificate":
-            auth = trino.auth.CertificateAuthentication(
-                credentials.client_certificate,
-                credentials.client_private_key,
-            )
-            if credentials.http_scheme and credentials.http_scheme != "https":
-                raise dbt.exceptions.RuntimeException((
-                    "http_scheme must be set to 'https' "
-                    "for 'certificate' method."
-                ))
-            http_scheme = "https"
-        else:
-            auth = trino.constants.DEFAULT_AUTH
-            http_scheme = credentials.http_scheme or "http"
 
         # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.
@@ -215,15 +352,15 @@ class TrinoConnectionManager(SQLConnectionManager):
             user=credentials.user,
             catalog=credentials.database,
             schema=credentials.schema,
-            http_scheme=http_scheme,
+            http_scheme=credentials.http_scheme.value,
             http_headers=credentials.http_headers,
             session_properties=credentials.session_properties,
-            auth=auth,
+            auth=credentials.trino_auth(),
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source="dbt-trino",
         )
         trino_conn._http_session.verify = credentials.cert
-        connection.state = 'open'
+        connection.state = "open"
         connection.handle = ConnectionWrapper(trino_conn)
         return connection
 
