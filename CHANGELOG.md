@@ -2,6 +2,7 @@
 
 ### Features
 - Add support for `on_table_exists` in table materialization ([#26](https://github.com/starburstdata/dbt-trino/issues/26), [#54](https://github.com/starburstdata/dbt-trino/pull/54))
+- Add support for `on_schema_change` in the incremental stategy options ([#48](https://github.com/starburstdata/dbt-trino/pull/48))
 
 ### Fixes
 
@@ -9,7 +10,8 @@
 - Add PostgreSQL docker container for testing ([#66](https://github.com/starburstdata/dbt-trino/issues/66), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
 
 Contributors:
-* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54), [#67](https://github.com/starburstdata/dbt-trino/pull/67))
+* [@hovaesco](https://github.com/hovaesco) ([#54](https://github.com/starburstdata/dbt-trino/pull/54))
+* [@AdamE87](https://github.com/AdamE87) ([#48](https://github.com/starburstdata/dbt-trino/pull/48))
 
 ## dbt-trino 1.0.3 (March 2, 2022)
 
