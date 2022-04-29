@@ -103,8 +103,15 @@
 
 
 {% macro trino__create_view_as(relation, sql) -%}
+  {%- set view_security = config.get('view_security', 'definer') -%}
+  {%- if view_security not in ['definer', 'invoker'] -%}
+      {%- set log_message = 'Invalid value for view_security (%s) specified. Setting default value (%s).' % (view_security, 'definer') -%}
+      {% do log(log_message) %}
+      {%- set on_table_exists = 'definer' -%}
+  {% endif %}
   create or replace view
     {{ relation }}
+  security {{ view_security }}
   as
     {{ sql }}
   ;
