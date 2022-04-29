@@ -3,10 +3,19 @@ services:
   trino:
     ports:
       - "8080:8080"
-    image: "trinodb/trino:371"
+    image: "trinodb/trino:377"
     volumes:
       - ./docker/trino/etc:/usr/lib/trino/etc:ro
       - ./docker/trino/catalog:/etc/trino/catalog
+
+  postgres:
+    ports:
+      - "5432:5432"
+    image: postgres:11
+    container_name: postgres
+    environment:
+      POSTGRES_USER: dbt-trino
+      POSTGRES_PASSWORD: dbt-trino
 
 networks:
   default:
