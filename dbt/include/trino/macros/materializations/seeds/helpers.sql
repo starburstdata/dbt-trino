@@ -34,7 +34,7 @@
           ('test','abc',CHAR 'd',CHAR 'ghi',VARBINARY '65683F',JSON '{"k1":1,"k2":23,"k3":456}'),(NULL,NULL,NULL,NULL,NULL,NULL)
   
   Usually seed row's values through agate_table's data type detection and come through as python types, in this case typing is 
-  handled in `ConnectionWrapper._escape_value`. However dbt also allows you to override the data types of the created table 
+  handled by using bindings in `ConnectionWrapper.execute`. However dbt also allows you to override the data types of the created table 
   through setting `column_types`, this case is handled here where we have the type information of the seed table.
 #}
 
