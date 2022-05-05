@@ -25,7 +25,7 @@ This repository represents a fork of the [dbt-presto](https://github.com/dbt-lab
 
 ### Compatibility
 
-This dbt plugin has been tested against `Trino` version `377` and `Starburst Enterprise` version `375-e`.
+This dbt plugin has been tested against `Trino` version `379` and `Starburst Enterprise` version `379-e`.
 
 ## Installation
 
@@ -185,7 +185,9 @@ NOTE that this functionality works on incremental models that use partitioning:
 
 Adapter supports all materializations provided by dbt-core.
 
-Additionally, adapter supports two modes in `table` materialization `rename` and `drop` configured using `on_table_exists`.
+- table materialization
+
+Adapter supports two modes in `table` materialization `rename` and `drop` configured using `on_table_exists`.
 
 - `rename` - creates intermediate table, then renames the target to backup one and renames intermediate to target one.
 - `drop` - drops and recreates a table. It overcomes table rename limitation in AWS Glue.
@@ -216,6 +218,33 @@ Using `table` materialization and `on_table_exists = 'rename'` with AWS Glue may
 
 ```
 TrinoUserError(type=USER_ERROR, name=NOT_SUPPORTED, message="Table rename is not yet supported by Glue service")
+```
+
+- view materialization
+
+Adapter supports two security modes in `view` materialization `DEFINER` and `INVOKER` configured using `view_security`.
+
+See [Trino docs](https://trino.io/docs/current/sql/create-view.html#security) for more details about security modes in views.
+
+By default `view` materialization uses `view_security = 'definer'`, see an examples below how to change it.
+
+In model add:
+```jinja2
+{{
+  config(
+    materialized = 'view',
+    view_security = 'invoker`
+  )
+}}
+```
+
+or in `dbt_project.yaml`:
+
+```yaml
+models:
+  path:
+    materialized: view
+    +view_security: invoker
 ```
 
 #### Use table properties to configure connector specifics
@@ -318,7 +347,7 @@ tox -r
 or
 
 ```sh
-pytest test/integration/trino.dbtspec
+pytest tests/functional
 ```
 
 ### Release process

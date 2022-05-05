@@ -1,2 +1,2 @@
-dbt-core==1.0.3
+dbt-core==1.1.0
 trino==0.313.0
