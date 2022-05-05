@@ -274,6 +274,17 @@ class ConnectionWrapper(object):
 
         return None
 
+    def fetchone(self):
+        if self._cursor is None:
+            return None
+
+        if self._fetch_result is not None:
+            ret = self._fetch_result[0]
+            self._fetch_result = None
+            return ret
+
+        return None
+
     def execute(self, sql, bindings=None):
 
         if bindings is not None:

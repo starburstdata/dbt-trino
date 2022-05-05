@@ -10,6 +10,7 @@ import agate
 @dataclass
 class TrinoConfig(AdapterConfig):
     properties: Optional[Dict[str, str]] = None
+    view_security: Optional[str] = 'definer'
 
 
 class TrinoAdapter(SQLAdapter):
