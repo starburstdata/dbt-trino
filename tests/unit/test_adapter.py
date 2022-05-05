@@ -8,8 +8,10 @@ from dbt.clients import agate_helper
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.connections import (
+    PREPARED_STATEMENTS_ENABLED_DEFAULT,
     HttpScheme,
     TrinoCertificateCredentials,
+    TrinoCredentials,
     TrinoKerberosCredentials,
     TrinoNoneCredentials,
     TrinoJwtCredentials,
@@ -117,6 +119,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             credentials.session_properties,
             {"query_max_run_time": "5d", "exchange_compression": True},
         )
+        self.assertEqual(credentials.prepared_statements_enabled, True)
 
     def test_none_authentication(self):
         connection = self.acquire_connetion_with_profile(
@@ -312,6 +315,75 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assert_default_connection_credentials(credentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(connection.credentials.prepared_statements_enabled, True)
+
+
+class TestPreparedStatementsEnabled(TestCase):
+    def setup_profile(self, credentials):
+        profile_cfg = {
+            "outputs": {
+                "test": credentials
+            },
+            "target": "test",
+        }
+
+        project_cfg = {
+            "name": "X",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "quoting": {
+                "identifier": False,
+                "schema": True,
+            },
+            "config-version": 2,
+        }
+
+        config = config_from_parts_or_dicts(project_cfg, profile_cfg)
+        adapter = TrinoAdapter(config)
+        connection = adapter.acquire_connection("dummy")
+        return connection
+
+    def test_default(self):
+        connection = self.setup_profile({
+            "type": "trino",
+            "catalog": "trinodb",
+            "host": "database",
+            "port": 5439,
+            "schema": "dbt_test_schema",
+            "method": "none",
+            "user": "trino_user",
+            "http_scheme": "http",
+        })
+        self.assertEqual(connection.credentials.prepared_statements_enabled, True)
+
+    def test_false(self):
+        connection = self.setup_profile({
+            "type": "trino",
+            "catalog": "trinodb",
+            "host": "database",
+            "port": 5439,
+            "schema": "dbt_test_schema",
+            "method": "none",
+            "user": "trino_user",
+            "http_scheme": "http",
+            "prepared_statements_enabled": False,
+        })
+        self.assertEqual(connection.credentials.prepared_statements_enabled, False)
+
+    def test_true(self):
+        connection = self.setup_profile({
+            "type": "trino",
+            "catalog": "trinodb",
+            "host": "database",
+            "port": 5439,
+            "schema": "dbt_test_schema",
+            "method": "none",
+            "user": "trino_user",
+            "http_scheme": "http",
+            "prepared_statements_enabled": True,
+        })
+        self.assertEqual(connection.credentials.prepared_statements_enabled, True)
 
 
 class TestAdapterConversions(TestCase):
