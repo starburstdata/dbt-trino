@@ -21,6 +21,7 @@ import sqlparse
 
 
 logger = AdapterLogger("Trino")
+PREPARED_STATEMENTS_ENABLED_DEFAULT = True
 
 
 class HttpScheme(Enum):
@@ -75,7 +76,16 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
         return self.host
 
     def _connection_keys(self):
-        return ("method", "host", "port", "user", "database", "schema", "cert")
+        return (
+            "method",
+            "host",
+            "port",
+            "user",
+            "database",
+            "schema",
+            "cert",
+            "prepared_statements_enabled"
+        )
 
     @abstractmethod
     def trino_auth() -> Optional[trino.auth.Authentication]:
@@ -91,6 +101,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     http_scheme: HttpScheme = HttpScheme.HTTP
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
     def method(self):
@@ -109,6 +120,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
     def http_scheme(self):
@@ -138,6 +150,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
     def http_scheme(self):
@@ -163,6 +176,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
     def http_scheme(self):
@@ -184,6 +198,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
     def http_scheme(self):
@@ -208,6 +223,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Optional[Dict[str, Any]] = None
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
     )
@@ -237,13 +253,14 @@ class ConnectionWrapper(object):
 
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle, prepared_statements_enabled):
         self.handle = handle
         self._cursor = None
         self._fetch_result = None
+        self._prepared_statements_enabled = prepared_statements_enabled
 
     def cursor(self):
-        self._cursor = self.handle.cursor()
+        self._cursor = self.handle.cursor(experimental_python_types=True)
         return self
 
     def cancel(self):
@@ -286,14 +303,17 @@ class ConnectionWrapper(object):
         return None
 
     def execute(self, sql, bindings=None):
-
-        if bindings is not None:
-            # trino doesn't actually pass bindings along so we have to do the
-            # escaping and formatting ourselves
+        if not self._prepared_statements_enabled and bindings is not None:
+            # DEPRECATED: by default prepared statements are used.
+            # Code is left as an escape hatch if prepared statements
+            # are failing.
             bindings = tuple(self._escape_value(b) for b in bindings)
             sql = sql % bindings
 
-        result = self._cursor.execute(sql)
+            result = self._cursor.execute(sql)
+        else:
+            result = self._cursor.execute(sql, params=bindings)
+
         self._fetch_result = self._cursor.fetchall()
         return result
 
@@ -372,7 +392,10 @@ class TrinoConnectionManager(SQLConnectionManager):
         )
         trino_conn._http_session.verify = credentials.cert
         connection.state = "open"
-        connection.handle = ConnectionWrapper(trino_conn)
+        connection.handle = ConnectionWrapper(
+            trino_conn,
+            credentials.prepared_statements_enabled
+        )
         return connection
 
     @classmethod

@@ -180,3 +180,11 @@
 {% macro trino__current_timestamp() -%}
     CURRENT_TIMESTAMP
 {%- endmacro %}
+
+{% macro trino__get_binding_char() %}
+  {%- if target.prepared_statements_enabled|as_bool -%}
+    {{ return('?') }}
+  {%- else -%}
+    {{ return('%s') }}
+  {%- endif -%}
+{% endmacro %}
