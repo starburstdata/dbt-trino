@@ -1,6 +1,16 @@
 ## dbt-trino TBD (TBD)
 
 ### Features
+
+### Fixes
+
+### Under the hood
+
+Contributors:
+
+## dbt-trino 1.1.0 (May 9, 2022)
+
+### Features
 - Add support for `on_table_exists` in table materialization ([#26](https://github.com/starburstdata/dbt-trino/issues/26), [#54](https://github.com/starburstdata/dbt-trino/pull/54))
 - Adds support for OAuth2 authentication using web browser ([#40](https://github.com/starburstdata/dbt-trino/issues/40), [#41](https://github.com/starburstdata/dbt-trino/pull/41))
 - Add `view_security` to define security mode for views ([#65](https://github.com/starburstdata/dbt-trino/pull/65))
