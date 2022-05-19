@@ -4,6 +4,8 @@
 
 ### Fixes
 
+- Enable setting session properties per dbt model when `session_properties` is not defined in the dbt profile ([#71](https://github.com/starburstdata/dbt-trino/pull/71))
+
 ### Under the hood
 
 Contributors:

@@ -61,6 +61,9 @@ models:
         tests:
           - not_null
 
+  - name: dim_session_property
+    description: This table is used for showcasing the usage of Trino session properties that are applied for a specific model
+
   - name: fct_orders
     description: This table has basic information about orders, as well as some derived facts based on payments
 
