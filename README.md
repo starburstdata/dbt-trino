@@ -122,6 +122,21 @@ hive.allow-drop-table=true
 hive.allow-rename-table=true
 ```
 
+#### Session properties per model
+
+In some specific cases, there may be needed tuning through the Trino session properties only 
+for a specific dbt model.
+In such cases, using the [dbt hooks](https://docs.getdbt.com/reference/resource-configs/pre-hook-post-hook)
+may come to the rescue:
+
+```
+{{
+  config(
+    pre_hook="set session query_max_run_time='10m'"
+  )
+}}
+```
+
 #### Incremental models
 
 The incremental strategy currently supported by this adapter is to append new records

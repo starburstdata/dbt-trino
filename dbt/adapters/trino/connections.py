@@ -8,7 +8,7 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.events import AdapterLogger
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, Dict
 from dbt.helper_types import Port
 
@@ -100,7 +100,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     cert: Optional[str] = None
     http_scheme: HttpScheme = HttpScheme.HTTP
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
@@ -119,7 +119,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     client_private_key: str
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
@@ -149,7 +149,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     password: str
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
@@ -175,7 +175,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     password: str
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
@@ -197,7 +197,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     jwt_token: str
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
 
     @property
@@ -222,7 +222,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     port: Port
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
-    session_properties: Optional[Dict[str, Any]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
@@ -385,7 +385,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             schema=credentials.schema,
             http_scheme=credentials.http_scheme.value,
             http_headers=credentials.http_headers,
-            session_properties=credentials.session_properties,
+            session_properties=credentials.session_properties.copy(),
             auth=credentials.trino_auth(),
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source="dbt-trino",
