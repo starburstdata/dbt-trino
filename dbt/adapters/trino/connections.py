@@ -117,6 +117,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     port: Port
     client_certificate: str
     client_private_key: str
+    user: Optional[str] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -129,10 +130,6 @@ class TrinoCertificateCredentials(TrinoCredentials):
     @property
     def method(self):
         return "certificate"
-
-    @property
-    def user(self):
-        return None
 
     def trino_auth(self):
         return trino.auth.CertificateAuthentication(
@@ -195,6 +192,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     host: str
     port: Port
     jwt_token: str
+    user: Optional[str] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -208,10 +206,6 @@ class TrinoJwtCredentials(TrinoCredentials):
     def method(self):
         return "jwt"
 
-    @property
-    def user(self):
-        return None
-
     def trino_auth(self):
         return trino.auth.JWTAuthentication(self.jwt_token)
 
@@ -220,6 +214,7 @@ class TrinoJwtCredentials(TrinoCredentials):
 class TrinoOauthCredentials(TrinoCredentials):
     host: str
     port: Port
+    user: Optional[str] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -235,10 +230,6 @@ class TrinoOauthCredentials(TrinoCredentials):
     @property
     def method(self):
         return "oauth"
-
-    @property
-    def user(self):
-        return None
 
     def trino_auth(self):
         return self.OAUTH
