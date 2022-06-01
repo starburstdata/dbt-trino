@@ -6,6 +6,7 @@ cd ..
 
 set -exo pipefail
 
+export COMPOSE_PROFILES=datalake
 docker-compose -f docker-compose-starburst.yml build
 docker-compose -f docker/util.yml build
 docker-compose -f docker-compose-starburst.yml up -d

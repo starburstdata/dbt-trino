@@ -8,10 +8,11 @@
 - Support impersonation with JWT, certificate and OAuth authentication ([#73](https://github.com/starburstdata/dbt-trino/issues/73), [#74](https://github.com/starburstdata/dbt-trino/pull/74))
 
 ### Under the hood
+- Add Delta lake and Icerberg support for testing ([#70](https://github.com/starburstdata/dbt-trino/pull/70))
 
 Contributors:
 * [@findinpath](https://github.com/findinpath) ([#71](https://github.com/starburstdata/dbt-trino/pull/71))
-* [@mdesmet](https://github.com/mdesmet) ([#74](https://github.com/starburstdata/dbt-trino/pull/74))
+* [@mdesmet](https://github.com/mdesmet) ([#70](https://github.com/starburstdata/dbt-trino/pull/70), [#74](https://github.com/starburstdata/dbt-trino/pull/74))
 
 ## dbt-trino 1.1.0 (May 9, 2022)
 
