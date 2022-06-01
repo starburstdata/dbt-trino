@@ -21,10 +21,32 @@ def dbt_profile_target(request):
         'schema': 'default'
     }
 
-    marker = request.node.get_closest_marker("prepared_statements_disabled")
-    if marker:
+    prepared_statements_disabled = request.node.get_closest_marker("prepared_statements_disabled")
+    if prepared_statements_disabled:
         target.update({
             'prepared_statements_enabled': False
+        })
+    
+    postgresql = request.node.get_closest_marker("postgresql")
+    iceberg = request.node.get_closest_marker("iceberg")
+    delta = request.node.get_closest_marker("delta")
+
+    if sum(bool(x) for x in (postgresql, iceberg, delta)) > 1:
+        raise ValueError("Only one of postgresql, iceberg, delta can be specified as a marker")
+
+    if postgresql:
+        target.update({
+            'catalog': 'postgresql'
+        })
+
+    if delta:
+        target.update({
+            'catalog': 'delta'
+        })
+
+    if iceberg:
+        target.update({
+            'catalog': 'iceberg'
         })
 
     return target

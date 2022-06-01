@@ -401,6 +401,18 @@ or
 pytest tests/functional
 ```
 
+### Seting the dbt profile to another catalog
+
+The catalog in the dbt profile can be setup through [pytest markers](https://docs.pytest.org/en/7.1.x/example/markers.html#registering-markers), if no marker has been specified the memory catalog is used.
+
+For example if you want to set the dbt profile to connect to the Delta Lake catalog, annotate your test with `@pytest.mark.delta`, (supported markers are `postgresql`, `delta` or `iceberg`).
+
+```
+@pytest.mark.delta
+def test_run_seed_test(self, project):
+  ...
+```
+
 ### Release process
 
 Before doing a release dbt's version requires updating.
