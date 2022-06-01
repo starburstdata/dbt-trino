@@ -7,9 +7,10 @@
 ### Under the hood
 - Use dependabot to keep python packages up to date ([#89](https://github.com/starburstdata/dbt-trino/pull/89))
 - Implement veracode security scan ([#90](https://github.com/starburstdata/dbt-trino/pull/90))
+- Add Delta Lake and Iceberg support for testing ([#70](https://github.com/starburstdata/dbt-trino/pull/70))
 
 Contributors:
-* [@mdesmet](https://github.com/mdesmet) ([#89](https://github.com/starburstdata/dbt-trino/pull/89), [#90](https://github.com/starburstdata/dbt-trino/pull/90))
+* [@mdesmet](https://github.com/mdesmet) ([#70](https://github.com/starburstdata/dbt-trino/pull/70), [#89](https://github.com/starburstdata/dbt-trino/pull/89), [#90](https://github.com/starburstdata/dbt-trino/pull/90))
 
 ## dbt-trino 1.2.0 (August 3, 2022)
 
@@ -26,7 +27,7 @@ Contributors:
 
 Contributors:
 * [@vivianhsu0214](https://github.com/vivianhsu0214) ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
-* [@mdesmet](https://github.com/mdesmet) ([#78](https://github.com/starburstdata/dbt-trino/pull/83))
+* [@mdesmet](https://github.com/mdesmet) ([#83](https://github.com/starburstdata/dbt-trino/pull/83))
 
 ## dbt-trino 1.1.1 (June 20, 2022)
 
