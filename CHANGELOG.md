@@ -3,15 +3,15 @@
 ### Features
 
 ### Fixes
-
+- Fix `TrinoKerberosCredentials.trino_auth()` for kerberos authentication ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
 ### Under the hood
 
 Contributors:
+* [@vivianhsu0214](https://github.com/vivianhsu0214) ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
 
 ## dbt-trino 1.1.1 (June 20, 2022)
 
 ### Fixes
-
 - Enable setting session properties per dbt model when `session_properties` is not defined in the dbt profile ([#71](https://github.com/starburstdata/dbt-trino/pull/71))
 - Support impersonation with JWT, certificate and OAuth authentication ([#73](https://github.com/starburstdata/dbt-trino/issues/73), [#74](https://github.com/starburstdata/dbt-trino/pull/74))
 
