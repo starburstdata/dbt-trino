@@ -18,6 +18,7 @@ import re
 import trino
 from trino.transaction import IsolationLevel
 import sqlparse
+import os
 
 
 logger = AdapterLogger("Trino")
@@ -169,7 +170,10 @@ class TrinoKerberosCredentials(TrinoCredentials):
     host: str
     port: Port
     user: str
-    password: str
+    keytab: Optional[str] = None
+    principal: Optional[str] = None
+    krb5_config: Optional[str] = None
+    service_name: Optional[str] = "trino"
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -183,8 +187,14 @@ class TrinoKerberosCredentials(TrinoCredentials):
     def method(self):
         return "kerberos"
 
-    def trino_auth():
-        return trino.auth.KerberosAuthentication()
+    def trino_auth(self):
+        os.environ["KRB5_CLIENT_KTNAME"] = self.keytab
+        return trino.auth.KerberosAuthentication(
+            config=self.krb5_config,
+            service_name=self.service_name,
+            principal=self.principal,
+            ca_bundle=self.cert
+        )
 
 
 @dataclass
