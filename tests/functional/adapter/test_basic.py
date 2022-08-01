@@ -10,6 +10,8 @@ from dbt.tests.adapter.basic.test_incremental import BaseIncremental
 from dbt.tests.adapter.basic.test_generic_tests import BaseGenericTests
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
+from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
+from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 
 
 class TestAdapterMethods(BaseAdapterMethod):
@@ -51,4 +53,13 @@ class TestSnapshotCheckColsTrino(BaseSnapshotCheckCols):
 
 @pytest.mark.xfail(reason="Snapshot not supported in dbt-trino")
 class TestSnapshotTimestampTrino(BaseSnapshotTimestamp):
+    pass   
+
+
+class TestTrinoValidateConnection(BaseValidateConnection):	
+    pass 	    
+
+
+@pytest.mark.xfail(reason="Docs generation not supported in dbt-trino")
+class TestDocsGenerateTrino(BaseDocsGenerate):
     pass
