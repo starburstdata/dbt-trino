@@ -6,6 +6,7 @@
 - Fix `TrinoKerberosCredentials.trino_auth()` for kerberos authentication ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
 ### Under the hood
 - Move crossdb macros from trino-dbt-utils to adapter ([#83](https://github.com/starburstdata/dbt-trino/pull/83))
+- Added dbt 1.2.0 standard adapter tests ([#83](https://github.com/starburstdata/dbt-trino/pull/83))
 
 Contributors:
 * [@vivianhsu0214](https://github.com/vivianhsu0214) ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
