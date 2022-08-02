@@ -39,8 +39,8 @@ $ pip install dbt-trino
 
 A dbt profile can be configured to run against Trino using the following configuration:
 
-| Option                         | Description                                                                                                  | Required?                                                                                               | Example                          |
-|--------------------------------|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|----------------------------------|
+| Option                         | Description                                                                                                  | Required?                                                                                                        | Example                          |
+|--------------------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|----------------------------------|
 | method                         | The Trino authentication method to use                                                                       | Optional (default is `none`, supported methods are `ldap`, `kerberos`, `jwt`, `oauth` or `certificate`)          | `none` or `kerberos`             |
 | user                           | Username for authentication                                                                                  | Optional (required if `method` is `none`, `ldap` or `kerberos`)                                                  | `commander`                      |
 | password                       | Password for authentication                                                                                  | Optional (required if `method` is `ldap`)                                                                        | `none` or `abc123`               |
@@ -61,7 +61,7 @@ A dbt profile can be configured to run against Trino using the following configu
 | port                           | The port to connect to the host on                                                                           | Required                                                                                                         | `8080`                           |
 | threads                        | How many threads dbt should use                                                                              | Optional (default is `1`)                                                                                        | `8`                              |
 | prepared_statements_enabled    | Enable usage of Trino prepared statements (used in `dbt seed` commands)                                      | Optional (default is `true`)                                                                                     | `true` or `false`                |
-
+| retries                        | Configure how many times a database operation is retried when connection issues arise                        | Optional (default is `3`)                                                                                        | `10`                             |
 
 **Example profiles.yml entry:**
 
