@@ -1,6 +1,7 @@
 ## dbt-trino TBD (TBD)
 
 ### Features
+- Configurable retries of database operations ([#83](https://github.com/starburstdata/dbt-trino/pull/83))
 
 ### Fixes
 - Fix `TrinoKerberosCredentials.trino_auth()` for kerberos authentication ([#78](https://github.com/starburstdata/dbt-trino/pull/78))
