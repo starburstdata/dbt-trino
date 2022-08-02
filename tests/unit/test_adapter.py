@@ -5,6 +5,7 @@ from unittest import TestCase
 import agate
 import dbt.flags as flags
 from dbt.clients import agate_helper
+import trino
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.connections import (
@@ -120,6 +121,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             {"query_max_run_time": "5d", "exchange_compression": True},
         )
         self.assertEqual(credentials.prepared_statements_enabled, True)
+        self.assertEqual(credentials.retries, trino.constants.DEFAULT_MAX_ATTEMPTS)
 
     def test_none_authentication(self):
         connection = self.acquire_connetion_with_profile(

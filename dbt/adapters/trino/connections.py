@@ -103,6 +103,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
 
     @property
     def method(self):
@@ -123,6 +124,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
 
     @property
     def http_scheme(self):
@@ -149,6 +151,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
 
     @property
     def http_scheme(self):
@@ -178,6 +181,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
 
     @property
     def http_scheme(self):
@@ -207,6 +211,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
 
     @property
     def http_scheme(self):
@@ -229,6 +234,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
     )
@@ -388,6 +394,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             http_headers=credentials.http_headers,
             session_properties=credentials.session_properties.copy(),
             auth=credentials.trino_auth(),
+            max_attempts=credentials.retries,
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source="dbt-trino",
         )
