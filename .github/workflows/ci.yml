@@ -17,9 +17,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        type:
+        engine:
           - "trino"
           - "starburst"
+        python:
+          - "3.9"
+          - "3.10"
 
     steps:
       - name: Checkout
@@ -28,11 +31,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9.5"
+          python-version: ${{ matrix.python }}
 
-      - name: Run dbt-trino tests against ${{ matrix.type }}
-        run: make dbt-${{ matrix.type }}-tests
+      - name: Run dbt-trino tests against ${{ matrix.engine }} on python ${{ matrix.python }}
+        run: make dbt-${{ matrix.engine }}-tests
 
       - name: Remove container on failure
         if: failure()
-        run: ./docker/remove_${{ matrix.type }}.bash || true
+        run: ./docker/remove_${{ matrix.engine }}.bash || true
