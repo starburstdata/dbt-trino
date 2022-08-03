@@ -23,6 +23,6 @@
     {% elif datepart == 'millisecond' %}
         (to_milliseconds((CAST({{ second_date }} AS TIMESTAMP) - CAST({{ first_date }} AS TIMESTAMP))))
     {% else %}
-        {{ exceptions.raise_compiler_error("Unsupported datepart for macro datediff in Trino: {!r}".format(datepart)) }}
+        {% if execute %}{{ exceptions.raise_compiler_error("Unsupported datepart for macro datediff in Trino: {!r}".format(datepart)) }}{% endif %}
     {% endif %}
 {% endmacro %}
