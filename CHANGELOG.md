@@ -6,9 +6,10 @@
 
 ### Under the hood
 - Use dependabot to keep python packages up to date ([#89](https://github.com/starburstdata/dbt-trino/pull/89))
+- Implement veracode security scan ([#90](https://github.com/starburstdata/dbt-trino/pull/90))
 
 Contributors:
-* [@mdesmet](https://github.com/mdesmet) ([#89](https://github.com/starburstdata/dbt-trino/pull/89))
+* [@mdesmet](https://github.com/mdesmet) ([#89](https://github.com/starburstdata/dbt-trino/pull/89), [#90](https://github.com/starburstdata/dbt-trino/pull/90))
 
 ## dbt-trino 1.2.0 (August 3, 2022)
 
