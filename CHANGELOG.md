@@ -5,8 +5,10 @@
 ### Fixes
 
 ### Under the hood
+- Use dependabot to keep python packages up to date ([#89](https://github.com/starburstdata/dbt-trino/pull/89))
 
 Contributors:
+* [@mdesmet](https://github.com/mdesmet) ([#89](https://github.com/starburstdata/dbt-trino/pull/89))
 
 ## dbt-trino 1.2.0 (August 3, 2022)
 
