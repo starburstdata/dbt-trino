@@ -1,0 +1,68 @@
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+versionHeaderPath: ""
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: '## dbt-trino {{.Version}} - {{.Time.Format "January 02, 2006"}}'
+kindFormat: '### {{.Kind}}'
+changeFormat: '- {{.Body}} ([#{{.Custom.Issue}}](https://github.com/starburstdata/dbt-trino/issues/{{.Custom.Issue}}), [#{{.Custom.PR}}](https://github.com/starburstdata/dbt-trino/pull/{{.Custom.PR}}))'
+
+kinds:
+  - label: Breaking Changes
+  - label: Features
+  - label: Fixes
+  - label: Under the Hood
+  - label: Dependencies
+    changeFormat: '- {{.Body}} ({{if ne .Custom.Issue ""}}[#{{.Custom.Issue}}](https://github.com/starburstdata/dbt-trino/issues/{{.Custom.Issue}}), {{end}}[#{{.Custom.PR}}](https://github.com/starburstdata/dbt-trino/pull/{{.Custom.PR}}))'
+  - label: Security
+    changeFormat: '- {{.Body}} ({{if ne .Custom.Issue ""}}[#{{.Custom.Issue}}](https://github.com/starburstdata/dbt-trino/issues/{{.Custom.Issue}}), {{end}}[#{{.Custom.PR}}](https://github.com/starburstdata/dbt-trino/pull/{{.Custom.PR}}))'
+
+newlines:
+  afterChangelogHeader: 1
+  afterKind: 1
+  afterChangelogVersion: 1
+  beforeKind: 1
+  endOfVersion: 1
+
+custom:
+  - key: Author
+    label: GitHub Username(s) (separated by a single space if multiple)
+    type: string
+    minLength: 3
+  - key: Issue
+    label: GitHub Issue Number
+    type: int
+    minInt: 1
+  - key: PR
+    label: GitHub Pull Request Number
+    type: int
+    minInt: 1
+
+footerFormat: |
+  {{- $contributorDict := dict }}
+  {{- range $change := .Changes }}
+    {{- $authorList := splitList " " $change.Custom.Author }}
+    {{- /* loop through all authors for a PR */}}
+    {{- range $author := $authorList }}
+      {{- $authorLower := lower $author }}
+      {{- $prLink := $change.Kind }}
+      {{- $prLink = "[#pr](https://github.com/starburstdata/dbt-trino/pull/pr)" | replace "pr" $change.Custom.PR }}
+      {{- /* check if this contributor has other PRs associated with them already */}}
+      {{- if hasKey $contributorDict $author }}
+        {{- $prList := get $contributorDict $author }}
+        {{- $prList = append $prList $prLink  }}
+        {{- $contributorDict := set $contributorDict $author $prList }}
+      {{- else }}
+        {{- $prList := list $prLink }}
+        {{- $contributorDict := set $contributorDict $author $prList }}
+      {{- end }}
+    {{- end}}
+  {{- end }}
+  {{- /* no indentation here for formatting so the final markdown doesn't have unneeded indentations */}}
+  {{- if $contributorDict}}
+  ### Contributors
+  {{- range $k,$v := $contributorDict }}
+  - [@{{$k}}](https://github.com/{{$k}}) ({{ range $index, $element := $v }}{{if $index}}, {{end}}{{$element}}{{end}})
+  {{- end }}
+  {{- end }}

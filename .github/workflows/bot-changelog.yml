@@ -1,0 +1,57 @@
+# **what?**
+# When bots create a PR, this action will add a corresponding changie yaml file to that
+# PR when a specific label is added.
+#
+# The file is created off a template:
+#
+# kind: <per action matrix>
+# body: <PR title>
+# time: <current timestamp>
+# custom:
+#   Author: <PR User Login (generally the bot)>
+#   Issue: 4904
+#   PR: <PR number>
+#
+# **why?**
+# Automate changelog generation for more visability with automated bot PRs.
+#
+# **when?**
+# Once a PR is created, label should be added to PR before or after creation. You can also
+#  manually trigger this by adding the appropriate label at any time.
+#
+# **how to add another bot?**
+# Add the label and changie kind to the include matrix.  That's it!
+#
+
+name: Bot Changelog
+
+on:
+  pull_request:
+    # catch when the PR is opened with the label or when the label is added
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  generate_changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Create and commit changelog on bot PR
+        id: bot_changelog
+        uses: emmyoop/changie_bot@v1.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commit_author_name: "starburstdata-automation"
+          commit_author_email: "automation@starburstdata.com"
+          commit_message: ${{ github.event.pull_request.title }}
+          changie_kind: "Dependencies"
+          label: "dependencies"
+          custom_changelog_string: "custom:\n  Author: ${{ github.event.pull_request.user.login }}\n  Issue: 27\n  PR: ${{ github.event.pull_request.number }}\n"

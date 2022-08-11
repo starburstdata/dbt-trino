@@ -23,7 +23,7 @@ models:
     staging:
       materialized: view
 
-seeds: 
+seeds:
   jaffle_shop:
     column_overrides:
       boolean_type:
@@ -59,4 +59,3 @@ seeds:
           char_n_example: char(10)
           varbinary_example: varbinary
           json_example: json
-

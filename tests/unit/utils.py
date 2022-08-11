@@ -4,11 +4,10 @@ Note that all imports should be inside the functions to avoid import/mocking
 issues.
 """
 import os
-from unittest import mock
-from unittest import TestCase
+from unittest import TestCase, mock
 
-from hologram import ValidationError
 from dbt.config.project import PartialProject
+from hologram import ValidationError
 
 
 def normalize(path):
@@ -38,7 +37,6 @@ def mock_connection(name):
 def profile_from_dict(profile, profile_name, cli_vars="{}"):
     from dbt.config import Profile
     from dbt.config.renderer import ProfileRenderer
-    from dbt.context.base import generate_base_context
     from dbt.config.utils import parse_cli_vars
 
     if not isinstance(cli_vars, dict):
@@ -53,8 +51,6 @@ def profile_from_dict(profile, profile_name, cli_vars="{}"):
 
 
 def project_from_dict(project, profile, packages=None, selectors=None, cli_vars="{}"):
-    from dbt.context.target import generate_target_context
-    from dbt.config import Project
     from dbt.config.renderer import DbtProjectYamlRenderer
     from dbt.config.utils import parse_cli_vars
 
@@ -74,11 +70,10 @@ def project_from_dict(project, profile, packages=None, selectors=None, cli_vars=
     return partial.render(renderer)
 
 
-def config_from_parts_or_dicts(
-    project, profile, packages=None, selectors=None, cli_vars="{}"
-):
-    from dbt.config import Project, Profile, RuntimeConfig
+def config_from_parts_or_dicts(project, profile, packages=None, selectors=None, cli_vars="{}"):
     from copy import deepcopy
+
+    from dbt.config import Profile, Project, RuntimeConfig
 
     if isinstance(project, Project):
         profile_name = project.profile_name

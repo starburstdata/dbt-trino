@@ -1,10 +1,10 @@
 import pytest
-from dbt.tests.util import run_dbt, check_relations_equal
+from dbt.tests.util import check_relations_equal, run_dbt
 
 from tests.functional.adapter.materialization.fixtures import (
-    seed_csv,
     model_sql,
     profile_yml,
+    seed_csv,
 )
 
 
@@ -19,10 +19,7 @@ class TestTableDrop:
     def project_config_update(self):
         return {
             "name": "example",
-            "models": {
-                "+materialized": "table",
-                "+on_table_exists": "drop"
-            }
+            "models": {"+materialized": "table", "+on_table_exists": "drop"},
         }
 
     # everything that goes in the "seeds" directory
