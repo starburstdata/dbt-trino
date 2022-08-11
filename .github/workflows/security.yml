@@ -1,6 +1,6 @@
 name: Veracode SCA
 
-on: 
+on:
   push:
     branches:
       - master
@@ -24,6 +24,6 @@ jobs:
 
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          create-issues: true 
+          create-issues: true
           min-cvss-for-issue: 1
           fail-on-cvss: 11

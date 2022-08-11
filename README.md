@@ -343,89 +343,18 @@ When executing a prepared statement with a large number of parameters, you might
 
 The prepared statements can be disabled by setting `prepared_statements_enabled` to `true` in your dbt profile (reverting back to the legacy behavior using Python string interpolation). This flag may be removed in later releases.
 
-## Development
+## Contributing
 
-### Running tests
-
-Tests can be executed against Trino or Starburst server. Docker compose creates PostgreSQL instance which can be used in tests by pointing to `postgresql` catalog.
-To run all tests alongside with building required docker images and server initialization run:
-
-```sh
-make dbt-trino-tests
-make dbt-starburst-tests
-```
-
-Build dbt container locally:
-
-```sh
-./docker/dbt/build.sh
-```
-
-Run Trino or Starburst server locally:
-
-```sh
-./docker/init_trino.bash
-./docker/init_starburst.bash
-```
-
-Run tests against Trino or Starburst:
-
-```sh
-./docker/run_tests.bash
-```
-
-Run the locally-built docker image (from docker/dbt/build.sh):
-
-```sh
-export DBT_PROJECT_DIR=$HOME/... # wherever the dbt project you want to run is
-docker run -it --mount "type=bind,source=$HOME/.dbt/,target=/root/.dbt" --mount="type=bind,source=$DBT_PROJECT_DIR,target=/usr/app" --network dbt-net dbt-trino /bin/bash
-```
-
-### Running integration tests
-
-Install the libraries required for development in order to be able to run the dbt tests:
-
-```sh
-pip install -r dev_requirements.txt
-```
-
-Run from the base directory of the project the command:
-
-```sh
-tox -r
-```
-
-or
-
-```sh
-pytest tests/functional
-```
-
-### Seting the dbt profile to another catalog
-
-The catalog in the dbt profile can be setup through [pytest markers](https://docs.pytest.org/en/7.1.x/example/markers.html#registering-markers), if no marker has been specified the memory catalog is used.
-
-For example if you want to set the dbt profile to connect to the Delta Lake catalog, annotate your test with `@pytest.mark.delta`, (supported markers are `postgresql`, `delta` or `iceberg`).
-
-```
-@pytest.mark.delta
-def test_run_seed_test(self, project):
-  ...
-```
+- Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the #db-presto-trino channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
+- Want to help us build dbt-trino? Check out the [Contributing Guide](https://github.com/starburstdata/dbt-trino/blob/HEAD/CONTRIBUTING.md)
 
 ### Release process
 
-Before doing a release dbt's version requires updating.
-In order to bump dbt-trino and dbt-core version run:
+Before doing a release, it is required to bump the dbt-trino version by triggering release workflow `version-bump.yml`. The major and minor part of the dbt version are used to associate dbt-trino's version with the dbt version.
 
-```sh
-bumpversion --config-file .bumpversion-dbt.cfg patch --new-version <new-version>
-bumpversion --config-file .bumpversion.cfg patch --new-version <new-version> --allow-dirty
-```
+Next step is to merge the bump PR and making sure that test suite pass.
 
-Next step is to merge bump commit and making sure that test suite pass.
-
-Finally to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
+Finally, to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
 
 ## Code of Conduct
 

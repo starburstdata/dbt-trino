@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 from typing import Dict, Optional
-from dbt.adapters.sql import SQLAdapter
-from dbt.adapters.trino import TrinoConnectionManager, TrinoColumn
-from dbt.adapters.base.impl import AdapterConfig
 
 import agate
+from dbt.adapters.base.impl import AdapterConfig
+from dbt.adapters.sql import SQLAdapter
+
+from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager
 
 
 @dataclass
 class TrinoConfig(AdapterConfig):
     properties: Optional[Dict[str, str]] = None
-    view_security: Optional[str] = 'definer'
+    view_security: Optional[str] = "definer"
 
 
 class TrinoAdapter(SQLAdapter):
