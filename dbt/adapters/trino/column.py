@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import ClassVar, Dict
+
 from dbt.adapters.base.column import Column
 
 

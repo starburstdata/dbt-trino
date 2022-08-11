@@ -12,6 +12,20 @@ on:
       - "**/*.md"
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout the source code"
+        uses: actions/checkout@v2
+
+      - name: "Install Python"
+        uses: actions/setup-python@v2
+
+      - name: "Install dev requirements"
+        run: pip install -r dev_requirements.txt
+
+      - name: "Run pre-commit checks"
+        run: pre-commit run --all-files
   test:
     runs-on: ubuntu-latest
     strategy:

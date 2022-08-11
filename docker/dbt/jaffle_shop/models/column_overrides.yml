@@ -21,7 +21,7 @@ seeds:
               expected_type: time(_)
           - unique
       - name: time_p_example
-        tests: 
+        tests:
           - column_data_type:
               expected_type: time(6)
           - unique
@@ -31,7 +31,7 @@ seeds:
               expected_type: time(_) with time zone
           - unique
       - name: timestamp_example
-        tests: 
+        tests:
           - column_data_type:
               expected_type: timestamp(_)
           - unique
