@@ -6,27 +6,26 @@ import trino
 
 pytest_plugins = ["dbt.tests.fixtures.project"]
 
+
 # The profile dictionary, used to write out profiles.yml
 @pytest.fixture(scope="class")
 def dbt_profile_target(request):
     target = {
-        'type': 'trino',
-        'method': 'none',
-        'threads': 1,
-        'host': 'localhost',
-        'port': 8080,
-        'user': 'admin',
-        'password': '',
-        'catalog': 'memory',
-        'schema': 'default'
+        "type": "trino",
+        "method": "none",
+        "threads": 1,
+        "host": "localhost",
+        "port": 8080,
+        "user": "admin",
+        "password": "",
+        "catalog": "memory",
+        "schema": "default",
     }
 
     prepared_statements_disabled = request.node.get_closest_marker("prepared_statements_disabled")
     if prepared_statements_disabled:
-        target.update({
-            'prepared_statements_enabled': False
-        })
-    
+        target.update({"prepared_statements_enabled": False})
+
     postgresql = request.node.get_closest_marker("postgresql")
     iceberg = request.node.get_closest_marker("iceberg")
     delta = request.node.get_closest_marker("delta")
@@ -35,28 +34,23 @@ def dbt_profile_target(request):
         raise ValueError("Only one of postgresql, iceberg, delta can be specified as a marker")
 
     if postgresql:
-        target.update({
-            'catalog': 'postgresql'
-        })
+        target.update({"catalog": "postgresql"})
 
     if delta:
-        target.update({
-            'catalog': 'delta'
-        })
+        target.update({"catalog": "delta"})
 
     if iceberg:
-        target.update({
-            'catalog': 'iceberg'
-        })
+        target.update({"catalog": "iceberg"})
 
     return target
+
 
 @pytest.fixture(scope="class")
 def trino_connection(dbt_profile_target):
     return trino.dbapi.connect(
-        host=dbt_profile_target['host'],
-        port=dbt_profile_target['port'],
-        user=dbt_profile_target['user'],
-        catalog=dbt_profile_target['catalog'],
-        schema=dbt_profile_target['schema']
+        host=dbt_profile_target["host"],
+        port=dbt_profile_target["port"],
+        user=dbt_profile_target["user"],
+        catalog=dbt_profile_target["catalog"],
+        schema=dbt_profile_target["schema"],
     )

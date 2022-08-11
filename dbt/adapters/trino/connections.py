@@ -1,25 +1,22 @@
+import decimal
+import os
+import re
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
+from dataclasses import dataclass, field
+from datetime import date, datetime
 from enum import Enum
+from typing import Any, Dict, Optional
 
 import dbt.exceptions
+import sqlparse
+import trino
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.events import AdapterLogger
-
-from dataclasses import dataclass, field
-from typing import Any, Optional, Dict
 from dbt.helper_types import Port
-
-from datetime import date, datetime
-import decimal
-import re
-import trino
 from trino.transaction import IsolationLevel
-import sqlparse
-import os
-
 
 logger = AdapterLogger("Trino")
 PREPARED_STATEMENTS_ENABLED_DEFAULT = True
@@ -48,9 +45,7 @@ class TrinoCredentialsFactory:
         return TrinoNoneCredentials
 
     @classmethod
-    def translate_aliases(
-        cls, kwargs: Dict[str, Any], recurse: bool = False
-    ) -> Dict[str, Any]:
+    def translate_aliases(cls, kwargs: Dict[str, Any], recurse: bool = False) -> Dict[str, Any]:
         klazz = cls._create_trino_profile(kwargs)
         return klazz.translate_aliases(kwargs, recurse)
 
@@ -85,11 +80,11 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
             "database",
             "schema",
             "cert",
-            "prepared_statements_enabled"
+            "prepared_statements_enabled",
         )
 
     @abstractmethod
-    def trino_auth() -> Optional[trino.auth.Authentication]:
+    def trino_auth(self) -> Optional[trino.auth.Authentication]:
         pass
 
 
@@ -162,10 +157,7 @@ class TrinoLdapCredentials(TrinoCredentials):
         return "ldap"
 
     def trino_auth(self):
-        return trino.auth.BasicAuthentication(
-            username=self.user,
-            password=self.password
-        )
+        return trino.auth.BasicAuthentication(username=self.user, password=self.password)
 
 
 @dataclass
@@ -197,7 +189,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
             config=self.krb5_config,
             service_name=self.service_name,
             principal=self.principal,
-            ca_bundle=self.cert
+            ca_bundle=self.cert,
         )
 
 
@@ -400,10 +392,7 @@ class TrinoConnectionManager(SQLConnectionManager):
         )
         trino_conn._http_session.verify = credentials.cert
         connection.state = "open"
-        connection.handle = ConnectionWrapper(
-            trino_conn,
-            credentials.prepared_statements_enabled
-        )
+        connection.handle = ConnectionWrapper(trino_conn, credentials.prepared_statements_enabled)
         return connection
 
     @classmethod
@@ -414,8 +403,7 @@ class TrinoConnectionManager(SQLConnectionManager):
     def cancel(self, connection):
         connection.handle.cancel()
 
-    def add_query(self, sql, auto_begin=True,
-                  bindings=None, abridge_sql_log=False):
+    def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
 
         connection = None
         cursor = None
