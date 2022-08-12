@@ -1,4 +1,4 @@
-black==22.3.0
+black==22.6.0
 bumpversion==0.6.0
 dbt-tests-adapter
 flake8>=3.5.0
