@@ -1,4 +1,9 @@
 import pytest
+
+from dbt.tests.adapter.basic.expected_catalog import (
+    base_expected_catalog,
+    no_stats
+)
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
@@ -61,6 +66,16 @@ class TestTrinoValidateConnection(BaseValidateConnection):
     pass
 
 
-@pytest.mark.xfail(reason="Docs generation not supported in dbt-trino")
 class TestDocsGenerateTrino(BaseDocsGenerate):
-    pass
+    @pytest.fixture(scope="class")
+    def expected_catalog(self, project, profile_user):
+        return base_expected_catalog(
+            project,
+            role=None,
+            id_type="integer",
+            text_type="varchar",
+            time_type="timestamp(3)",
+            view_type="VIEW",
+            table_type="BASE TABLE",
+            model_stats=no_stats(),
+        )
