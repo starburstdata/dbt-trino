@@ -356,6 +356,12 @@ In order to override default value define within your project a macro like the f
 {% endmacro %}
 ```
 
+#### Persist docs
+
+Persist docs optionally persist resource descriptions as column and relation comments in the database. By default, documentation persistence is disabled, but it can be enabled for specific resources or groups of resources as needed.
+
+Column-level comments are not supported in Trino views. Detailed documentation can be found [here](https://docs.getdbt.com/reference/resource-configs/persist_docs).
+
 #### Generating lineage flow in docs
 
 In order to generate lineage flow in docs use `ref` function in the place of table names in the query. It builts dependencies between models and allows to create DAG with data flow. Refer to examples [here](https://docs.getdbt.com/docs/building-a-dbt-project/building-models#building-dependencies-between-models).

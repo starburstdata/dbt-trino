@@ -1,4 +1,4 @@
-
+-- Table-level and column-level comments returned as null, see https://github.com/trinodb/trino/issues/13705
 {% macro trino__get_catalog(information_schema, schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
     select * from (
