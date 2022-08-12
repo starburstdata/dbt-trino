@@ -1,9 +1,5 @@
 import pytest
-
-from dbt.tests.adapter.basic.expected_catalog import (
-    base_expected_catalog,
-    no_stats
-)
+from dbt.tests.adapter.basic.expected_catalog import base_expected_catalog, no_stats
 from dbt.tests.adapter.basic.test_adapter_methods import BaseAdapterMethod
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
