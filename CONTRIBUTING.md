@@ -55,7 +55,7 @@ Docker and `docker-compose` are both used in testing. Specific instructions for 
 First make sure that you set up your `virtualenv` as described in [Setting up an environment](#setting-up-an-environment).  Also ensure you have the latest version of pip installed with `pip install --upgrade pip`. Next, install `dbt-trino` (and its dependencies) with:
 
 ```sh
-pip install -r dev-requirements.txt
+pip install -r dev_requirements.txt
 ```
 
 When installed in this way, any changes you make to your local copy of the source code will be reflected immediately in your next `dbt` run.
