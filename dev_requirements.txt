@@ -1,6 +1,6 @@
 wheel
 twine
-freezegun==1.2.1
+freezegun==1.2.2
 pytest
 dbt-tests-adapter
 mock>=1.3.0
