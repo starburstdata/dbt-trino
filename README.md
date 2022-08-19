@@ -209,6 +209,26 @@ select * from {{ ref('users') }}
 {% endif %}
 ```
 
+##### `merge`
+
+Through the `merge` incremental strategy, dbt-trino constructs a [`MERGE` statement](https://trino.io/docs/current/sql/merge.html) which `INSERT`s new and `UPDATE`s existing records based on the unique key (specified by `unique_key`).  
+If `unique_key` is not unique `delete+insert` strategy can be used.
+Note that some connectors in Trino have limited or no support for `MERGE`.
+
+```jinja2
+{{
+    config(
+      materialized = 'incremental',
+      unique_key='user_id',
+      incremental_strategy='merge',
+      )
+}}
+select * from {{ ref('users') }}
+{% if is_incremental() %}
+  where updated_ts > (select max(updated_ts) from {{ this }})
+{% endif %}
+```
+
 #### Incremental overwrite on hive models
 
 In case that the target incremental model is being accessed with
