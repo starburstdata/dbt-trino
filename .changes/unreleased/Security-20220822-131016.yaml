@@ -1,0 +1,7 @@
+kind: Security
+body: Require pyyaml 6.0
+time: 2022-08-22T13:10:16.429309+02:00
+custom:
+  Author: mdesmet
+  Issue: "96"
+  PR: "106"
