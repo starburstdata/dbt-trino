@@ -54,3 +54,14 @@ def trino_connection(dbt_profile_target):
         catalog=dbt_profile_target["catalog"],
         schema=dbt_profile_target["schema"],
     )
+
+
+def get_engine_type():
+    conn = trino.dbapi.connect(host="localhost", port=8080, user="dbt-trino")
+    cur = conn.cursor()
+    cur.execute("SELECT version()")
+    version = cur.fetchone()
+    if "-e" in version[0]:
+        return "starburst"
+    else:
+        return "trino"
