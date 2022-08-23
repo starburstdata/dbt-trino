@@ -82,7 +82,12 @@ jobs:
           then
             changie batch ${{ steps.semver.outputs.base-version }}  --move-dir '${{ steps.semver.outputs.base-version }}' --prerelease '${{ steps.semver.outputs.pre-release }}'
           else
-            changie batch ${{ steps.semver.outputs.base-version }}  --include '${{ steps.semver.outputs.base-version }}' --remove-prereleases
+            if [[ -d ".changes/${{ steps.semver.outputs.base-version }}" ]]
+            then
+              changie batch ${{ steps.semver.outputs.base-version }}  --include '${{ steps.semver.outputs.base-version }}' --remove-prereleases
+            else
+              changie batch ${{ steps.semver.outputs.base-version }}  --move-dir '${{ steps.semver.outputs.base-version }}'
+            fi
           fi
           changie merge
           git status
