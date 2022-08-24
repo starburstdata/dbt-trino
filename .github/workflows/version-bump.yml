@@ -61,17 +61,7 @@ jobs:
 
       - name: Bump version
         run: |
-          source env/bin/activate
-          pip install -r dev_requirements.txt
-          env/bin/bumpversion --allow-dirty --new-version ${{ github.event.inputs.version_number }} major
-          git status
-
-      # this step will fail on whitespace errors but also correct them
-      - name: Format bumpversion file
-        continue-on-error: true
-        run: |
-          brew install pre-commit
-          pre-commit run trailing-whitespace --files .bumpversion.cfg
+          echo -en "version = \"${{ github.event.inputs.version_number }}\"\n"  > dbt/adapters/trino/__version__.py
           git status
 
       - name: Run changie
