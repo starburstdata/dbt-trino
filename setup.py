@@ -2,7 +2,6 @@
 import os
 import re
 import sys
-from operator import itemgetter
 
 # require python 3.7 or newer
 if sys.version_info < (3, 7):
@@ -44,8 +43,11 @@ def _get_plugin_version_dict():
 
 
 def _dbt_trino_version():
-    major, minor, patch = itemgetter("major", "minor", "patch")(_get_plugin_version_dict())
-    return f"{major}.{minor}.{patch}"
+    parts = _get_plugin_version_dict()
+    trino_version = "{major}.{minor}.{patch}".format(**parts)
+    if parts["prekind"] and parts["pre"]:
+        trino_version += parts["prekind"] + parts["pre"]
+    return trino_version
 
 
 # require a compatible minor version (~=), prerelease if this is a prerelease
@@ -58,15 +60,7 @@ def _get_dbt_core_version():
 
 package_version = _dbt_trino_version()
 description = """The trino adapter plugin for dbt (data build tool)"""
-
 dbt_version = _get_dbt_core_version()
-# the package version should be the dbt version, with maybe some things on the
-# ends of it. (0.19.1 vs 0.19.1a1, 0.19.1.1, ...)
-if not package_version.startswith(dbt_version):
-    raise ValueError(
-        f"Invalid setup.py: package_version={package_version} must start with "
-        f"dbt_version={dbt_version}"
-    )
 
 setup(
     name=package_name,
