@@ -40,7 +40,7 @@ jobs:
           python-version: "3.9.5"
 
       - name: Get dbt-trino version
-        run: echo "version_number=$(cat .bumpversion.cfg | grep current_version | cut -d " " -f3)" >> $GITHUB_ENV
+        run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
 
       # Need to set an output variable because env variables can't be taken as input
       # This is needed for the next step with releasing to GitHub
@@ -61,7 +61,6 @@ jobs:
           prerelease: ${{ steps.release_type.outputs.isPrerelease }}
           body: |
             [Release notes](https://github.com/starburstdata/dbt-trino/blob/master/CHANGELOG.md)
-            Tracking [dbt-core v${{env.version_number}}](https://github.com/dbt-labs/dbt/releases/tag/v${{env.version_number}}).
             ```sh
             $ pip install dbt-trino==${{env.version_number}}
             ```
