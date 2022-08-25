@@ -80,7 +80,7 @@ jobs:
           python-version: "3.9.5"
 
       - name: Get dbt-trino version
-        run: echo "version_number=$(cat .bumpversion.cfg | grep current_version | cut -d " " -f3)" >> $GITHUB_ENV
+        run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
 
       - name: Release to pypi
         env:
