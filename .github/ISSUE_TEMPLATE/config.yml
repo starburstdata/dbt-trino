@@ -1,0 +1,5 @@
+---
+contact_links:
+  - name: Ask a question or get help around `dbt-trino` on Slack
+    url: https://getdbt.slack.com/channels/db-presto-trino
+    about: Get help and share your experiences around `dbt-trino` with the `dbt` Slack community.
