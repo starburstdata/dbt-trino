@@ -1,54 +1,65 @@
--- Table-level and column-level comments returned as null, see https://github.com/trinodb/trino/issues/13705
 {% macro trino__get_catalog(information_schema, schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
-    select * from (
+        with tables as (
 
-        (
-            with tables as (
+            select
+                table_catalog as "table_database",
+                table_schema as "table_schema",
+                table_name as "table_name",
+                table_type as "table_type",
+                null as "table_owner"
 
-                select
-                    table_catalog as "table_database",
-                    table_schema as "table_schema",
-                    table_name as "table_name",
-                    table_type as "table_type",
-                    null as "table_owner"
+            from {{ information_schema }}.tables
+            where
+                table_schema != 'information_schema'
+                and
+                table_schema in ('{{ schemas | join("','") | lower }}')
 
-                from {{ information_schema }}.tables
-                where
-                    table_schema != 'information_schema'
-                    and
-                    table_schema in ('{{ schemas | join("','") | lower }}')
+        ),
 
-            ),
+        columns as (
 
-            columns as (
+            select
+                table_catalog as "table_database",
+                table_schema as "table_schema",
+                table_name as "table_name",
 
-                select
-                    table_catalog as "table_database",
-                    table_schema as "table_schema",
-                    table_name as "table_name",
-                    null as "table_comment",
+                column_name as "column_name",
+                ordinal_position as "column_index",
+                data_type as "column_type",
+                comment as "column_comment"
 
-                    column_name as "column_name",
-                    ordinal_position as "column_index",
-                    data_type as "column_type",
-                    null as "column_comment"
+            from {{ information_schema }}.columns
+            where
+                table_schema != 'information_schema'
+                and
+                table_schema in ('{{ schemas | join("','") | lower }}')
 
-                from {{ information_schema }}.columns
-                where
-                    table_schema != 'information_schema'
-                    and
-                    table_schema in ('{{ schemas | join("','") | lower }}')
+        ),
 
-            )
+        table_comment as (
 
-            select *
-            from tables
-            join columns using ("table_database", "table_schema", "table_name")
-            order by "column_index"
+            select
+                catalog_name as "table_database",
+                schema_name as "table_schema",
+                table_name as "table_name",
+                comment as "table_comment"
+
+            from system.metadata.table_comments
+            where
+                catalog_name = '{{ database }}'
+                and
+                schema_name != 'information_schema'
+                and
+                schema_name in ('{{ schemas | join("','") | lower }}')
         )
 
-    )
+        select *
+        from tables
+        join columns using ("table_database", "table_schema", "table_name")
+        join table_comment using ("table_database", "table_schema", "table_name")
+        order by "column_index"
+
   {%- endcall -%}
 
   {{ return(load_result('catalog').table) }}
