@@ -14,8 +14,6 @@ from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     seeds__seed_csv,
 )
 
-from tests.conftest import get_engine_type
-
 seeds__duplicate_insert_sql = """
 -- Insert statement which when applied to seed.csv triggers the inplace
 --   overwrite strategy of incremental models. Seed and incremental model
@@ -126,9 +124,6 @@ class TrinoIncrementalUniqueKey(BaseIncrementalUniqueKey):
 
 
 @pytest.mark.iceberg
-@pytest.mark.skipif(
-    condition=get_engine_type() == "starburst", reason="Starburst doesn't support MERGE yet"
-)
 class TestIcebergIncrementalMerge(TrinoIncrementalUniqueKey):
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -140,9 +135,6 @@ class TestIcebergIncrementalMerge(TrinoIncrementalUniqueKey):
 
 
 @pytest.mark.delta
-@pytest.mark.skipif(
-    condition=get_engine_type() == "starburst", reason="Starburst doesn't support MERGE yet"
-)
 class TestDeltaIncrementalMerge(TrinoIncrementalUniqueKey):
     @pytest.fixture(scope="class")
     def project_config_update(self):
