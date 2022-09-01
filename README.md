@@ -113,12 +113,7 @@ on your Trino instance.
 
 #### Supported Functionality
 
-Due to the nature of Trino, not all core `dbt` functionality is supported.
-The following features of dbt are not implemented in `dbt-trino`:
-
-- Snapshot
-
-Also, note that upper or mixed case schema names will cause catalog queries to fail.
+Note that upper or mixed case schema names will cause catalog queries to fail.
 Please only use lower case schema names with this adapter.
 
 #### Supported authentication types
@@ -159,7 +154,72 @@ may come to the rescue:
 }}
 ```
 
-#### Incremental models
+#### Materializations
+
+##### Table
+
+`dbt-trino` supports two modes in `table` materialization `rename` and `drop` configured using `on_table_exists`.
+
+- `rename` - creates intermediate table, then renames the target to backup one and renames intermediate to target one.
+- `drop` - drops and recreates a table. It overcomes table rename limitation in AWS Glue.
+
+
+By default `table` materialization uses `on_table_exists = 'rename'`, see an examples below how to change it.
+
+In model add:
+```jinja2
+{{
+  config(
+    materialized = 'table',
+    on_table_exists = 'drop`
+  )
+}}
+```
+
+or in `dbt_project.yaml`:
+
+```yaml
+models:
+  path:
+    materialized: table
+    +on_table_exists: drop
+```
+
+Using `table` materialization and `on_table_exists = 'rename'` with AWS Glue may result in below error:
+
+```
+TrinoUserError(type=USER_ERROR, name=NOT_SUPPORTED, message="Table rename is not yet supported by Glue service")
+```
+
+##### View
+
+Adapter supports two security modes in `view` materialization `DEFINER` and `INVOKER` configured using `view_security`.
+
+See [Trino docs](https://trino.io/docs/current/sql/create-view.html#security) for more details about security modes in views.
+
+By default `view` materialization uses `view_security = 'definer'`, see an examples below how to change it.
+
+In model add:
+```jinja2
+{{
+  config(
+    materialized = 'view',
+    view_security = 'invoker`
+  )
+}}
+```
+
+or in `dbt_project.yaml`:
+
+```yaml
+models:
+  path:
+    materialized: view
+    +view_security: invoker
+```
+
+
+##### Incremental
 
 Using an incremental model limits the amount of data that needs to be transformed, vastly reducing the runtime of your transformations. This improves performance and reduces compute costs.
 
@@ -176,7 +236,7 @@ select * from {{ ref('events') }}
 {% endif %}
 ```
 
-##### `append` (default)
+###### `append` (default)
 
 The default incremental strategy is `append`. `append` only adds the new records based on the condition specified in the `is_incremental()` conditional block.
 
@@ -191,7 +251,7 @@ select * from {{ ref('events') }}
 {% endif %}
 ```
 
-##### `delete+insert`
+###### `delete+insert`
 
 Through the `delete+insert` incremental strategy, you can instruct dbt to use a two-step incremental approach. It will first delete the records detected through the configured `is_incremental()` block and re-insert them.
 
@@ -209,7 +269,7 @@ select * from {{ ref('users') }}
 {% endif %}
 ```
 
-##### `merge`
+###### `merge`
 
 Through the `merge` incremental strategy, dbt-trino constructs a [`MERGE` statement](https://trino.io/docs/current/sql/merge.html) which `INSERT`s new and `UPDATE`s existing records based on the unique key (specified by `unique_key`).  
 If `unique_key` is not unique `delete+insert` strategy can be used.
@@ -229,7 +289,7 @@ select * from {{ ref('users') }}
 {% endif %}
 ```
 
-#### Incremental overwrite on hive models
+###### Incremental overwrite on hive models
 
 In case that the target incremental model is being accessed with
 [hive](https://trino.io/docs/current/connector/hive.html) Trino connector, an `insert overwrite`
@@ -279,70 +339,37 @@ NOTE that this functionality works on incremental models that use partitioning:
 }}
 ```
 
-#### Materialization
+##### Snapshots
 
-Adapter supports all materializations provided by dbt-core.
+Commonly, analysts need to "look back in time" at some previous state of data in their mutable tables. While some source data systems are built in a way that makes accessing historical data possible, this is often not the case. dbt provides a mechanism, snapshots, which records changes to a mutable table over time.
 
-- table materialization
+Snapshots implement type-2 Slowly Changing Dimensions over mutable source tables. These Slowly Changing Dimensions (or SCDs) identify how a row in a table changes over time. Imagine you have an orders table where the status field can be overwritten as the order is processed. [See also the dbt docs about snapshots](https://docs.getdbt.com/docs/building-a-dbt-project/snapshots).
 
-Adapter supports two modes in `table` materialization `rename` and `drop` configured using `on_table_exists`.
+An example is given below.
 
-- `rename` - creates intermediate table, then renames the target to backup one and renames intermediate to target one.
-- `drop` - drops and recreates a table. It overcomes table rename limitation in AWS Glue.
-
-
-By default `table` materialization uses `on_table_exists = 'rename'`, see an examples below how to change it.
-
-In model add:
 ```jinja2
+{% snapshot orders_snapshot %}
 {{
-  config(
-    materialized = 'table',
-    on_table_exists = 'drop`
-  )
+    config(
+        target_database='analytics',
+        target_schema='snapshots',
+        unique_key='id',
+        strategy='timestamp',
+        updated_at='updated_at',
+    )
 }}
+select * from {{ source('jaffle_shop', 'orders') }}
+{% endsnapshot %}
 ```
 
-or in `dbt_project.yaml`:
+Note that the Snapshot feature depends on the `current_timestamp` macro. In some connectors the standard precision (`TIMESTAMP(3) WITH TIME ZONE`) is not supported by the connector eg. Iceberg.
 
-```yaml
-models:
-  path:
-    materialized: table
-    +on_table_exists: drop
-```
+If necessary, you can override the standard precision by providing your own version of the `trino__current_timestamp()` macro as in following example:
 
-Using `table` materialization and `on_table_exists = 'rename'` with AWS Glue may result in below error:
-
-```
-TrinoUserError(type=USER_ERROR, name=NOT_SUPPORTED, message="Table rename is not yet supported by Glue service")
-```
-
-- view materialization
-
-Adapter supports two security modes in `view` materialization `DEFINER` and `INVOKER` configured using `view_security`.
-
-See [Trino docs](https://trino.io/docs/current/sql/create-view.html#security) for more details about security modes in views.
-
-By default `view` materialization uses `view_security = 'definer'`, see an examples below how to change it.
-
-In model add:
 ```jinja2
-{{
-  config(
-    materialized = 'view',
-    view_security = 'invoker`
-  )
-}}
-```
-
-or in `dbt_project.yaml`:
-
-```yaml
-models:
-  path:
-    materialized: view
-    +view_security: invoker
+{% macro trino__current_timestamp() %}
+    current_timestamp(6)
+{% endmacro %}
 ```
 
 #### Use table properties to configure connector specifics
