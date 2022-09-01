@@ -54,4 +54,4 @@ jobs:
           commit_message: ${{ github.event.pull_request.title }}
           changie_kind: "Dependencies"
           label: "dependencies"
-          custom_changelog_string: "custom:\n  Author: ${{ github.event.pull_request.user.login }}\n  Issue: 27\n  PR: ${{ github.event.pull_request.number }}\n"
+          custom_changelog_string: "custom:\n  Author: ${{ github.event.pull_request.user.login }}\n  Issue: 27\n  PR: ${{ github.event.pull_request.number }}"
