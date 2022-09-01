@@ -11,8 +11,6 @@ from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
 from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
     BaseSingularTestsEphemeral,
 )
-from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
-from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
 
 
@@ -45,16 +43,6 @@ class TestIncrementalTrino(BaseIncremental):
 
 
 class TestGenericTestsTrino(BaseGenericTests):
-    pass
-
-
-@pytest.mark.xfail(reason="Snapshot not supported in dbt-trino")
-class TestSnapshotCheckColsTrino(BaseSnapshotCheckCols):
-    pass
-
-
-@pytest.mark.xfail(reason="Snapshot not supported in dbt-trino")
-class TestSnapshotTimestampTrino(BaseSnapshotTimestamp):
     pass
 
 
