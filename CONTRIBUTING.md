@@ -56,6 +56,7 @@ First make sure that you set up your `virtualenv` as described in [Setting up an
 
 ```sh
 pip install -r dev_requirements.txt
+pip install -e .
 ```
 
 When installed in this way, any changes you make to your local copy of the source code will be reflected immediately in your next `dbt` run.
