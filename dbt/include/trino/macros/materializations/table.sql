@@ -38,28 +38,28 @@
   {{ run_hooks(pre_hooks) }}
 
   {% if on_table_exists == 'rename' %}
-      -- build modeldock
+      {#-- build modeldock #}
       {% call statement('main') -%}
         {{ create_table_as(False, intermediate_relation, sql) }}
       {%- endcall %}
 
-      -- cleanup
+      {#-- cleanup #}
       {% if old_relation is not none %}
           {{ adapter.rename_relation(old_relation, backup_relation) }}
       {% endif %}
 
       {{ adapter.rename_relation(intermediate_relation, target_relation) }}
 
-      -- finally, drop the existing/backup relation after the commit
+      {#-- finally, drop the existing/backup relation after the commit #}
       {{ drop_relation_if_exists(backup_relation) }}
 
   {% elif on_table_exists == 'drop' %}
-      -- cleanup
+      {#-- cleanup #}
       {%- if old_relation is not none -%}
           {{ adapter.drop_relation(old_relation) }}
       {%- endif -%}
 
-      -- build model
+      {#-- build model #}
       {% call statement('main') -%}
         {{ create_table_as(False, target_relation, sql) }}
       {%- endcall %}

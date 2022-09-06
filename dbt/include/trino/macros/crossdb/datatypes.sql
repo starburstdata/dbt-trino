@@ -1,14 +1,14 @@
-{% macro trino__type_float() %}
+{% macro trino__type_float() -%}
     double
-{% endmacro %}
+{%- endmacro %}
 
-{% macro trino__type_string() %}
+{% macro trino__type_string() -%}
     varchar
-{% endmacro %}
+{%- endmacro %}
 
-{% macro trino__type_numeric() %}
+{% macro trino__type_numeric() -%}
     DECIMAL(28, 6)
-{% endmacro %}
+{%- endmacro %}
 
 {%- macro trino__type_int() -%}
     integer

@@ -1,3 +1,3 @@
-{% macro trino__current_timestamp() %}
+{% macro trino__current_timestamp() -%}
     current_timestamp
-{% endmacro %}
+{%- endmacro %}
