@@ -52,9 +52,9 @@ id,name,some_date,last_initial
 """.lstrip()
 
 iceberg_macro_override_sql = """\
-{% macro trino__current_timestamp() %}
+{% macro trino__current_timestamp() -%}
     current_timestamp(6)
-{% endmacro %}
+{%- endmacro %}
 """
 
 
