@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import trino
 
@@ -7,20 +9,20 @@ import trino
 pytest_plugins = ["dbt.tests.fixtures.project"]
 
 
+def pytest_addoption(parser):
+    parser.addoption("--profile", action="store", default="trino_starburst", type=str)
+
+
 # The profile dictionary, used to write out profiles.yml
 @pytest.fixture(scope="class")
 def dbt_profile_target(request):
-    target = {
-        "type": "trino",
-        "method": "none",
-        "threads": 1,
-        "host": "localhost",
-        "port": 8080,
-        "user": "admin",
-        "password": "",
-        "catalog": "memory",
-        "schema": "default",
-    }
+    profile_type = request.config.getoption("--profile")
+    if profile_type == "trino_starburst":
+        target = get_trino_starburst_target()
+    elif profile_type == "starburst_galaxy":
+        target = get_galaxy_target()
+    else:
+        raise ValueError(f"Invalid profile type '{profile_type}'")
 
     prepared_statements_disabled = request.node.get_closest_marker("prepared_statements_disabled")
     if prepared_statements_disabled:
@@ -45,15 +47,65 @@ def dbt_profile_target(request):
     return target
 
 
+def get_trino_starburst_target():
+    return {
+        "type": "trino",
+        "method": "none",
+        "threads": 4,
+        "host": "localhost",
+        "port": 8080,
+        "user": "admin",
+        "password": "",
+        "catalog": "memory",
+        "schema": "default",
+    }
+
+
+def get_galaxy_target():
+    return {
+        "type": "trino",
+        "method": "ldap",
+        "threads": 4,
+        "retries": 5,
+        "host": os.environ.get("DBT_TESTS_STARBURST_GALAXY_HOST"),
+        "port": 443,
+        "user": os.environ.get("DBT_TESTS_STARBURST_GALAXY_USER"),
+        "password": os.environ.get("DBT_TESTS_STARBURST_GALAXY_PASSWORD"),
+        "catalog": "iceberg",
+        "schema": "default",
+    }
+
+
+@pytest.fixture(autouse=True)
+def skip_by_profile_type(request):
+    profile_type = request.config.getoption("--profile")
+    if request.node.get_closest_marker("skip_profile"):
+        for skip_profile_type in request.node.get_closest_marker("skip_profile").args:
+            if skip_profile_type == profile_type:
+                pytest.skip(f"skipped on {profile_type} profile")
+
+
 @pytest.fixture(scope="class")
 def trino_connection(dbt_profile_target):
-    return trino.dbapi.connect(
-        host=dbt_profile_target["host"],
-        port=dbt_profile_target["port"],
-        user=dbt_profile_target["user"],
-        catalog=dbt_profile_target["catalog"],
-        schema=dbt_profile_target["schema"],
-    )
+    if dbt_profile_target["method"] == "ldap":
+        return trino.dbapi.connect(
+            host=dbt_profile_target["host"],
+            port=dbt_profile_target["port"],
+            auth=trino.auth.BasicAuthentication(
+                dbt_profile_target["user"], dbt_profile_target["password"]
+            ),
+            catalog=dbt_profile_target["catalog"],
+            schema=dbt_profile_target["schema"],
+            http_scheme="https",
+        )
+    else:
+        return trino.dbapi.connect(
+            host=dbt_profile_target["host"],
+            port=dbt_profile_target["port"],
+            user=dbt_profile_target["user"],
+            catalog=dbt_profile_target["catalog"],
+            schema=dbt_profile_target["schema"],
+        )
 
 
 def get_engine_type():
