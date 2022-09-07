@@ -18,8 +18,11 @@ class TestTableDrop:
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
-            "name": "example",
+            "name": "table_drop",
             "models": {"+materialized": "table", "+on_table_exists": "drop"},
+            "seeds": {
+                "+column_types": {"some_date": "timestamp(6)"},
+            },
         }
 
     # everything that goes in the "seeds" directory

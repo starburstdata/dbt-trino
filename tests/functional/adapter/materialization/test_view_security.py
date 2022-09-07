@@ -18,8 +18,11 @@ class TestViewSecurity:
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
-            "name": "example",
+            "name": "view_security",
             "models": {"+materialized": "view", "+view_security": "invoker"},
+            "seeds": {
+                "+column_types": {"some_date": "timestamp(6)"},
+            },
         }
 
     # everything that goes in the "seeds" directory
