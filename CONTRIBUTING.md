@@ -116,9 +116,9 @@ Finally, you can also run a specific test or group of tests using [`pytest`](htt
 
 ```sh
 # run all unit tests in a file
-python3 -m pytest test/unit/utils.py
+python3 -m pytest tests/unit/utils.py
 # run a specific unit test
-python3 -m pytest test/unit/test_adapter.py::TestTrinoAdapter::test_acquire_connection
+python3 -m pytest tests/unit/test_adapter.py::TestTrinoAdapter::test_acquire_connection
 # run integration tests
 python3 -m pytest tests/functional
 ```
