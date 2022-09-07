@@ -63,12 +63,19 @@ class TestPersistDocsTable(TestPersistDocsBase):
 
 # Comments on views are not supported in Trino engine
 # https://github.com/trinodb/trino/issues/10705
+# TODO Galaxy tests skipped on type=USER_ERROR, name=PERMISSION_DENIED,
+# message="Access Denied: Cannot comment view"
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocsView(TestPersistDocsBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
             "name": "persist_docs_tests",
-            "models": {"+persist_docs": {"relation": True}},
+            "models": {
+                "+persist_docs": {"relation": True},
+                "+materialized": "view",
+                "+view_security": "definer",
+            },
             "seeds": {
                 "+column_types": {"date": "timestamp(6)"},
                 "+persist_docs": {"relation": True},

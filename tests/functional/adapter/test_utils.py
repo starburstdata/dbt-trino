@@ -46,10 +46,29 @@ class TestConcat(BaseConcat):
 
 
 class TestDateAdd(BaseDateAdd):
-    pass
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "test_date_add",
+            "seeds": {
+                "+column_types": {
+                    "from_time": "timestamp(6)",
+                    "result": "timestamp(6)",
+                },
+            },
+        }
 
 
 class TestDateDiff(BaseDateDiff):
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "test_date_diff",
+            "seeds": {
+                "+column_types": {"first_date": "timestamp(6)", "second_date": "timestamp(6)"},
+            },
+        }
+
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"data_datediff.csv": seeds__data_datediff_csv}
@@ -65,7 +84,14 @@ class TestDateDiff(BaseDateDiff):
 
 
 class TestDateTrunc(BaseDateTrunc):
-    pass
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "test_date_diff",
+            "seeds": {
+                "+column_types": {"updated_at": "timestamp(6)"},
+            },
+        }
 
 
 class TestEscapeSingleQuotes(BaseEscapeSingleQuotesQuote):

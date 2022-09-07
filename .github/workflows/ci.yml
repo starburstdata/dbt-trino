@@ -34,9 +34,13 @@ jobs:
         engine:
           - "trino"
           - "starburst"
+          - "starburst_galaxy"
         python:
           - "3.9"
           - "3.10"
+        exclude:
+          - engine: "starburst_galaxy"
+            python: "3.10"
 
     steps:
       - name: Checkout
@@ -48,7 +52,18 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Run dbt-trino tests against ${{ matrix.engine }} on python ${{ matrix.python }}
-        run: make dbt-${{ matrix.engine }}-tests
+        env:
+          DBT_TESTS_STARBURST_GALAXY_HOST: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_HOST }}
+          DBT_TESTS_STARBURST_GALAXY_USER: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_USER }}
+          DBT_TESTS_STARBURST_GALAXY_PASSWORD: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_PASSWORD }}
+        run: |
+          if [[ ${{ matrix.engine }} == "trino" || ${{ matrix.engine }} == "starburst" ]]; then
+            make dbt-${{ matrix.engine }}-tests
+          elif [[ ${{ matrix.engine }} == "starburst_galaxy" ]]; then
+            python -m pip install -r dev_requirements.txt
+            pip install -e .
+            python -m pytest tests/functional --profile starburst_galaxy
+          fi
 
       - name: Remove container on failure
         if: failure()

@@ -17,7 +17,12 @@ class PreparedStatementsBase:
     # configuration in dbt_project.yml
     @pytest.fixture(scope="class")
     def project_config_update(self):
-        return {"name": "example"}
+        return {
+            "name": "test_prepared_statements",
+            "seeds": {
+                "+column_types": {"some_date": "timestamp(6)"},
+            },
+        }
 
     # everything that goes in the "seeds" directory
     @pytest.fixture(scope="class")
