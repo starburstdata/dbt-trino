@@ -204,7 +204,7 @@ In model add:
 {{
   config(
     materialized = 'view',
-    view_security = 'invoker`
+    view_security = 'invoker'
   )
 }}
 ```
