@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump tox from 3.25.1 to 3.26.0"
+time: 2022-09-09T04:44:19.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: 27
+  PR: 124
