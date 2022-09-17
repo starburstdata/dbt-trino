@@ -94,6 +94,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     host: str
     port: Port
     user: str
+    roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_scheme: HttpScheme = HttpScheme.HTTP
     http_headers: Optional[Dict[str, str]] = None
@@ -116,6 +117,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     client_certificate: str
     client_private_key: str
     user: Optional[str] = None
+    roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -143,6 +145,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     port: Port
     user: str
     password: str
+    roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -166,6 +169,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     host: str
     port: Port
     user: str
+    roles: Optional[Dict[str, str]] = None
     keytab: Optional[str] = None
     principal: Optional[str] = None
     krb5_config: Optional[str] = None
@@ -210,6 +214,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     port: Port
     jwt_token: str
     user: Optional[str] = None
+    roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -233,6 +238,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     host: str
     port: Port
     user: Optional[str] = None
+    roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -404,6 +410,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             host=credentials.host,
             port=credentials.port,
             user=credentials.user,
+            roles=credentials.roles,
             catalog=credentials.database,
             schema=credentials.schema,
             http_scheme=credentials.http_scheme.value,
