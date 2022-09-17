@@ -53,6 +53,7 @@ services:
       AZURE_ABFS_OAUTH_SECRET: ""
       AZURE_ABFS_OAUTH_ENDPOINT: ""
       AZURE_WASB_ACCESS_KEY: ""
+      HIVE_METASTORE_USERS_IN_ADMIN_ROLE: "admin"
     depends_on:
       - metastore_db
 
