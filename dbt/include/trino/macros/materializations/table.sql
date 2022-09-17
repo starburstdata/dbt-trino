@@ -37,6 +37,9 @@
 
   {{ run_hooks(pre_hooks) }}
 
+  -- grab current tables grants config for comparision later on
+  {% set grant_config = config.get('grants') %}
+
   {% if on_table_exists == 'rename' %}
       {#-- build modeldock #}
       {% call statement('main') -%}
@@ -65,9 +68,12 @@
       {%- endcall %}
   {% endif %}
 
-  {{ run_hooks(post_hooks) }}
-
   {% do persist_docs(target_relation, model) %}
+
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {{ run_hooks(post_hooks) }}
 
   {{ return({'relations': [target_relation]}) }}
 {% endmaterialization %}
