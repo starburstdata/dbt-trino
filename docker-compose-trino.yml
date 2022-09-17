@@ -27,7 +27,7 @@ services:
 
   hive-metastore:
     hostname: hive-metastore
-    image: 'starburstdata/hive:3.1.2-e.15'
+    image: 'starburstdata/hive:3.1.2-e.18'
     ports:
       - '9083:9083' # Metastore Thrift
     environment:
