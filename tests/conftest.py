@@ -31,6 +31,7 @@ def dbt_profile_target(request):
     postgresql = request.node.get_closest_marker("postgresql")
     iceberg = request.node.get_closest_marker("iceberg")
     delta = request.node.get_closest_marker("delta")
+    hive = request.node.get_closest_marker("hive")
 
     if sum(bool(x) for x in (postgresql, iceberg, delta)) > 1:
         raise ValueError("Only one of postgresql, iceberg, delta can be specified as a marker")
@@ -43,6 +44,9 @@ def dbt_profile_target(request):
 
     if iceberg:
         target.update({"catalog": "iceberg"})
+
+    if hive:
+        target.update({"catalog": "hive"})
 
     return target
 
