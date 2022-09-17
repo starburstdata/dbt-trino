@@ -130,6 +130,9 @@
 
   {{ run_hooks(pre_hooks) }}
 
+  -- grab current tables grants config for comparision later on
+  {% set grant_config = config.get('grants') %}
+
   {% if existing_relation is none %}
     {% set build_sql = create_table_as(False, target_relation, sql) %}
   {% elif existing_relation.is_view or full_refresh_mode %}
@@ -152,6 +155,10 @@
   {%- endcall -%}
 
   {{ run_hooks(post_hooks) }}
+
+  {% set should_revoke =
+   should_revoke(existing_relation.is_table, full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
 
   {% do persist_docs(target_relation, model) %}
 

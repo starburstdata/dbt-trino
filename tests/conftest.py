@@ -60,6 +60,9 @@ def get_trino_starburst_target():
         "port": 8080,
         "user": "admin",
         "password": "",
+        "roles": {
+            "hive": "ROLE{admin}",
+        },
         "catalog": "memory",
         "schema": "default",
     }
