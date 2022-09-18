@@ -111,11 +111,6 @@ on your Trino instance.
 
 ## Usage Notes
 
-#### Supported Functionality
-
-Note that upper or mixed case schema names will cause catalog queries to fail.
-Please only use lower case schema names with this adapter.
-
 #### Supported authentication types
 
 - none - No authentication
