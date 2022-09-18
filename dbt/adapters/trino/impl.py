@@ -5,7 +5,7 @@ import agate
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.sql import SQLAdapter
 
-from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager
+from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
 
 
 @dataclass
@@ -15,6 +15,7 @@ class TrinoConfig(AdapterConfig):
 
 
 class TrinoAdapter(SQLAdapter):
+    Relation = TrinoRelation
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
     AdapterSpecificConfigs = TrinoConfig
