@@ -122,18 +122,6 @@ on your Trino instance.
 
 See also: https://trino.io/docs/current/security/authentication-types.html
 
-#### Required configuration
-
-dbt fundamentally works by dropping and creating tables and views in databases.
-As such, the following Trino configs must be set for dbt to work properly on Trino:
-
-```properties
-hive.metastore-cache-ttl=0s
-hive.metastore-refresh-interval = 5s
-hive.allow-drop-table=true
-hive.allow-rename-table=true
-```
-
 #### Session properties per model
 
 In some specific cases, there may be needed tuning through the Trino session properties only 
