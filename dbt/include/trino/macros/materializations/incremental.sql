@@ -126,6 +126,7 @@
 
   {#-- Validate early so we don't run SQL if the strategy is invalid --#}
   {%- set strategy = validate_get_incremental_strategy(config) -%}
+  {%- set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') -%}
 
   {{ run_hooks(pre_hooks) }}
 
@@ -138,7 +139,11 @@
     {% set drop_tmp_relation_sql = "drop table if exists " ~  tmp_relation %}
     {% do run_query(drop_tmp_relation_sql) %}
     {% do run_query(create_table_as(True, tmp_relation, sql)) %}
-    {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
+    {#-- Process schema changes. Returns dict of changes if successful. Use source columns for upserting/merging --#}
+    {% set dest_columns = process_schema_changes(on_schema_change, tmp_relation, existing_relation) %}
+    {% if not dest_columns %}
+      {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
+    {% endif %}
     {% set build_sql = get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
   {% endif %}
 
