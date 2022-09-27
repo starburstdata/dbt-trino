@@ -169,8 +169,13 @@ class TrinoKerberosCredentials(TrinoCredentials):
     principal: Optional[str] = None
     krb5_config: Optional[str] = None
     service_name: Optional[str] = "trino"
+    mutual_authentication: Optional[bool] = False
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
+    force_preemptive: Optional[bool] = False
+    hostname_override: Optional[str] = None
+    sanitize_mutual_error_response: Optional[bool] = True
+    delegate: Optional[bool] = False
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
@@ -189,7 +194,12 @@ class TrinoKerberosCredentials(TrinoCredentials):
             config=self.krb5_config,
             service_name=self.service_name,
             principal=self.principal,
+            mutual_authentication=self.mutual_authentication,
             ca_bundle=self.cert,
+            force_preemptive=self.force_preemptive,
+            hostname_override=self.hostname_override,
+            sanitize_mutual_error_response=self.sanitize_mutual_error_response,
+            delegate=self.delegate,
         )
 
 
