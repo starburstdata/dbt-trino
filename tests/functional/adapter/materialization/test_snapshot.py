@@ -58,9 +58,6 @@ iceberg_macro_override_sql = """\
 """
 
 
-# TODO Merge not supported in Galaxy yet
-# https://github.com/starburstdata/dbt-trino/issues/133
-@pytest.mark.skip_profile("starburst_galaxy")
 class BaseTrinoSnapshotTimestamp(BaseSnapshotTimestamp):
     def test_snapshot_timestamp(self, project):
         super().test_snapshot_timestamp(project)
