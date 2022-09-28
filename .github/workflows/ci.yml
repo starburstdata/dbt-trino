@@ -38,12 +38,12 @@ jobs:
         python:
           - "3.9"
           - "3.10"
-        isForkBranch:
-          - ${{ !contains(github.event.pull_request.head.repo.full_name, 'starburstdata') }}
+        isStarburstBranch:
+          - ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.head.repo.full_name, 'starburstdata')) || github.event_name != 'pull_request' }}
         exclude:
           - engine: "starburst_galaxy"
             python: "3.9"
-            isForkBranch: true
+            isStarburstBranch: false
           - engine: "starburst_galaxy"
             python: "3.10"
 
