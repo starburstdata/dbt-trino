@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Enable MERGE tests for Galaxy
+time: 2022-09-28T16:32:07.184055+02:00
+custom:
+  Author: hovaesco
+  Issue: "133"
+  PR: "139"

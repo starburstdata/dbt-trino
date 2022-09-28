@@ -25,9 +25,6 @@ from tests.functional.adapter.materialization.fixtures import (
 )
 
 
-# TODO Merge not supported in Galaxy yet
-# https://github.com/starburstdata/dbt-trino/issues/133
-@pytest.mark.skip_profile("starburst_galaxy")
 class OnSchemaChangeBase:
     # configuration in dbt_project.yml
     @pytest.fixture(scope="class")
