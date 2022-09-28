@@ -94,9 +94,6 @@ select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
 """
 
 
-# TODO Merge not supported in Galaxy yet
-# https://github.com/starburstdata/dbt-trino/issues/133
-@pytest.mark.skip_profile("starburst_galaxy")
 class TrinoIncrementalUniqueKey(BaseIncrementalUniqueKey):
     @pytest.fixture(scope="class")
     def seeds(self):
