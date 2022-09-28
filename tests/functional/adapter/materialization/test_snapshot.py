@@ -74,7 +74,6 @@ class BaseTrinoSnapshotTimestamp(BaseSnapshotTimestamp):
 
 
 @pytest.mark.iceberg
-@pytest.mark.skip_profile("starburst_galaxy")
 class TestIcebergSnapshotCheckColsTrino(BaseSnapshotCheckCols):
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -118,7 +117,6 @@ class TestIcebergSnapshotTimestampTrino(BaseTrinoSnapshotTimestamp):
 
 
 @pytest.mark.delta
-@pytest.mark.skip_profile("starburst_galaxy")
 class TestDeltaSnapshotCheckColsTrino(BaseSnapshotCheckCols):
     @pytest.fixture(scope="class")
     def project_config_update(self):
