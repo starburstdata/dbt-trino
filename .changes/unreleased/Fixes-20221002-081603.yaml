@@ -1,0 +1,7 @@
+kind: Fixes
+body: Ignore case when matching relations
+time: 2022-10-02T08:16:03.70013648Z
+custom:
+  Author: bachng2017
+  Issue: "140"
+  PR: "141"
