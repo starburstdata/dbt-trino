@@ -7,6 +7,5 @@ cd ..
 set -exo pipefail
 
 docker-compose -f docker-compose-starburst.yml build
-docker-compose -f docker/util.yml build
 docker-compose -f docker-compose-starburst.yml up -d
-docker-compose -f docker/util.yml run --rm util wait_for_up trino 8080 10
+timeout 5m bash -c -- 'while ! docker-compose -f docker-compose-starburst.yml logs trino 2>&1 | tail -n 1 | grep "SERVER STARTED"; do sleep 2; done'
