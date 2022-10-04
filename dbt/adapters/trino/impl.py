@@ -4,6 +4,7 @@ from typing import Dict, Optional
 import agate
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.sql import SQLAdapter
+from dbt.exceptions import DatabaseException
 
 from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
 
@@ -43,3 +44,12 @@ class TrinoAdapter(SQLAdapter):
 
     def timestamp_add_sql(self, add_to: str, number: int = 1, interval: str = "hour") -> str:
         return f"{add_to} + interval '{number}' {interval}"
+
+    def get_columns_in_relation(self, relation):
+        try:
+            return super().get_columns_in_relation(relation)
+        except DatabaseException as exc:
+            if "does not exist" in str(exc):
+                return []
+            else:
+                raise
