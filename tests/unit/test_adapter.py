@@ -1,11 +1,13 @@
 import string
 import unittest
 from unittest import TestCase
+from unittest.mock import MagicMock, Mock, patch
 
 import agate
 import dbt.flags as flags
 import trino
 from dbt.clients import agate_helper
+from dbt.exceptions import DatabaseException, FailedToConnectException, RuntimeException
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.connections import (
@@ -80,6 +82,37 @@ class TestTrinoAdapter(unittest.TestCase):
         key = self.adapter.connections.get_thread_identifier()
         self.adapter.connections.thread_connections[key] = mock_connection("master")
         self.assertEqual(len(list(self.adapter.cancel_open_connections())), 0)
+
+    @patch("dbt.adapters.trino.TrinoAdapter.ConnectionManager.get_thread_connection")
+    def test_database_exception(self, get_thread_connection):
+        self._setup_mock_exception(
+            get_thread_connection, trino.exceptions.ProgrammingError("Syntax error")
+        )
+        with self.assertRaises(DatabaseException):
+            self.adapter.execute("select 1")
+
+    @patch("dbt.adapters.trino.TrinoAdapter.ConnectionManager.get_thread_connection")
+    def test_failed_to_connect_exception(self, get_thread_connection):
+        self._setup_mock_exception(
+            get_thread_connection,
+            trino.exceptions.OperationalError("Failed to establish a new connection"),
+        )
+        with self.assertRaises(FailedToConnectException):
+            self.adapter.execute("select 1")
+
+    @patch("dbt.adapters.trino.TrinoAdapter.ConnectionManager.get_thread_connection")
+    def test_dbt_exception(self, get_thread_connection):
+        self._setup_mock_exception(get_thread_connection, Exception("Unexpected error"))
+        with self.assertRaises(RuntimeException):
+            self.adapter.execute("select 1")
+
+    def _setup_mock_exception(self, get_thread_connection, exception):
+        connection = mock_connection("master")
+        connection.handle = MagicMock()
+        cursor = MagicMock()
+        cursor.execute = Mock(side_effect=exception)
+        connection.handle.cursor = MagicMock(return_value=cursor)
+        get_thread_connection.return_value = connection
 
 
 class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):

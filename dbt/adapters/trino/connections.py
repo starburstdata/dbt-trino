@@ -15,6 +15,7 @@ from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.events import AdapterLogger
+from dbt.exceptions import DatabaseException, FailedToConnectException, RuntimeException
 from dbt.helper_types import Port
 from trino.transaction import IsolationLevel
 
@@ -360,12 +361,25 @@ class TrinoConnectionManager(SQLConnectionManager):
     def exception_handler(self, sql):
         try:
             yield
-        # TODO: introspect into `DatabaseError`s and expose `errorName`,
-        # `errorType`, etc instead of stack traces full of garbage!
-        except Exception as exc:
-            logger.debug("Error while running:\n{}".format(sql))
-            logger.debug(exc)
-            raise dbt.exceptions.RuntimeException(str(exc))
+        except trino.exceptions.Error as e:
+            msg = str(e)
+
+            if "Failed to establish a new connection" in msg:
+                raise FailedToConnectException(msg) from e
+
+            if isinstance(e, trino.exceptions.TrinoQueryError):
+                logger.debug("Trino query id: {}".format(e.query_id))
+            logger.debug("Trino error: {}".format(msg))
+
+            raise DatabaseException(msg)
+        except Exception as e:
+            msg = str(e)
+            if isinstance(e, RuntimeException):
+                # during a sql query, an internal to dbt exception was raised.
+                # this sounds a lot like a signal handler and probably has
+                # useful information, so raise it without modification.
+                raise
+            raise RuntimeException(msg) from e
 
     # For connection in auto-commit mode there is no need to start
     # separate transaction. If using auto-commit, the client will
