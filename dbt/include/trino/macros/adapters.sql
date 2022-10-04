@@ -4,33 +4,25 @@
 -- - get_columns_in_relation
 
 {% macro trino__get_columns_in_relation(relation) -%}
-  {% call statement('get_columns_in_relation', fetch_result=True) %}
-      select
-          column_name,
-          case when regexp_like(data_type, 'varchar\(\d+\)') then 'varchar'
-               else data_type
-          end as data_type,
-          case when regexp_like(data_type, 'varchar\(\d+\)') then
-                  from_base(regexp_extract(data_type, 'varchar\((\d+)\)', 1), 10)
-               else NULL
-          end as character_maximum_length,
-          NULL as numeric_precision,
-          NULL as numeric_scale
+  {%- set sql -%}
+    describe {{ relation }}
+  {%- endset -%}
+  {%- set result = run_query(sql) -%}
 
-      from
-      {{ relation.information_schema('columns') }}
+  {% set maximum = 10000 %}
+  {% if (result | length) >= maximum %}
+    {% set msg %}
+      Too many columns in relation {{ relation }}! dbt can only get
+      information about relations with fewer than {{ maximum }} columns.
+    {% endset %}
+    {% do exceptions.raise_compiler_error(msg) %}
+  {% endif %}
 
-      where
-        table_name = '{{ relation.name }}'
-        {% if relation.schema %}
-        and table_schema = '{{ relation.schema | lower }}'
-        {% endif %}
-      order by ordinal_position
-
-  {% endcall %}
-
-  {% set table = load_result('get_columns_in_relation').table %}
-  {{ return(sql_convert_columns_in_relation(table)) }}
+  {% set columns = [] %}
+  {% for row in result %}
+    {% do columns.append(api.Column.from_description(row['Column'].lower(), row['Type'])) %}
+  {% endfor %}
+  {% do return(columns) %}
 {% endmacro %}
 
 
