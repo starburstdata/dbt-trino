@@ -1,0 +1,7 @@
+kind: Fixes
+body: Fixes instantiation of CertificateAuthentication object from trino-python-client
+time: 2022-10-09T13:24:38.264985+02:00
+custom:
+  Author: KateShopify
+  Issue: "149"
+  PR: "150"

@@ -131,8 +131,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
 
     def trino_auth(self):
         return trino.auth.CertificateAuthentication(
-            client_certificate=self.client_certificate,
-            client_private_key=self.client_private_key,
+            self.client_certificate, self.client_private_key
         )
 
 
