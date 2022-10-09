@@ -299,6 +299,11 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         )
         credentials = connection.credentials
         self.assertIsInstance(credentials, TrinoCertificateCredentials)
+        self.assertIsInstance(credentials.trino_auth(), trino.auth.CertificateAuthentication)
+        self.assertEqual(
+            credentials.trino_auth(),
+            trino.auth.CertificateAuthentication("/path/to/client_cert", "password"),
+        )
         self.assert_default_connection_credentials(credentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
