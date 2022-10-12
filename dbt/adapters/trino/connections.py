@@ -408,7 +408,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             schema=credentials.schema,
             http_scheme=credentials.http_scheme.value,
             http_headers=credentials.http_headers,
-            session_properties=credentials.session_properties.copy(),
+            session_properties=credentials.session_properties,
             auth=credentials.trino_auth(),
             max_attempts=credentials.retries,
             isolation_level=IsolationLevel.AUTOCOMMIT,
