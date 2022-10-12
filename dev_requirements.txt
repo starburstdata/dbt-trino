@@ -1,5 +1,5 @@
 black==22.8.0
-dbt-tests-adapter
+dbt-tests-adapter==1.2
 flake8>=3.5.0
 flaky>=3.5.3,<4
 freezegun==1.2.2
