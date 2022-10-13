@@ -1,4 +1,4 @@
-black==22.8.0
+black==22.10.0
 dbt-tests-adapter==1.2
 flake8>=3.5.0
 flaky>=3.5.3,<4
