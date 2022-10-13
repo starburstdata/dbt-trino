@@ -36,6 +36,10 @@ jobs:
         with:
           python-version: "3.8"
 
+      - name: Install brew
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> $GITHUB_PATH
+
       - name: Install python dependencies
         run: |
           python3 -m venv env
