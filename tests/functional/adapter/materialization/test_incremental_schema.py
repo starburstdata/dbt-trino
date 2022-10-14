@@ -201,6 +201,8 @@ class TestIcebergOnSchemaChange(OnSchemaChangeBase):
 
 
 @pytest.mark.delta
+# TODO: re-enable when https://github.com/trinodb/trino/pull/11763 is merged
+@pytest.mark.skip(reason="Delta doesn't support views")
 class TestDeltaOnSchemaChange(OnSchemaChangeBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):

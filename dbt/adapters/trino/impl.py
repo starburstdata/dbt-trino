@@ -53,3 +53,6 @@ class TrinoAdapter(SQLAdapter):
                 return []
             else:
                 raise
+
+    def valid_incremental_strategies(self):
+        return ["append", "merge", "delete+insert"]

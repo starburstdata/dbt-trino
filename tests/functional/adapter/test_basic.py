@@ -7,7 +7,10 @@ from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
 from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
 from dbt.tests.adapter.basic.test_generic_tests import BaseGenericTests
-from dbt.tests.adapter.basic.test_incremental import BaseIncremental
+from dbt.tests.adapter.basic.test_incremental import (
+    BaseIncremental,
+    BaseIncrementalNotSchemaChange,
+)
 from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
 from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
     BaseSingularTestsEphemeral,
@@ -66,6 +69,17 @@ seeds:
 
 seed__seed_csv = """id,first_name,email,ip_address,updated_at
 1,Larry,lking0@miitbeian.gov.cn,69.135.206.194,2008-09-12 19:08:31
+"""
+
+incremental_not_schema_change_sql = """
+{{ config(materialized="incremental", unique_key="user_id_current_time",on_schema_change="sync_all_columns") }}
+select
+    '1' || '-' || cast(current_timestamp as varchar) as user_id_current_time,
+    {% if is_incremental() %}
+        'thisis18characters' as platform
+    {% else %}
+        'okthisis20characters' as platform
+    {% endif %}
 """
 
 
@@ -148,6 +162,12 @@ class TestIncrementalTrino(BaseIncremental):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"base.csv": seeds_base_csv, "added.csv": seeds_added_csv}
+
+
+class TestIncrementalNotSchemaChangeTrino(BaseIncrementalNotSchemaChange):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"incremental_not_schema_change.sql": incremental_not_schema_change_sql}
 
 
 class TestGenericTestsTrino(BaseGenericTests):

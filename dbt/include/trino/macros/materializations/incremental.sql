@@ -1,35 +1,104 @@
-{% macro validate_get_incremental_strategy(config) %}
-  {#-- Find and validate the incremental strategy #}
-  {%- set strategy = config.get("incremental_strategy", default="append") -%}
+{% macro get_incremental_tmp_relation_type(strategy, unique_key, language) %}
 
-  {% set invalid_strategy_msg -%}
-    Invalid incremental strategy provided: {{ strategy }}
-    Expected one of: 'append', 'delete+insert', 'merge'
-  {%- endset %}
-  {% if strategy not in ['append', 'delete+insert', 'merge'] %}
-    {% do exceptions.raise_compiler_error(invalid_strategy_msg) %}
-  {% endif %}
+  /* {#
+       If we are running multiple statements (DELETE + INSERT),
+       we must first save the model query results as a temporary table
+       in order to guarantee consistent inputs to both statements.
 
-  {% do return(strategy) %}
-{% endmacro %}
+       If we are running a single statement (MERGE or INSERT alone),
+       we can save the model query definition as a view instead,
+       for faster overall incremental processing.
+  #} */
 
-{% macro get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
-  {% if strategy == 'append' %}
-    {% do return(get_append_sql(target_relation, tmp_relation, dest_columns)) %}
-  {% elif strategy == 'delete+insert' %}
-    {% do return(get_delete_insert_merge_sql(target_relation, tmp_relation, unique_key, dest_columns)) %}
-  {% elif strategy == 'merge' %}
-    {% do return(get_merge_sql(target_relation, tmp_relation, unique_key, dest_columns, predicates=none)) %}
+  {% if language == 'sql' and (strategy in ('default', 'append', 'merge') or (unique_key is none)) %}
+    {{ return('view') }}
+  {% else %}  {#--  play it safe -- #}
+    {{ return('table') }}
   {% endif %}
 {% endmacro %}
 
-{% macro get_append_sql(target_relation, tmp_relation, dest_columns) %}
-    {%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
-    insert into {{ target_relation }}
-    select {{dest_cols_csv}} from {{ tmp_relation }};
+{% materialization incremental, adapter='trino', supported_languages=['sql'] -%}
 
-    drop table if exists {{ tmp_relation }};
-{% endmacro %}
+  {#-- Set vars --#}
+  {%- set full_refresh_mode = (should_full_refresh()) -%}
+  {%- set language = model['language'] -%}
+  {#-- TODO: figure out why we need to add table explicitly, otherwise persist_docs doesn't know the type --#}
+  {% set target_relation = this.incorporate(type='table') %}
+  {% set existing_relation = load_relation(this) %}
+
+  {#-- The temp relation will be a view (faster) or temp table, depending on upsert/merge strategy --#}
+  {%- set unique_key = config.get('unique_key') -%}
+  {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
+  {% set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) %}
+  {% set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) %}
+
+  {% set grant_config = config.get('grants') %}
+
+  {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
+
+  {{ run_hooks(pre_hooks) }}
+
+  {% if existing_relation is none %}
+    {%- call statement('main', language=language) -%}
+      {{ create_table_as(False, target_relation, compiled_code, language) }}
+    {%- endcall -%}
+
+  {% elif existing_relation.is_view %}
+    {#-- Can't overwrite a view with a table - we must drop --#}
+    {{ log("Dropping relation " ~ target_relation ~ " because it is a view and this model is a table.") }}
+    {% do adapter.drop_relation(existing_relation) %}
+    {%- call statement('main', language=language) -%}
+      {{ create_table_as(False, target_relation, compiled_code, language) }}
+    {%- endcall -%}
+  {% elif full_refresh_mode %}
+    {%- call statement('main', language=language) -%}
+      {{ create_table_as(False, target_relation, compiled_code, language) }}
+    {%- endcall -%}
+
+  {% else %}
+    {#-- Create the temp relation, either as a view or as a temp table --#}
+    {% if tmp_relation_type == 'view' %}
+        {%- call statement('create_tmp_relation') -%}
+          {{ create_view_as(tmp_relation, compiled_code) }}
+        {%- endcall -%}
+    {% else %}
+        {%- call statement('create_tmp_relation', language=language) -%}
+          {{ create_table_as(True, tmp_relation, compiled_code, language) }}
+        {%- endcall -%}
+    {% endif %}
+
+    {% do adapter.expand_target_column_types(
+           from_relation=tmp_relation,
+           to_relation=target_relation) %}
+    {#-- Process schema changes. Returns dict of changes if successful. Use source columns for upserting/merging --#}
+    {% set dest_columns = process_schema_changes(on_schema_change, tmp_relation, existing_relation) %}
+    {% if not dest_columns %}
+      {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
+    {% endif %}
+
+    {#-- Get the incremental_strategy, the macro to use for the strategy, and build the sql --#}
+    {% set incremental_predicates = config.get('incremental_predicates', none) %}
+    {% set strategy_sql_macro_func = adapter.get_incremental_strategy_macro(context, incremental_strategy) %}
+    {% set strategy_arg_dict = ({'target_relation': target_relation, 'temp_relation': tmp_relation, 'unique_key': unique_key, 'dest_columns': dest_columns, 'predicates': incremental_predicates }) %}
+
+    {%- call statement('main') -%}
+      {{ strategy_sql_macro_func(strategy_arg_dict) }}
+    {%- endcall -%}
+  {% endif %}
+
+  {% do drop_relation_if_exists(tmp_relation) %}
+
+  {{ run_hooks(post_hooks) }}
+
+  {% set should_revoke =
+   should_revoke(existing_relation.is_table, full_refresh_mode) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {% do persist_docs(target_relation, model) %}
+
+  {{ return({'relations': [target_relation]}) }}
+
+{%- endmaterialization %}
 
 {% macro trino__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
@@ -61,43 +130,43 @@
     )
 {%- endmacro %}
 
-{% macro trino__get_merge_sql(target, source, unique_key, dest_columns, predicates=none) -%}
+{% macro trino__get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
     {%- set predicates = [] if predicates is none else [] + predicates -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
     {%- set dest_cols_csv_source = dest_cols_csv.split(', ') -%}
-    {%- set update_columns = config.get('merge_update_columns', default = dest_columns | map(attribute="quoted") | list) -%}
+    {%- set merge_update_columns = config.get('merge_update_columns') -%}
+    {%- set merge_exclude_columns = config.get('merge_exclude_columns') -%}
+    {%- set update_columns = get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
 
     {% if unique_key %}
         {% if unique_key is sequence and unique_key is not mapping and unique_key is not string %}
             {% for key in unique_key %}
-                {% set this_key_match -%}
+                {% set this_key_match %}
                     DBT_INTERNAL_SOURCE.{{ key }} = DBT_INTERNAL_DEST.{{ key }}
-                {%- endset %}
+                {% endset %}
                 {% do predicates.append(this_key_match) %}
             {% endfor %}
         {% else %}
-            {% set unique_key_match -%}
+            {% set unique_key_match %}
                 DBT_INTERNAL_SOURCE.{{ unique_key }} = DBT_INTERNAL_DEST.{{ unique_key }}
-            {%- endset %}
+            {% endset %}
             {% do predicates.append(unique_key_match) %}
         {% endif %}
 
         {{ sql_header if sql_header is not none }}
 
-        merge into {{ target }} as DBT_INTERNAL_DEST {{ "\n" }}using {{ source }} as DBT_INTERNAL_SOURCE on
-        {{ predicates | join(' and
-        ') }}
+        merge into {{ target }} as DBT_INTERNAL_DEST
+            using {{ source }} as DBT_INTERNAL_SOURCE
+            on {{ predicates | join(' and ') }}
 
-        {%- if unique_key %}
-
+        {% if unique_key %}
         when matched then update set
             {% for column_name in update_columns -%}
                 {{ column_name }} = DBT_INTERNAL_SOURCE.{{ column_name }}
-                {%- if not loop.last %},
-            {% endif %}
+                {%- if not loop.last %}, {%- endif %}
             {%- endfor %}
-        {%- endif %}
+        {% endif %}
 
         when not matched then insert
             ({{ dest_cols_csv }})
@@ -115,53 +184,3 @@
         )
     {% endif %}
 {% endmacro %}
-
-{% materialization incremental, adapter='trino' -%}
-  {%- set unique_key = config.get('unique_key') -%}
-  {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
-
-  {%- set target_relation = this.incorporate(type='table') -%}
-  {%- set existing_relation = load_relation(this) -%}
-  {%- set tmp_relation = make_temp_relation(this) -%}
-
-  {#-- Validate early so we don't run SQL if the strategy is invalid --#}
-  {%- set strategy = validate_get_incremental_strategy(config) -%}
-  {%- set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') -%}
-
-  {{ run_hooks(pre_hooks) }}
-
-  -- grab current tables grants config for comparision later on
-  {% set grant_config = config.get('grants') %}
-
-  {% if existing_relation is none %}
-    {% set build_sql = create_table_as(False, target_relation, sql) %}
-  {% elif existing_relation.is_view or full_refresh_mode %}
-    {% do adapter.drop_relation(existing_relation) %}
-    {% set build_sql = create_table_as(False, target_relation, sql) %}
-  {% else %}
-    {% set drop_tmp_relation_sql = "drop table if exists " ~  tmp_relation %}
-    {% do run_query(drop_tmp_relation_sql) %}
-    {% do run_query(create_table_as(True, tmp_relation, sql)) %}
-    {#-- Process schema changes. Returns dict of changes if successful. Use source columns for upserting/merging --#}
-    {% set dest_columns = process_schema_changes(on_schema_change, tmp_relation, existing_relation) %}
-    {% if not dest_columns %}
-      {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
-    {% endif %}
-    {% set build_sql = get_incremental_sql(strategy, tmp_relation, target_relation, unique_key, dest_columns) %}
-  {% endif %}
-
-  {%- call statement('main') -%}
-    {{ build_sql }}
-  {%- endcall -%}
-
-  {{ run_hooks(post_hooks) }}
-
-  {% set should_revoke =
-   should_revoke(existing_relation.is_table, full_refresh_mode) %}
-  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
-
-  {% do persist_docs(target_relation, model) %}
-
-  {{ return({'relations': [target_relation]}) }}
-
-{%- endmaterialization %}
