@@ -1,9 +1,13 @@
 import pytest
 from dbt.tests.adapter.utils.fixture_datediff import models__test_datediff_yml
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
+from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
+from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
+from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
 from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
@@ -28,8 +32,52 @@ from tests.functional.adapter.fixture_datediff import (
     seeds__data_datediff_csv,
 )
 
+models__array_append_expected_sql = """
+select 1 as id, {{ array_construct([1,2,3,4]) }} as array_col
+"""
+
+
+models__array_append_actual_sql = """
+select 1 as id, {{ array_append(array_construct([1,2,3]), 4) }} as array_col
+"""
+
+models__array_concat_expected_sql = """
+select 1 as id, {{ array_construct([1,2,3,4,5,6]) }} as array_col
+"""
+
+
+models__array_concat_actual_sql = """
+select 1 as id, {{ array_concat(array_construct([1,2,3]), array_construct([4,5,6])) }} as array_col
+"""
+
 
 class TestAnyValue(BaseAnyValue):
+    pass
+
+
+# Only partially because of https://github.com/trinodb/trino/issues/13
+# No way to concat an array with null or empty array
+class TestArrayAppend(BaseArrayAppend):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "actual.sql": models__array_append_actual_sql,
+            "expected.sql": models__array_append_expected_sql,
+        }
+
+
+# Only partially because of https://github.com/trinodb/trino/issues/13
+# No way to concat an array with null or empty array
+class TestArrayConcat(BaseArrayConcat):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "actual.sql": models__array_concat_actual_sql,
+            "expected.sql": models__array_concat_expected_sql,
+        }
+
+
+class TestArrayConstruct(BaseArrayConstruct):
     pass
 
 
@@ -42,6 +90,10 @@ class TestCastBoolToText(BaseCastBoolToText):
 
 
 class TestConcat(BaseConcat):
+    pass
+
+
+class TestCurrentTimestamp(BaseCurrentTimestampAware):
     pass
 
 
