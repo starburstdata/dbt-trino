@@ -227,6 +227,8 @@ select * from {{ ref('events') }}
 
 Use the `+on_schema_change` property to define how dbt-trino should handle column changes. See [dbt docs](https://docs.getdbt.com/docs/building-a-dbt-project/building-models/configuring-incremental-models#what-if-the-columns-of-my-incremental-model-change).
 
+Set the `+views_enabled` to `false` if your connector doesn't support views. 
+
 ###### `append` (default)
 
 The default incremental strategy is `append`. `append` only adds the new records based on the condition specified in the `is_incremental()` conditional block.
