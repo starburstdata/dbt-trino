@@ -1,6 +1,9 @@
 import pytest
 from dbt.tests.adapter.utils.fixture_datediff import models__test_datediff_yml
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
+from dbt.tests.adapter.utils.test_array_append import BaseArrayAppend
+from dbt.tests.adapter.utils.test_array_concat import BaseArrayConcat
+from dbt.tests.adapter.utils.test_array_construct import BaseArrayConstruct
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
@@ -31,6 +34,22 @@ from tests.functional.adapter.fixture_datediff import (
 
 
 class TestAnyValue(BaseAnyValue):
+    pass
+
+
+# Not working because of https://github.com/trinodb/trino/issues/13
+@pytest.mark.skip(reason="No way to concat an array with null or empty array")
+class TestArrayAppend(BaseArrayAppend):
+    pass
+
+
+# Not working because of https://github.com/trinodb/trino/issues/13
+@pytest.mark.skip(reason="No way to concat an array with null or empty array")
+class TestArrayConcat(BaseArrayConcat):
+    pass
+
+
+class TestArrayConstruct(BaseArrayConstruct):
     pass
 
 
