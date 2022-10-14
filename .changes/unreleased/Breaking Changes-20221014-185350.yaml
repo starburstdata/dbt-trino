@@ -1,0 +1,9 @@
+kind: Breaking Changes
+body: By default incremental materializations will use views if all incremental operations
+  can be applied atomically, please set `+views_enabled` to `false` in your incremental
+  model if your connector doesn't support view creation to use a table instead.
+time: 2022-10-14T18:53:50.405268+02:00
+custom:
+  Author: mdesmet
+  Issue: ""
+  PR: "160"
