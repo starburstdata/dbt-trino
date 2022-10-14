@@ -9,7 +9,7 @@ from dbt.adapters.trino.impl import TrinoAdapter  # isort: split
 from dbt.include import trino
 
 Plugin = AdapterPlugin(
-    adapter=TrinoAdapter,
-    credentials=TrinoCredentialsFactory,
+    adapter=TrinoAdapter,  # type: ignore
+    credentials=TrinoCredentialsFactory,  # type: ignore
     include_path=trino.PACKAGE_PATH,
 )
