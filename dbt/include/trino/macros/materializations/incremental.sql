@@ -9,8 +9,9 @@
        we can save the model query definition as a view instead,
        for faster overall incremental processing.
   #} */
+  {%- set views_enabled = config.get('views_enabled', false) -%}
 
-  {% if language == 'sql' and (strategy in ('default', 'append', 'merge') or (unique_key is none)) %}
+  {% if language == 'sql' and (views_enabled and (strategy in ('default', 'append', 'merge') or (unique_key is none))) %}
     {{ return('view') }}
   {% else %}  {#--  play it safe -- #}
     {{ return('table') }}
