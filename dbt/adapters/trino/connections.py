@@ -8,7 +8,6 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, Optional
 
-import dbt.exceptions
 import sqlparse
 import trino
 from dbt.adapters.base import Credentials
@@ -460,11 +459,17 @@ class TrinoConnectionManager(SQLConnectionManager):
             )
 
         if cursor is None:
-            raise dbt.exceptions.RuntimeException(
+            conn = self.get_thread_connection()
+            if conn is None or conn.name is None:
+                conn_name = "<None>"
+            else:
+                conn_name = conn.name
+
+            raise RuntimeException(
                 "Tried to run an empty query on model '{}'. If you are "
                 "conditionally running\nsql, eg. in a model hook, make "
                 "sure your `else` clause contains valid sql!\n\n"
-                "Provided SQL:\n{}".format(connection.name, sql)
+                "Provided SQL:\n{}".format(conn_name, sql)
             )
 
         return connection, cursor
