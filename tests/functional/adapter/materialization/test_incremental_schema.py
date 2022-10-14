@@ -201,14 +201,17 @@ class TestIcebergOnSchemaChange(OnSchemaChangeBase):
 
 
 @pytest.mark.delta
-# TODO: re-enable when https://github.com/trinodb/trino/pull/11763 is merged
-@pytest.mark.skip(reason="Delta doesn't support views")
 class TestDeltaOnSchemaChange(OnSchemaChangeBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
             "name": "on_schema_change_delta",
-            "models": {"+on_table_exists": "drop", "+incremental_strategy": "merge"},
+            # TODO: remove views_enabled when https://github.com/trinodb/trino/pull/11763 is merged
+            "models": {
+                "+on_table_exists": "drop",
+                "+incremental_strategy": "merge",
+                "+views_enabled": False,
+            },
         }
 
     @pytest.mark.xfail(reason="This connector does not support dropping columns")

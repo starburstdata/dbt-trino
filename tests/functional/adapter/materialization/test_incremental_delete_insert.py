@@ -136,8 +136,6 @@ class TestIcebergIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
 
 @pytest.mark.delta
 class TestDeltaIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
-    # TODO: re-enable when https://github.com/trinodb/trino/pull/11763 is merged
-    @pytest.mark.skip(reason="Delta doesn't support views")
     def test__no_unique_keys(self, project):
         super().test__no_unique_keys(project)
 
