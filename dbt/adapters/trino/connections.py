@@ -419,8 +419,8 @@ class TrinoConnectionManager(SQLConnectionManager):
             max_attempts=credentials.retries,
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source="dbt-trino",
+            verify=credentials.cert,
         )
-        trino_conn._http_session.verify = credentials.cert
         connection.state = "open"
         connection.handle = ConnectionWrapper(trino_conn, credentials.prepared_statements_enabled)
         return connection
