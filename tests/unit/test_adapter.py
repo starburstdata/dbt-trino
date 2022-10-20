@@ -229,29 +229,34 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_ldap_authentication(self):
-        connection = self.acquire_connetion_with_profile(
-            {
-                "type": "trino",
-                "catalog": "trinodb",
-                "host": "database",
-                "port": 5439,
-                "method": "ldap",
-                "schema": "dbt_test_schema",
-                "user": "trino_user",
-                "password": "trino_password",
-                "cert": "/path/to/cert",
-                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
-                "session_properties": {
-                    "query_max_run_time": "5d",
-                    "exchange_compression": True,
-                },
-            }
-        )
-        credentials = connection.credentials
-        self.assertIsInstance(credentials, TrinoLdapCredentials)
-        self.assert_default_connection_credentials(credentials)
-        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
-        self.assertEqual(credentials.cert, "/path/to/cert")
+        test_cases = [(False, "trino_user"), (True, "impersonated_user")]
+        for is_impersonation, expected_user in test_cases:
+            connection = self.acquire_connetion_with_profile(
+                {
+                    "type": "trino",
+                    "catalog": "trinodb",
+                    "host": "database",
+                    "port": 5439,
+                    "method": "ldap",
+                    "schema": "dbt_test_schema",
+                    "user": "trino_user",
+                    "impersonation_user": "impersonated_user" if is_impersonation else None,
+                    "password": "trino_password",
+                    "cert": "/path/to/cert",
+                    "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                    "session_properties": {
+                        "query_max_run_time": "5d",
+                        "exchange_compression": True,
+                    },
+                }
+            )
+            credentials = connection.credentials
+            connection.handle
+            self.assertIsInstance(credentials, TrinoLdapCredentials)
+            self.assert_default_connection_credentials(credentials)
+            self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+            self.assertEqual(credentials.cert, "/path/to/cert")
+            self.assertEqual(connection.handle.handle.user, expected_user)
 
     def test_kerberos_authentication(self):
         connection = self.acquire_connetion_with_profile(

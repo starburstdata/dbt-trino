@@ -144,6 +144,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     port: Port
     user: str
     password: str
+    impersonation_user: Optional[str] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -408,7 +409,9 @@ class TrinoConnectionManager(SQLConnectionManager):
         trino_conn = trino.dbapi.connect(
             host=credentials.host,
             port=credentials.port,
-            user=credentials.user,
+            user=credentials.impersonation_user
+            if getattr(credentials, "impersonation_user", None)
+            else credentials.user,
             roles=credentials.roles,
             catalog=credentials.database,
             schema=credentials.schema,
