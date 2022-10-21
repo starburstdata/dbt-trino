@@ -136,6 +136,9 @@ class TestIcebergIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
 
 @pytest.mark.delta
 class TestDeltaIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
+    def test__no_unique_keys(self, project):
+        super().test__no_unique_keys(project)
+
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {

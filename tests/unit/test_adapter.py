@@ -119,7 +119,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
     def setUp(self):
         flags.STRICT_MODE = True
 
-    def acquire_connetion_with_profile(self, profile):
+    def acquire_connection_with_profile(self, profile):
         profile_cfg = {
             "outputs": {"test": profile},
             "target": "test",
@@ -156,7 +156,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.retries, trino.constants.DEFAULT_MAX_ATTEMPTS)
 
     def test_none_authentication(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -180,7 +180,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_none_authentication_with_method(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -205,7 +205,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_none_authentication_without_http_scheme(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -231,7 +231,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
     def test_ldap_authentication(self):
         test_cases = [(False, "trino_user"), (True, "impersonated_user")]
         for is_impersonation, expected_user in test_cases:
-            connection = self.acquire_connetion_with_profile(
+            connection = self.acquire_connection_with_profile(
                 {
                     "type": "trino",
                     "catalog": "trinodb",
@@ -259,7 +259,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             self.assertEqual(connection.handle.handle.user, expected_user)
 
     def test_kerberos_authentication(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -284,7 +284,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_certificate_authentication(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -314,7 +314,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_jwt_authentication(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",
@@ -338,7 +338,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
 
     def test_oauth_authentication(self):
-        connection = self.acquire_connetion_with_profile(
+        connection = self.acquire_connection_with_profile(
             {
                 "type": "trino",
                 "catalog": "trinodb",

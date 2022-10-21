@@ -1,5 +1,6 @@
 import pytest
 from dbt.context.base import BaseContext  # diff_of_two_dicts only
+from dbt.tests.adapter.grants.test_invalid_grants import BaseInvalidGrants
 from dbt.tests.adapter.grants.test_model_grants import BaseModelGrants
 
 
@@ -12,7 +13,7 @@ from dbt.tests.adapter.grants.test_model_grants import BaseModelGrants
 # DBT_TEST_USER_1=user1
 # DBT_TEST_USER_2=user2
 # DBT_TEST_USER_3=user3
-class TestModelGrants(BaseModelGrants):
+class TestModelGrantsTrino(BaseModelGrants):
     def assert_expected_grants_match_actual(self, project, relation_name, expected_grants):
         actual_grants = self.get_grants_on_relation(project, relation_name)
         # Remove the creation user
@@ -30,3 +31,12 @@ class TestModelGrants(BaseModelGrants):
         diff_a = BaseContext.diff_of_two_dicts(actual_grants, expected_grants)
         diff_b = BaseContext.diff_of_two_dicts(expected_grants, actual_grants)
         assert diff_a == diff_b == {}
+
+
+@pytest.mark.hive
+# TODO: setup Galaxy and Starbust tests, might need separate tests
+#   See https://github.com/starburstdata/dbt-trino/issues/147
+#   and also https://github.com/starburstdata/dbt-trino/issues/146
+@pytest.mark.skip(reason="Hive doesn't raise errors on invalid roles")
+class TestInvalidGrantsTrino(BaseInvalidGrants):
+    pass
