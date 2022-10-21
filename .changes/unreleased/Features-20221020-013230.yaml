@@ -1,0 +1,7 @@
+kind: Features
+body: added impersonate user config for ldap authentication
+time: 2022-10-20T01:32:30.783762+08:00
+custom:
+  Author: aezomz
+  Issue: "163"
+  PR: "162"
