@@ -51,6 +51,8 @@
       {{ create_table_as(False, target_relation, compiled_code, language) }}
     {%- endcall -%}
   {% elif full_refresh_mode %}
+    {#-- Can't replace a table - we must drop --#}
+    {% do adapter.drop_relation(existing_relation) %}
     {%- call statement('main', language=language) -%}
       {{ create_table_as(False, target_relation, compiled_code, language) }}
     {%- endcall -%}
