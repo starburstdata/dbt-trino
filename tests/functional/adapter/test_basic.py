@@ -16,6 +16,7 @@ from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
     BaseSingularTestsEphemeral,
 )
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
+from dbt.tests.util import run_dbt
 
 seeds_base_csv = """
 id,name,some_date
@@ -162,6 +163,13 @@ class TestIncrementalTrino(BaseIncremental):
     @pytest.fixture(scope="class")
     def seeds(self):
         return {"base.csv": seeds_base_csv, "added.csv": seeds_added_csv}
+
+
+class TestIncrementalFullRefreshTrino(BaseIncremental):
+    def test_incremental(self, project):
+        super().test_incremental(project)
+        results = run_dbt(["run", "--vars", "seed_name: base", "--full-refresh"])
+        assert len(results) == 1
 
 
 class TestIncrementalNotSchemaChangeTrino(BaseIncrementalNotSchemaChange):
