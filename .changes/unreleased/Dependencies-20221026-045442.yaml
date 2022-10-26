@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update pytest-xdist requirement from <3,>=2.1.0 to >=2.1.0,<4"
+time: 2022-10-26T04:54:42.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 169
