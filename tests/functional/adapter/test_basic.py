@@ -165,7 +165,7 @@ class TestIncrementalTrino(BaseIncremental):
         return {"base.csv": seeds_base_csv, "added.csv": seeds_added_csv}
 
 
-class TestIncrementalFullRefreshTrino(BaseIncremental):
+class TestIncrementalFullRefreshTrino(TestIncrementalTrino):
     def test_incremental(self, project):
         super().test_incremental(project)
         results = run_dbt(["run", "--vars", "seed_name: base", "--full-refresh"])
