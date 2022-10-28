@@ -96,9 +96,11 @@ models:
         tests:
           - unique
           - not_null
+        description: ID Column description
       - name: name
         tests:
           - not_null
+        description: Name description
 seeds:
   - name: seed
     description: |

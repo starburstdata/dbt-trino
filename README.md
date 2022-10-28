@@ -401,7 +401,7 @@ In order to override default value define within your project a macro like the f
 
 Persist docs optionally persist resource descriptions as column and relation comments in the database. By default, documentation persistence is disabled, but it can be enabled for specific resources or groups of resources as needed.
 
-Column-level comments are not supported in Trino views. Detailed documentation can be found [here](https://docs.getdbt.com/reference/resource-configs/persist_docs).
+Detailed documentation can be found [here](https://docs.getdbt.com/reference/resource-configs/persist_docs).
 
 #### Generating lineage flow in docs
 
