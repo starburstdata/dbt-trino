@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Update trino to 0.319.0
+time: 2022-11-15T14:15:35.791884933Z
+custom:
+  Author: mederka
+  Issue: ""
+  PR: "179"
