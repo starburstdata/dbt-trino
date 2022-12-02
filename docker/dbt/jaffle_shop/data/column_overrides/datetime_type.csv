@@ -1,3 +1,0 @@
-date_example,time_example,time_p_example,time_tz_example,timestamp_example,timestamp_p_example,timestamp_tz_example,timestamp_p_tz_example,interval_ym_example,interval_ds_example
-2018-01-05,01:02:03.456,01:02:03.456789,01:02:03.456 -08:00,2020-06-10 15:55:23.383,2020-06-10 15:55:23.383345,2001-08-22 03:04:05.321-08:00,2001-08-22 03:04:05.321456-08:00,'3' MONTH,'2' DAY
-,,,,,,,,,
