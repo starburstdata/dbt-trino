@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Migrated jaffle shop tests to pytest
+time: 2022-12-02T14:54:20.447213+01:00
+custom:
+  Author: damian3031
+  Issue: "68"
+  PR: "188"
