@@ -61,7 +61,7 @@ A dbt profile can be configured to run against Trino using the following configu
 | http_headers                   | HTTP Headers to send alongside requests to Trino, specified as a yaml dictionary of (header, value) pairs.   | Optional                                                                                                | `X-Trino-Client-Info: dbt-trino`         |
 | http_scheme                    | The HTTP scheme to use for requests to Trino                                                                 | Optional (default is `http`, or `https` for `method: kerberos`, `ldap` or `jwt`)                        | `https` or `http`                        |
 | cert                           | The full path to a certificate file for authentication with trino                                            | Optional                                                                                                |                                          |
-| session_properties             | Sets Trino session properties used in the connection                                                         | Optional                                                                                                | `query_max_run_time: 5d`                 |
+| session_properties             | Sets Trino session properties used in the connection                                                         | Optional                                                                                                | `query_max_run_time: 4h`                 |
 | database                       | Specify the database to build models into                                                                    | Required                                                                                                | `analytics`                              |
 | schema                         | Specify the schema to build models into. Note: it is not recommended to use upper or mixed case schema names | Required                                                                                                | `public`                                 |
 | host                           | The hostname to connect to                                                                                   | Required                                                                                                | `127.0.0.1`                              |
@@ -86,7 +86,7 @@ my-trino-db:
       threads: 8
       http_scheme: http
       session_properties:
-        query_max_run_time: 5d
+        query_max_run_time: 4h
         exchange_compression: True
 ```
 

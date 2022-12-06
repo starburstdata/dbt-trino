@@ -41,7 +41,7 @@ class TestTrinoAdapter(unittest.TestCase):
                     "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                     "http_scheme": "http",
                     "session_properties": {
-                        "query_max_run_time": "5d",
+                        "query_max_run_time": "4h",
                         "exchange_compression": True,
                     },
                 }
@@ -150,7 +150,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.http_headers, {"X-Trino-Client-Info": "dbt-trino"})
         self.assertEqual(
             credentials.session_properties,
-            {"query_max_run_time": "5d", "exchange_compression": True},
+            {"query_max_run_time": "4h", "exchange_compression": True},
         )
         self.assertEqual(credentials.prepared_statements_enabled, True)
         self.assertEqual(credentials.retries, trino.constants.DEFAULT_MAX_ATTEMPTS)
@@ -168,7 +168,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "http_scheme": "https",
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -193,7 +193,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "http_scheme": "https",
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -217,7 +217,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "cert": "/path/to/cert",
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -245,7 +245,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                     "cert": "/path/to/cert",
                     "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                     "session_properties": {
-                        "query_max_run_time": "5d",
+                        "query_max_run_time": "4h",
                         "exchange_compression": True,
                     },
                 }
@@ -272,7 +272,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "cert": "/path/to/cert",
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -297,7 +297,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "client_certificate": "/path/to/client_cert",
                 "client_private_key": "password",
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -326,7 +326,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "jwt_token": "aabbccddeeff",
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
@@ -349,7 +349,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "cert": "/path/to/cert",
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
-                    "query_max_run_time": "5d",
+                    "query_max_run_time": "4h",
                     "exchange_compression": True,
                 },
             }
