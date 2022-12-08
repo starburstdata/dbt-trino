@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import sqlparse
 import trino
@@ -93,6 +93,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     host: str
     port: Port
     user: str
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_scheme: HttpScheme = HttpScheme.HTTP
@@ -116,6 +117,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     client_certificate: str
     client_private_key: str
     user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -144,6 +146,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     user: str
     password: str
     impersonation_user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -168,6 +171,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     host: str
     port: Port
     user: str
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     keytab: Optional[str] = None
     principal: Optional[str] = None
@@ -213,6 +217,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     port: Port
     jwt_token: str
     user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -237,6 +242,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     host: str
     port: Port
     user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
     cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
@@ -411,6 +417,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             user=credentials.impersonation_user
             if getattr(credentials, "impersonation_user", None)
             else credentials.user,
+            client_tags=credentials.client_tags,
             roles=credentials.roles,
             catalog=credentials.database,
             schema=credentials.schema,

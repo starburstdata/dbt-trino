@@ -1,0 +1,7 @@
+kind: Features
+body: Support client_tags in profile configuration
+time: 2022-12-08T10:48:15.8267+01:00
+custom:
+  Author: damian3031
+  Issue: "111"
+  PR: "193"
