@@ -165,6 +165,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "schema": "dbt_test_schema",
                 "user": "trino_user",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "none"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "http_scheme": "https",
                 "session_properties": {
@@ -178,6 +179,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertIsInstance(credentials, TrinoNoneCredentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "none"])
 
     def test_none_authentication_with_method(self):
         connection = self.acquire_connection_with_profile(
@@ -190,6 +192,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "schema": "dbt_test_schema",
                 "user": "trino_user",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "none_with_method"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "http_scheme": "https",
                 "session_properties": {
@@ -203,6 +206,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertIsInstance(credentials, TrinoNoneCredentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "none_with_method"])
 
     def test_none_authentication_without_http_scheme(self):
         connection = self.acquire_connection_with_profile(
@@ -215,6 +219,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "schema": "dbt_test_schema",
                 "user": "trino_user",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "without_http_scheme"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
                     "query_max_run_time": "4h",
@@ -227,6 +232,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertIsInstance(credentials, TrinoNoneCredentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTP)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "without_http_scheme"])
 
     def test_ldap_authentication(self):
         test_cases = [(False, "trino_user"), (True, "impersonated_user")]
@@ -243,6 +249,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                     "impersonation_user": "impersonated_user" if is_impersonation else None,
                     "password": "trino_password",
                     "cert": "/path/to/cert",
+                    "client_tags": ["dev", "ldap"],
                     "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                     "session_properties": {
                         "query_max_run_time": "4h",
@@ -257,6 +264,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
             self.assertEqual(credentials.cert, "/path/to/cert")
             self.assertEqual(connection.handle.handle.user, expected_user)
+            self.assertEqual(credentials.client_tags, ["dev", "ldap"])
 
     def test_kerberos_authentication(self):
         connection = self.acquire_connection_with_profile(
@@ -270,6 +278,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "user": "trino_user",
                 "password": "trino_password",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "kerberos"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
                     "query_max_run_time": "4h",
@@ -282,6 +291,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assert_default_connection_credentials(credentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "kerberos"])
 
     def test_certificate_authentication(self):
         connection = self.acquire_connection_with_profile(
@@ -293,6 +303,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "method": "certificate",
                 "schema": "dbt_test_schema",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "certificate"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "client_certificate": "/path/to/client_cert",
                 "client_private_key": "password",
@@ -312,6 +323,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assert_default_connection_credentials(credentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "certificate"])
 
     def test_jwt_authentication(self):
         connection = self.acquire_connection_with_profile(
@@ -324,6 +336,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "schema": "dbt_test_schema",
                 "cert": "/path/to/cert",
                 "jwt_token": "aabbccddeeff",
+                "client_tags": ["dev", "jwt"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
                     "query_max_run_time": "4h",
@@ -336,6 +349,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assert_default_connection_credentials(credentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "jwt"])
 
     def test_oauth_authentication(self):
         connection = self.acquire_connection_with_profile(
@@ -347,6 +361,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "method": "oauth",
                 "schema": "dbt_test_schema",
                 "cert": "/path/to/cert",
+                "client_tags": ["dev", "oauth"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
                     "query_max_run_time": "4h",
@@ -360,6 +375,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
         self.assertEqual(credentials.cert, "/path/to/cert")
         self.assertEqual(connection.credentials.prepared_statements_enabled, True)
+        self.assertEqual(credentials.client_tags, ["dev", "oauth"])
 
 
 class TestPreparedStatementsEnabled(TestCase):
