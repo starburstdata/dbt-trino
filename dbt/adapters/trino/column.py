@@ -15,6 +15,15 @@ class TrinoColumn(Column):
         "INTEGER": "INT",
     }
 
+    @property
+    def data_type(self):
+        # when varchar has no defined size, default to unbound varchar
+        # the super().data_type defaults to varchar(256)
+        if self.dtype.lower() == "varchar" and self.char_size is None:
+            return self.dtype
+
+        return super().data_type
+
     @classmethod
     def string_type(cls, size: int) -> str:
         return "varchar({})".format(size)
