@@ -1,0 +1,7 @@
+kind: Fixes
+body: Handle unbound varchar data_type instead of defaulting to varchar(256)
+time: 2022-12-09T11:44:03.689108-08:00
+custom:
+  Author: kalvinnchau
+  Issue: "35"
+  PR: "194"
