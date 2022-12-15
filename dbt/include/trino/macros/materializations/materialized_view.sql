@@ -1,4 +1,4 @@
-{% materialization trino_materialized_view, adapter="trino" %} 
+{% materialization materialized_view, adapter="trino" %} 
 {%- set target_relation = this %}
 {%- set existing_relation = load_relation(this) -%}
 {%- set config_grace_period = config.require('grace_period') %}
@@ -12,8 +12,8 @@
 
 {% if existing_relation is none %}
 
-    {{ log("No existing view found, creating materialized view...", info=true) }}
-    {%- set build_sql = build_materialized_view(target_relation,config_grace_period,config_max_import_duration,config_cron,config_refresh_interval) %}
+    {{ log("No existing materialized view found, creating materialized view...", info=true) }}
+    {%- set build_sql = build_materialized_view(target_relation, config_grace_period, config_max_import_duration, config_cron, config_refresh_interval) %}
 
 {% else %}
     {%- if existing_relation.is_view %}
@@ -26,18 +26,18 @@
 
     {%- if existing_type is not none and config_drop_any_existing == 'False' %}
         {{ log("Found a " ~ existing_type ~ " with same name.", info=true) }}
-        {%- set build_sql = build_materialized_view(target_relation,config_grace_period,config_max_import_duration,config_cron,config_refresh_interval) %}
+        {%- set build_sql = build_materialized_view(target_relation, config_grace_period, config_max_import_duration, config_cron, config_refresh_interval) %}
 
     {% elif existing_type is not none and config_drop_any_existing == 'True' and existing_type != 'table'%} -- theres an issue with starburst thinking that the materialised view is a table in the information schema, hence the logic on this line
         {%- set drop_existing_sql = "DROP " ~ existing_type ~ " IF EXISTS " ~ existing_relation %}
-        {%- set build_sql = build_materialized_view(target_relation,config_grace_period,config_max_import_duration,config_cron,config_refresh_interval) %}
+        {%- set build_sql = build_materialized_view(target_relation, config_grace_period, config_max_import_duration, config_cron, config_refresh_interval) %}
         {%- call statement('drop_existing') -%}
             {{ drop_existing_sql }} 
         {% endcall %}
 
     {% else %}
         {{ log("Found something with same name, trying to create materialized view anyway...", info=true) }}
-        {%- set build_sql = build_materialized_view(target_relation,config_grace_period,config_max_import_duration,config_cron,config_refresh_interval) %}
+        {%- set build_sql = build_materialized_view(target_relation, config_grace_period, config_max_import_duration, config_cron, config_refresh_interval) %}
     {% endif %}
     
 {% endif %}
@@ -55,7 +55,7 @@
 
 ---------------- Macros -------------------
 
-{%- macro build_materialized_view(target_relation,config_grace_period,config_max_import_duration,config_cron,config_refresh_interval) -%}
+{%- macro build_materialized_view(target_relation, config_grace_period, config_max_import_duration, config_cron, config_refresh_interval) -%}
 {% if config_cron is not none and config_refresh_interval is not none %}
     {{ log("Found config for CRON and Refresh Interval, error will be thrown as only 1 is allowed", info=true) }}
     {{ exceptions.raise_compiler_error("Invalid config: only CRON or refresh interval allowed - " ~ config_cron ~ " - " ~ config_refresh_interval) }}
@@ -78,3 +78,4 @@
 
 {% endif %}
 {%- endmacro -%}
+

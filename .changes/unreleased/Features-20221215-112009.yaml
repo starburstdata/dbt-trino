@@ -1,7 +1,6 @@
 kind: Features
-body: Added initial code for a custom materialization, materialized view in starburst
+body: Support Materialized View materialization
 time: 2022-12-15T11:20:09.053826Z
 custom:
   Author: Jay-code0
-  Issue: "900000"
   PR: "198"
