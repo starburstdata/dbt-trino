@@ -31,10 +31,17 @@
   {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
   {% set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) %}
   {% set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) %}
+  -- the temp_ relation should not already exist in the database; get_relation
+  -- will return None in that case. Otherwise, we get a relation that we can drop
+  -- later, before we try to use this name for the current operation.
+  {%- set preexisting_tmp_relation = load_cached_relation(tmp_relation)-%}
 
   {% set grant_config = config.get('grants') %}
 
   {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
+
+  -- drop the temp relation if it exists already in the database
+  {{ drop_relation_if_exists(preexisting_tmp_relation) }}
 
   {{ run_hooks(pre_hooks) }}
 
