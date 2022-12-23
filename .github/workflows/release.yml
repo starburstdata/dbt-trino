@@ -37,7 +37,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9.5"
+          python-version: "3.11"
 
       - name: Get dbt-trino version
         run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9.5"
+          python-version: "3.11"
 
       - name: Get dbt-trino version
         run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
