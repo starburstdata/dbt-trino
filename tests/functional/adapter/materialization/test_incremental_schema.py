@@ -206,11 +206,9 @@ class TestDeltaOnSchemaChange(OnSchemaChangeBase):
     def project_config_update(self):
         return {
             "name": "on_schema_change_delta",
-            # TODO: remove views_enabled when https://github.com/trinodb/trino/pull/11763 is merged
             "models": {
                 "+on_table_exists": "drop",
                 "+incremental_strategy": "merge",
-                "+views_enabled": False,
             },
         }
 

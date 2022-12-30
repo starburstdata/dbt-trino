@@ -140,11 +140,9 @@ class TestDeltaIncrementalMerge(TrinoIncrementalUniqueKey):
     def project_config_update(self):
         return {
             "name": "incremental",
-            # TODO: remove `views_enabled` when https://github.com/trinodb/trino/pull/11763 is merged
             "models": {
                 "+on_table_exists": "drop",
                 "+incremental_strategy": "merge",
-                "+views_enabled": False,
             },
             "seeds": {"incremental": {"seed": {"+column_types": {"some_date": "date"}}}},
         }
