@@ -14,7 +14,7 @@ from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.events import AdapterLogger
-from dbt.exceptions import DatabaseException, FailedToConnectException, RuntimeException
+from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectError
 from dbt.helper_types import Port
 from trino.transaction import IsolationLevel
 
@@ -376,21 +376,21 @@ class TrinoConnectionManager(SQLConnectionManager):
             msg = str(e)
 
             if "Failed to establish a new connection" in msg:
-                raise FailedToConnectException(msg) from e
+                raise FailedToConnectError(msg) from e
 
             if isinstance(e, trino.exceptions.TrinoQueryError):
                 logger.debug("Trino query id: {}".format(e.query_id))
             logger.debug("Trino error: {}".format(msg))
 
-            raise DatabaseException(msg)
+            raise DbtDatabaseError(msg)
         except Exception as e:
             msg = str(e)
-            if isinstance(e, RuntimeException):
+            if isinstance(e, DbtRuntimeError):
                 # during a sql query, an internal to dbt exception was raised.
                 # this sounds a lot like a signal handler and probably has
                 # useful information, so raise it without modification.
                 raise
-            raise RuntimeException(msg) from e
+            raise DbtRuntimeError(msg) from e
 
     # For connection in auto-commit mode there is no need to start
     # separate transaction. If using auto-commit, the client will
@@ -475,7 +475,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             else:
                 conn_name = conn.name
 
-            raise RuntimeException(
+            raise DbtRuntimeError(
                 "Tried to run an empty query on model '{}'. If you are "
                 "conditionally running\nsql, eg. in a model hook, make "
                 "sure your `else` clause contains valid sql!\n\n"

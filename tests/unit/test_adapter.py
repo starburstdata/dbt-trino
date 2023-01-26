@@ -7,7 +7,7 @@ import agate
 import dbt.flags as flags
 import trino
 from dbt.clients import agate_helper
-from dbt.exceptions import DatabaseException, FailedToConnectException, RuntimeException
+from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectError
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.connections import (
@@ -88,7 +88,7 @@ class TestTrinoAdapter(unittest.TestCase):
         self._setup_mock_exception(
             get_thread_connection, trino.exceptions.ProgrammingError("Syntax error")
         )
-        with self.assertRaises(DatabaseException):
+        with self.assertRaises(DbtDatabaseError):
             self.adapter.execute("select 1")
 
     @patch("dbt.adapters.trino.TrinoAdapter.ConnectionManager.get_thread_connection")
@@ -97,13 +97,13 @@ class TestTrinoAdapter(unittest.TestCase):
             get_thread_connection,
             trino.exceptions.OperationalError("Failed to establish a new connection"),
         )
-        with self.assertRaises(FailedToConnectException):
+        with self.assertRaises(FailedToConnectError):
             self.adapter.execute("select 1")
 
     @patch("dbt.adapters.trino.TrinoAdapter.ConnectionManager.get_thread_connection")
     def test_dbt_exception(self, get_thread_connection):
         self._setup_mock_exception(get_thread_connection, Exception("Unexpected error"))
-        with self.assertRaises(RuntimeException):
+        with self.assertRaises(DbtRuntimeError):
             self.adapter.execute("select 1")
 
     def _setup_mock_exception(self, get_thread_connection, exception):

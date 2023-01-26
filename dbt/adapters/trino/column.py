@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from dbt.adapters.base.column import Column
-from dbt.exceptions import RuntimeException
+from dbt.exceptions import DbtRuntimeError
 
 
 @dataclass
@@ -28,7 +28,7 @@ class TrinoColumn(Column):
             r"(?P<type>[^(]+)(?P<size>\([^)]+\))?(?P<type_suffix>[\w ]+)?", raw_data_type
         )
         if match is None:
-            raise RuntimeException(f'Could not interpret data type "{raw_data_type}"')
+            raise DbtRuntimeError(f'Could not interpret data type "{raw_data_type}"')
         data_type = match.group("type")
         size_info = match.group("size")
         data_type_suffix = match.group("type_suffix")
@@ -45,7 +45,7 @@ class TrinoColumn(Column):
                 try:
                     char_size = int(parts[0])
                 except ValueError:
-                    raise RuntimeException(
+                    raise DbtRuntimeError(
                         f'Could not interpret data_type "{raw_data_type}": '
                         f'could not convert "{parts[0]}" to an integer'
                     )
@@ -53,14 +53,14 @@ class TrinoColumn(Column):
                 try:
                     numeric_precision = int(parts[0])
                 except ValueError:
-                    raise RuntimeException(
+                    raise DbtRuntimeError(
                         f'Could not interpret data_type "{raw_data_type}": '
                         f'could not convert "{parts[0]}" to an integer'
                     )
                 try:
                     numeric_scale = int(parts[1])
                 except ValueError:
-                    raise RuntimeException(
+                    raise DbtRuntimeError(
                         f'Could not interpret data_type "{raw_data_type}": '
                         f'could not convert "{parts[1]}" to an integer'
                     )
