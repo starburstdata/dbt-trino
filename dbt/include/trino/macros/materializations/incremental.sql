@@ -86,9 +86,9 @@
     {% endif %}
 
     {#-- Get the incremental_strategy, the macro to use for the strategy, and build the sql --#}
-    {% set incremental_predicates = config.get('incremental_predicates', none) %}
+    {% set incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) %}
     {% set strategy_sql_macro_func = adapter.get_incremental_strategy_macro(context, incremental_strategy) %}
-    {% set strategy_arg_dict = ({'target_relation': target_relation, 'temp_relation': tmp_relation, 'unique_key': unique_key, 'dest_columns': dest_columns, 'predicates': incremental_predicates }) %}
+    {% set strategy_arg_dict = ({'target_relation': target_relation, 'temp_relation': tmp_relation, 'unique_key': unique_key, 'dest_columns': dest_columns, 'incremental_predicates': incremental_predicates }) %}
 
     {%- call statement('main') -%}
       {{ strategy_sql_macro_func(strategy_arg_dict) }}
@@ -109,7 +109,7 @@
 
 {%- endmaterialization %}
 
-{% macro trino__get_delete_insert_merge_sql(target, source, unique_key, dest_columns) -%}
+{% macro trino__get_delete_insert_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
 
     {% if unique_key %}
@@ -120,6 +120,11 @@
                     {{ target }}.{{ key }} in (select {{ key }} from {{ source }})
                     {{ "and " if not loop.last }}
                 {% endfor %}
+                {% if incremental_predicates %}
+                    {% for predicate in incremental_predicates %}
+                        and {{ predicate }}
+                    {% endfor %}
+                {% endif %}
             ;
         {% else %}
             delete from {{ target }}
@@ -127,7 +132,12 @@
                 {{ unique_key }}) in (
                 select {{ unique_key }}
                 from {{ source }}
-            );
+            )
+            {%- if incremental_predicates %}
+                {% for predicate in incremental_predicates %}
+                    and {{ predicate }}
+                {% endfor %}
+            {%- endif -%};
 
         {% endif %}
     {% endif %}
@@ -139,8 +149,8 @@
     )
 {%- endmacro %}
 
-{% macro trino__get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
-    {%- set predicates = [] if predicates is none else [] + predicates -%}
+{% macro trino__get_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
+    {%- set predicates = [] if incremental_predicates is none else [] + incremental_predicates -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
     {%- set dest_cols_csv_source = dest_cols_csv.split(', ') -%}
     {%- set merge_update_columns = config.get('merge_update_columns') -%}
@@ -167,7 +177,7 @@
 
         merge into {{ target }} as DBT_INTERNAL_DEST
             using {{ source }} as DBT_INTERNAL_SOURCE
-            on {{ predicates | join(' and ') }}
+            on {{"(" ~ predicates | join(") and (") ~ ")"}}
 
         {% if unique_key %}
         when matched then update set
