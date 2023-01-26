@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from dbt.adapters.base.relation import BaseRelation, Policy
 from dbt.contracts.relation import ComponentName
@@ -13,7 +13,7 @@ class TrinoQuotePolicy(Policy):
 
 @dataclass(frozen=True, eq=False, repr=False)
 class TrinoRelation(BaseRelation):
-    quote_policy: TrinoQuotePolicy = TrinoQuotePolicy()
+    quote_policy: TrinoQuotePolicy = field(default_factory=lambda: TrinoQuotePolicy())
 
     # Overridden as Trino converts relation identifiers to lowercase
     def _is_exactish_match(self, field: ComponentName, value: str) -> bool:
