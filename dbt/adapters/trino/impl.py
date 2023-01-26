@@ -4,7 +4,7 @@ from typing import Dict, Optional
 import agate
 from dbt.adapters.base.impl import AdapterConfig
 from dbt.adapters.sql import SQLAdapter
-from dbt.exceptions import DatabaseException
+from dbt.exceptions import DbtDatabaseError
 
 from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
 
@@ -48,7 +48,7 @@ class TrinoAdapter(SQLAdapter):
     def get_columns_in_relation(self, relation):
         try:
             return super().get_columns_in_relation(relation)
-        except DatabaseException as exc:
+        except DbtDatabaseError as exc:
             if "does not exist" in str(exc):
                 return []
             else:
