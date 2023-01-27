@@ -61,10 +61,11 @@ def get_trino_starburst_target():
         "user": "admin",
         "password": "",
         "roles": {
-            "hive": "ROLE{admin}",
+            "hive": "admin",
         },
         "catalog": "memory",
         "schema": "default",
+        "timezone": "UTC",
     }
 
 
@@ -80,6 +81,7 @@ def get_galaxy_target():
         "password": os.environ.get("DBT_TESTS_STARBURST_GALAXY_PASSWORD"),
         "catalog": "iceberg",
         "schema": "default",
+        "timezone": "UTC",
     }
 
 

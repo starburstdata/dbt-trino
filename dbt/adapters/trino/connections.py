@@ -101,6 +101,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
 
     @property
     def method(self):
@@ -124,6 +125,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
 
     @property
     def http_scheme(self):
@@ -153,6 +155,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
 
     @property
     def http_scheme(self):
@@ -187,6 +190,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
 
     @property
     def http_scheme(self):
@@ -224,6 +228,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
 
     @property
     def http_scheme(self):
@@ -249,6 +254,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
     )
@@ -281,7 +287,7 @@ class ConnectionWrapper(object):
         self._prepared_statements_enabled = prepared_statements_enabled
 
     def cursor(self):
-        self._cursor = self.handle.cursor(experimental_python_types=True)
+        self._cursor = self.handle.cursor()
         return self
 
     def cancel(self):
@@ -429,6 +435,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source="dbt-trino",
             verify=credentials.cert,
+            timezone=credentials.timezone,
         )
         connection.state = "open"
         connection.handle = ConnectionWrapper(trino_conn, credentials.prepared_statements_enabled)
