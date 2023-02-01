@@ -69,6 +69,7 @@ A dbt profile can be configured to run against Trino using the following configu
 | threads                        | How many threads dbt should use                                                                              | Optional (default is `1`)                                                                               | `8`                              |
 | prepared_statements_enabled    | Enable usage of Trino prepared statements (used in `dbt seed` commands)                                      | Optional (default is `true`)                                                                            | `true` or `false`                |
 | retries                        | Configure how many times a database operation is retried when connection issues arise                        | Optional (default is `3`)                                                                               | `10`                             |
+| timezone                       | The time zone for the Trino session                                                                          | Optional (defaults to the client side local timezone)                                                   | `Europe/Brussels`                |
 
 **Example profiles.yml entry:**
 
@@ -88,6 +89,7 @@ my-trino-db:
       session_properties:
         query_max_run_time: 4h
         exchange_compression: True
+      timezone: UTC
 ```
 
 **Example profiles.yml entry for kerberos authentication:**
