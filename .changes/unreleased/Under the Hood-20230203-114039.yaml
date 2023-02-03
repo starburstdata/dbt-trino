@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Add support for Python 3.11
+time: 2023-02-03T11:40:39.862646+01:00
+custom:
+  Author: damian3031
+  Issue: "225"
+  PR: "224"
