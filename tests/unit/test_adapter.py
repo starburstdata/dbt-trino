@@ -10,6 +10,7 @@ from dbt.clients import agate_helper
 from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectError
 
 from dbt.adapters.trino import TrinoAdapter
+from dbt.adapters.trino.column import TRINO_VARCHAR_MAX_LENGTH, TrinoColumn
 from dbt.adapters.trino.connections import (
     HttpScheme,
     TrinoCertificateCredentials,
@@ -546,3 +547,28 @@ class TestTrinoAdapterConversions(TestAdapterConversions):
         expected = ["DATE", "DATE", "DATE"]
         for col_idx, expect in enumerate(expected):
             assert TrinoAdapter.convert_date_type(agate_table, col_idx) == expect
+
+
+class TestTrinoColumn(unittest.TestCase):
+    def test_bound_varchar(self):
+        col = TrinoColumn.from_description("my_col", "VARCHAR(100)")
+        assert col.column == "my_col"
+        assert col.dtype == "VARCHAR"
+        assert col.char_size == 100
+        # bounded varchars get formatted to lowercase
+        assert col.data_type == "varchar(100)"
+        assert col.string_size() == 100
+        assert col.is_string() is True
+        assert col.is_number() is False
+        assert col.is_numeric() is False
+
+    def test_unbound_varchar(self):
+        col = TrinoColumn.from_description("my_col", "VARCHAR")
+        assert col.column == "my_col"
+        assert col.dtype == "VARCHAR"
+        assert col.char_size is None
+        assert col.data_type == "VARCHAR"
+        assert col.string_size() == TRINO_VARCHAR_MAX_LENGTH
+        assert col.is_string() is True
+        assert col.is_number() is False
+        assert col.is_numeric() is False
