@@ -5,6 +5,10 @@ from typing import ClassVar, Dict
 from dbt.adapters.base.column import Column
 from dbt.exceptions import DbtRuntimeError
 
+# Taken from the MAX_LENGTH variable in
+# https://github.com/trinodb/trino/blob/master/core/trino-spi/src/main/java/io/trino/spi/type/VarcharType.java
+TRINO_VARCHAR_MAX_LENGTH = 2147483646
+
 
 @dataclass
 class TrinoColumn(Column):
@@ -27,6 +31,13 @@ class TrinoColumn(Column):
     @classmethod
     def string_type(cls, size: int) -> str:
         return "varchar({})".format(size)
+
+    def string_size(self) -> int:
+        # override the string_size function to handle the unbound varchar case
+        if self.dtype.lower() == "varchar" and self.char_size is None:
+            return TRINO_VARCHAR_MAX_LENGTH
+
+        return super().string_size()
 
     @classmethod
     def from_description(cls, name: str, raw_data_type: str) -> "Column":
