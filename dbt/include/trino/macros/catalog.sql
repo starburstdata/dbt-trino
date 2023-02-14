@@ -1,5 +1,6 @@
 {% macro trino__get_catalog(information_schema, schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
+        {% set database = information_schema.database %}
         with tables as (
 
             select
