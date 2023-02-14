@@ -1,6 +1,5 @@
 {% macro trino__get_catalog(information_schema, schemas) -%}
     {%- call statement('catalog', fetch_result=True) -%}
-        {% set database = information_schema.database %}
         with tables as (
 
             select
@@ -48,7 +47,7 @@
 
             from system.metadata.table_comments
             where
-                catalog_name = '{{ database }}'
+                catalog_name = '{{ information_schema.database }}'
                 and
                 schema_name != 'information_schema'
                 and
