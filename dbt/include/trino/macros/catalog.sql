@@ -47,7 +47,7 @@
 
             from system.metadata.table_comments
             where
-                catalog_name = '{{ database }}'
+                catalog_name = '{{ information_schema.database }}'
                 and
                 schema_name != 'information_schema'
                 and
