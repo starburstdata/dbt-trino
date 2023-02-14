@@ -1,0 +1,7 @@
+kind: Fixes
+body: 'Set database name in catalog.sql for correctly filtering table_comments '
+time: 2023-02-14T15:13:16.572660553+03:00
+custom:
+  Author: eminuzun
+  Issue: "228"
+  PR: "229"
