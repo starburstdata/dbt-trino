@@ -53,6 +53,8 @@ class TestStoreFailuresTable:
         assert len(results) == 1
         # test tests
         results = run_dbt(["test"], expect_pass=True)
+        assert results[0].adapter_response.get("_message") == "SUCCESS"
+        assert results[0].adapter_response.get("query_id")
         assert len(results) == 5
         # test tests 2nd times
         results = run_dbt(["test"], expect_pass=True)

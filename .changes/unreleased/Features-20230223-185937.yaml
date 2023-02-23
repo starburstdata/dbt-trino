@@ -1,0 +1,7 @@
+kind: Features
+body: add query_id to adapter response
+time: 2023-02-23T18:59:37.406854+08:00
+custom:
+  Author: aezomz
+  Issue: "210"
+  PR: "211"

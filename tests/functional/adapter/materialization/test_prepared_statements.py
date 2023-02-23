@@ -63,6 +63,8 @@ class PreparedStatementsBase:
         # run models
         results = run_dbt(["run"], expect_pass=True)
         assert len(results) == 1
+        assert results[0].adapter_response.get("_message") == "SUCCESS"
+        assert results[0].adapter_response.get("query_id")
         # test tests
         results = run_dbt(["test"], expect_pass=True)
         assert len(results) == 3

@@ -89,6 +89,11 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
 
 
 @dataclass
+class TrinoAdapterResponse(AdapterResponse):
+    query_id: str = ""
+
+
+@dataclass
 class TrinoNoneCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -442,9 +447,12 @@ class TrinoConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_response(cls, cursor) -> AdapterResponse:
+    def get_response(cls, cursor) -> TrinoAdapterResponse:
         message = "SUCCESS"
-        return AdapterResponse(_message=message)
+        return TrinoAdapterResponse(
+            _message=message,
+            query_id=cursor._cursor.query_id,
+        )
 
     def cancel(self, connection):
         connection.handle.cancel()
