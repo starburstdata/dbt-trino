@@ -59,7 +59,7 @@ setup(
         ]
     },
     install_requires=[
-        "dbt-core=={}".format(dbt_version),
+        "dbt-core~={}".format(dbt_version),
         "trino==0.310.0",
     ],
 )
