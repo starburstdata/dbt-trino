@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump dbt-tests-adapter from 1.4.1 to 1.4.3"
+time: 2023-02-24T04:55:59.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 233
