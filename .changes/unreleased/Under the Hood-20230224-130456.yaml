@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Unpin dbt-core version
+time: 2023-02-24T13:04:56.170951+01:00
+custom:
+  Author: damian3031
+  Issue: "221"
+  PR: "235"

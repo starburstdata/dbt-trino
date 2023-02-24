@@ -11,6 +11,19 @@ with open(os.path.join(this_directory, "README.md")) as f:
 package_name = "dbt-trino"
 
 
+# get this package's version from dbt/adapters/<name>/__version__.py
+def _get_plugin_version_dict():
+    _version_path = os.path.join(this_directory, "dbt", "adapters", "trino", "__version__.py")
+    _semver = r"""(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"""
+    _pre = r"""((?P<prekind>a|b|rc)(?P<pre>\d+))?"""
+    _version_pattern = rf"""version\s*=\s*["']{_semver}{_pre}["']"""
+    with open(_version_path) as f:
+        match = re.search(_version_pattern, f.read().strip())
+        if match is None:
+            raise ValueError(f"invalid version at {_version_path}")
+        return match.groupdict()
+
+
 # get this from a separate file
 def _dbt_trino_version():
     _version_path = os.path.join(
@@ -24,17 +37,17 @@ def _dbt_trino_version():
         return match.group(1)
 
 
+# require a compatible minor version (~=), prerelease if this is a prerelease
+def _get_dbt_core_version():
+    parts = _get_plugin_version_dict()
+    minor = "{major}.{minor}.0".format(**parts)
+    pre = parts["prekind"] + "1" if parts["prekind"] else ""
+    return f"{minor}{pre}"
+
+
 package_version = _dbt_trino_version()
 description = """The trino adapter plugin for dbt (data build tool)"""
-
-dbt_version = "1.0.3"
-# the package version should be the dbt version, with maybe some things on the
-# ends of it. (0.19.1 vs 0.19.1a1, 0.19.1.1, ...)
-if not package_version.startswith(dbt_version):
-    raise ValueError(
-        f"Invalid setup.py: package_version={package_version} must start with "
-        f"dbt_version={dbt_version}"
-    )
+dbt_version = _get_dbt_core_version()
 
 setup(
     name=package_name,
@@ -59,7 +72,7 @@ setup(
         ]
     },
     install_requires=[
-        "dbt-core=={}".format(dbt_version),
+        "dbt-core~={}".format(dbt_version),
         "trino==0.310.0",
     ],
 )
