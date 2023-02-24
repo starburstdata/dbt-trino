@@ -17,7 +17,7 @@ ADD README.md ${DBT_DIR}
 ADD docker/dbt/jaffle_shop /jaffle_shop
 ADD docker/dbt/profiles.yml /root/.dbt/profiles.yml
 WORKDIR ${DBT_DIR}
-RUN python3 setup.py install
+RUN pip3 install .
 
 WORKDIR /usr/app
 
