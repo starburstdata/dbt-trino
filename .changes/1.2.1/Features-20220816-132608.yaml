@@ -1,7 +1,0 @@
-kind: Features
-body: Support `delete+insert` materialization
-time: 2022-08-16T13:26:08.919021+02:00
-custom:
-  Author: mdesmet
-  Issue: "103"
-  PR: "62"

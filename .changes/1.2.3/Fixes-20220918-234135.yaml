@@ -1,7 +1,0 @@
-kind: Fixes
-body: Support mixed-case schemata through `TrinoQuotePolicy`
-time: 2022-09-18T23:41:35.574721+02:00
-custom:
-  Author: mdesmet
-  Issue: "131"
-  PR: "132"

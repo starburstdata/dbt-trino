@@ -1,7 +1,0 @@
-kind: Features
-body: Add support for persist_docs
-time: 2022-08-16T18:06:52.291584+02:00
-custom:
-  Author: hovaesco
-  Issue: "76"
-  PR: "77"

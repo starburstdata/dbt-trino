@@ -1,7 +1,0 @@
-kind: Features
-body: Support `on_schema_change` on incremental models
-time: 2022-09-22T08:52:14.6753+02:00
-custom:
-  Author: mdesmet
-  Issue: "48"
-  PR: "134"
