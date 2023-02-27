@@ -84,5 +84,5 @@ services:
 
 networks:
   default:
-    external:
-      name: dbt-net
+    name: dbt-net
+    external: true
