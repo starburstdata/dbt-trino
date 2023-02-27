@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Improve developer experience (changie, pre-commit, black, isort)
-time: 2022-08-10T17:35:29.55895+02:00
-custom:
-  Author: mdesmet
-  Issue: "97"
-  PR: "98"

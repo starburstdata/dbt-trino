@@ -1,7 +1,0 @@
-kind: Breaking Changes
-body: '`adapter.get_columns_in_relation` now properly returns the type of timestamp and time with timezone columns. Before this fix these were incorrectly returned as timestamp and time respectively.'
-time: 2022-12-06T14:27:00.401727+01:00
-custom:
-  Author: damian3031
-  Issue: "68"
-  PR: "188"

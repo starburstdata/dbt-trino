@@ -460,6 +460,11 @@ Next step is to merge the bump PR and making sure that test suite pass.
 
 Finally, to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
 
+### Backport process
+
+Sometimes it is necessary to backport some changes to some older versions. In that case, create branch from `x.x.latest` branch. There is a `x.x.latest` for each minor version, e.g. `1.3.latest`. Make a fix and open PR back to `x.x.latest`. Create changelog by `changie new` as ususal, as separate changlog for each minor version is kept on every `x.x.latest` branch.
+After merging, to make a release of that version, just follow instructions from **Release process** section, but run every workflow on `x.x.latest` branch.
+
 ## Code of Conduct
 
 Everyone interacting in the dbt project's codebases, issue trackers, chat rooms, and mailing lists is expected
