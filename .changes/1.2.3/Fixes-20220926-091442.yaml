@@ -1,7 +1,0 @@
-kind: Fixes
-body: Adding Kerberos auth configs from the trino-python-client
-time: 2022-09-26T09:14:42.507437-07:00
-custom:
-  Author: BendettaSD
-  Issue: ""
-  PR: "137"
