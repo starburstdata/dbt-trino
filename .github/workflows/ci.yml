@@ -3,11 +3,13 @@ on:
   push:
     branches:
       - master
+      - "*.*.latest"
     paths-ignore:
       - "**/*.md"
   pull_request:
     branches:
       - master
+      - "*.*.latest"
     paths-ignore:
       - "**/*.md"
 

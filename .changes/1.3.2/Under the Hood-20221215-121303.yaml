@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: 'Refactor table materialization for more dbt-core high level functions usage '
-time: 2022-12-15T12:13:03.691425+01:00
-custom:
-  Author: damian3031
-  Issue: "185"
-  PR: "197"

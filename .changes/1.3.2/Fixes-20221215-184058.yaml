@@ -1,7 +1,0 @@
-kind: Fixes
-body: Fix incremental materialization doesnt drop temp table
-time: 2022-12-15T18:40:58.037156+01:00
-custom:
-  Author: damian3031
-  Issue: "195"
-  PR: "199"
