@@ -1,10 +1,8 @@
 kind: Breaking Changes
-body: This breaking change makes sure extra logic for parsing the precision, scale
-  or charsize from a data type is only executed when the data type is a varchar, char
-  or decimal. This way, timestamps remain unaltered. Before this breaking change,
-  timestamps would lose their precision when constructing them with `from_description`.
+body: Column types returned by the adapter methods are now returned as is,
+except for decimal, varchar and char.
 time: 2023-02-28T13:59:14.034453639+01:00
 custom:
-  Author: robbertDM mdesmet damian3031
+  Author: robbertDM
   Issue: "126"
   PR: "242"
