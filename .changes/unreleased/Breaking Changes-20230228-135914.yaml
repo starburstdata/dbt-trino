@@ -1,0 +1,7 @@
+kind: Breaking Changes
+body: Column types returned by the adapter methods are now returned as is, except for decimal, varchar and char.
+time: 2023-02-28T13:59:14.034453639+01:00
+custom:
+  Author: robbertDM
+  Issue: "126"
+  PR: "242"

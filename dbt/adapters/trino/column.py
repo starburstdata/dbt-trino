@@ -41,9 +41,10 @@ class TrinoColumn(Column):
 
     @classmethod
     def from_description(cls, name: str, raw_data_type: str) -> "Column":
-        # some of the Trino data types specify a type and not a precision
-        if raw_data_type.startswith(("array", "map", "row")):
+        # Most of the Trino data types specify a type and not a precision/scale/charsize
+        if not raw_data_type.startswith(("varchar", "char", "decimal")):
             return cls(name, raw_data_type)
+        # Trino data types that do specify a precision/scale/charsize:
         match = re.match(
             r"(?P<type>[^(]+)(?P<size>\([^)]+\))?(?P<type_suffix>[\w ]+)?", raw_data_type
         )
