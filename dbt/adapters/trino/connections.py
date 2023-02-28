@@ -18,6 +18,8 @@ from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectErr
 from dbt.helper_types import Port
 from trino.transaction import IsolationLevel
 
+from dbt.adapters.trino.__version__ import version
+
 logger = AdapterLogger("Trino")
 PREPARED_STATEMENTS_ENABLED_DEFAULT = True
 
@@ -433,7 +435,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             auth=credentials.trino_auth(),
             max_attempts=credentials.retries,
             isolation_level=IsolationLevel.AUTOCOMMIT,
-            source="dbt-trino",
+            source=f"dbt-trino-{version}",
             verify=credentials.cert,
             timezone=credentials.timezone,
         )
