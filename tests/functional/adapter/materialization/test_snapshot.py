@@ -38,17 +38,17 @@ seeds_added_csv = (
 )
 
 seeds_newcolumns_csv = """
-id,name,some_date,last_initial
-1,Easton,1981-05-20 06:46:51,A
-2,Lillian,1978-09-03 18:10:33,B
-3,Jeremiah,1982-03-11 03:59:51,C
-4,Nolan,1976-05-06 20:21:35,D
-5,Hannah,1982-06-23 05:41:26,E
-6,Eleanor,1991-08-10 23:12:21,F
-7,Lily,1971-03-29 14:58:02,G
-8,Jonathan,1988-02-26 02:55:24,H
-9,Adrian,1994-02-09 13:14:23,I
-10,Nora,1976-03-01 16:51:39,J
+id,name,some_date,last_initial,new_date
+1,Easton,1981-05-20 06:46:51,A,1981-05-20 06:46:51
+2,Lillian,1978-09-03 18:10:33,B,1978-09-03 18:10:33
+3,Jeremiah,1982-03-11 03:59:51,C,1982-03-11 03:59:51
+4,Nolan,1976-05-06 20:21:35,D,1976-05-06 20:21:35
+5,Hannah,1982-06-23 05:41:26,E,1982-06-23 05:41:26
+6,Eleanor,1991-08-10 23:12:21,F,1991-08-10 23:12:21
+7,Lily,1971-03-29 14:58:02,G,1971-03-29 14:58:02
+8,Jonathan,1988-02-26 02:55:24,H,1988-02-26 02:55:24
+9,Adrian,1994-02-09 13:14:23,I,1994-02-09 13:14:23
+10,Nora,1976-03-01 16:51:39,J,1976-03-01 16:51:39
 """.lstrip()
 
 iceberg_macro_override_sql = """\
@@ -111,7 +111,10 @@ class TestIcebergSnapshotTimestampTrino(BaseTrinoSnapshotTimestamp):
         return {
             "name": "snapshot_strategy_timestamp",
             "seeds": {
-                "+column_types": {"some_date": "timestamp(6)"},
+                "+column_types": {
+                    "some_date": "timestamp(6)",
+                    "new_date": "timestamp(6)",
+                },
             },
         }
 
@@ -123,7 +126,10 @@ class TestDeltaSnapshotCheckColsTrino(BaseSnapshotCheckCols):
         return {
             "name": "snapshot_strategy_check_cols",
             "seeds": {
-                "+column_types": {"some_date": "timestamp(3) with time zone"},
+                "+column_types": {
+                    "some_date": "timestamp(3) with time zone",
+                    "new_date": "timestamp(3) with time zone",
+                },
             },
         }
 
@@ -142,7 +148,10 @@ class TestDeltaSnapshotTimestampTrino(BaseTrinoSnapshotTimestamp):
         return {
             "name": "snapshot_strategy_timestamp",
             "seeds": {
-                "+column_types": {"some_date": "timestamp(3) with time zone"},
+                "+column_types": {
+                    "some_date": "timestamp(3) with time zone",
+                    "new_date": "timestamp(3) with time zone",
+                },
             },
         }
 
