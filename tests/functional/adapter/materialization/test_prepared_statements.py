@@ -64,11 +64,13 @@ class PreparedStatementsBase:
         check_relations_equal(project.adapter, ["seed", "materialization"])
 
 @pytest.mark.prepared_statements_disabled
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPreparedStatementsDisabled(PreparedStatementsBase):
     def test_run_seed_with_prepared_statements_disabled(self, project, trino_connection):
         self.run_seed_with_prepared_statements(project, trino_connection, 0)
 
 
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPreparedStatementsEnabled(PreparedStatementsBase):
     def test_run_seed_with_prepared_statements_enabled(self, project, trino_connection):
         self.run_seed_with_prepared_statements(project, trino_connection, 1)
