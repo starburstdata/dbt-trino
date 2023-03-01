@@ -11,7 +11,7 @@ class TestCurrentTimestampTrino(BaseCurrentTimestamps):
 
     @pytest.fixture(scope="class")
     def expected_schema(self):
-        return {"current_timestamp": "timestamp with time zone"}
+        return {"current_timestamp": "timestamp(3) with time zone"}
 
     @pytest.fixture(scope="class")
     def expected_sql(self):

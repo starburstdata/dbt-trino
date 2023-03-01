@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from dbt.tests.util import get_connection, relation_from_name, run_dbt
 
@@ -106,48 +104,43 @@ class TestSeedsColumnTypesOverrides:
         results = run_dbt(["seed"], expect_pass=True)
         assert len(results) == 4
 
+        actual_columns = {}
         for seed_name, seed_columns in seed_types.items():
             # retrieve information about columns from trino
-            columns = get_relation_columns(project.adapter, seed_name)
-            for column in columns:
-                (
-                    column_name,
-                    column_data_type,
-                    column_char_size,
-                    column_numeric_precision,
-                    column_numeric_scale,
-                ) = column
-                # if precision/scale/char_length was explicitly specified in column_types config,
-                # compare specified and retrieved column's precision/scale/char_length,
-                # then compare specified and retrieved column type
-                if "(" in seed_columns[column_name]:
-                    # if precision/char_length is specified:
-                    if "," not in seed_columns[column_name]:
-                        (
-                            seed_column_data_type,
-                            seed_column_char_size,
-                            seed_column_data_type_suffix,
-                        ) = re.split(r"[()]", seed_columns[column_name])
-                        # precision/char_length:
-                        assert seed_column_char_size == str(column_char_size)
-                    # if precision and scale are specified:
-                    else:
-                        (
-                            seed_column_data_type,
-                            seed_column_numeric_precision,
-                            seed_column_numeric_scale,
-                            seed_column_data_type_suffix,
-                        ) = re.split(r"[(),]", seed_columns[column_name])
-                        # scale:
-                        assert seed_column_numeric_scale == str(column_numeric_scale)
-                        # precision:
-                        assert seed_column_numeric_precision == str(column_numeric_precision)
-                    # column type:
-                    assert (
-                        "".join([seed_column_data_type, seed_column_data_type_suffix])
-                        == column_data_type
-                    )
-                # if precision/length was NOT explicitly specified,
-                # compare specified and retrieved column type only
-                else:
-                    assert seed_columns[column_name] == column_data_type
+            actual_columns[seed_name] = get_relation_columns(project.adapter, seed_name)
+
+        assert actual_columns == {
+            "boolean_type": [
+                ("boolean_example", "boolean", None, None, None),
+            ],
+            "datetime_type": [
+                ("date_example", "date", None, None, None),
+                ("interval_ds_example", "interval day to second", None, None, None),
+                ("interval_ym_example", "interval year to month", None, None, None),
+                ("time_example", "time(3)", None, None, None),
+                ("time_p_example", "time(6)", None, None, None),
+                ("time_tz_example", "time(3) with time zone", None, None, None),
+                ("timestamp_example", "timestamp(3)", None, None, None),
+                ("timestamp_p_example", "timestamp(6)", None, None, None),
+                ("timestamp_p_tz_example", "timestamp(6) with time zone", None, None, None),
+                ("timestamp_tz_example", "timestamp(3) with time zone", None, None, None),
+            ],
+            "number_type": [
+                ("bigint_example", "bigint", None, None, None),
+                ("decimal_example", "decimal", None, 38, 0),
+                ("decimal_p_example", "decimal", None, 3, 2),
+                ("double_example", "double", None, None, None),
+                ("integer_example", "integer", None, None, None),
+                ("real_example", "real", None, None, None),
+                ("smallint_example", "smallint", None, None, None),
+                ("tinyint_example", "tinyint", None, None, None),
+            ],
+            "string_type": [
+                ("char_example", "char", 1, None, None),
+                ("char_n_example", "char", 10, None, None),
+                ("json_example", "json", None, None, None),
+                ("varbinary_example", "varbinary", None, None, None),
+                ("varchar_example", "varchar", None, None, None),
+                ("varchar_n_example", "varchar", 10, None, None),
+            ],
+        }
