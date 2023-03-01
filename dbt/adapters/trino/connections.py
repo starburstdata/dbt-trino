@@ -19,6 +19,7 @@ import trino
 from trino.transaction import IsolationLevel
 import sqlparse
 
+from dbt.adapters.trino.__version__ import version
 
 logger = AdapterLogger("Trino")
 PREPARED_STATEMENTS_ENABLED_DEFAULT = True
@@ -379,7 +380,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             session_properties=credentials.session_properties.copy(),
             auth=credentials.trino_auth(),
             isolation_level=IsolationLevel.AUTOCOMMIT,
-            source="dbt-trino",
+            source=f"dbt-trino-{version}",
         )
         trino_conn._http_session.verify = credentials.cert
         connection.state = "open"
