@@ -373,6 +373,12 @@ class ConnectionWrapper(object):
             raise ValueError("Cannot escape {}".format(type(value)))
 
 
+@dataclass
+class TrinoAdapterResponse(AdapterResponse):
+    query: str = ""
+    query_id: str = ""
+
+
 class TrinoConnectionManager(SQLConnectionManager):
     TYPE = "trino"
 
@@ -444,9 +450,14 @@ class TrinoConnectionManager(SQLConnectionManager):
         return connection
 
     @classmethod
-    def get_response(cls, cursor) -> AdapterResponse:
+    def get_response(cls, cursor) -> TrinoAdapterResponse:
         message = "SUCCESS"
-        return AdapterResponse(_message=message)
+        return TrinoAdapterResponse(
+            _message=message,
+            query=cursor._cursor.query,
+            query_id=cursor._cursor.query_id,
+            rows_affected=cursor._cursor.rowcount,
+        )  # type: ignore
 
     def cancel(self, connection):
         connection.handle.cancel()
