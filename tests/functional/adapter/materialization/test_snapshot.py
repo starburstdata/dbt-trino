@@ -68,9 +68,11 @@ class BaseTrinoSnapshotTimestamp(BaseSnapshotTimestamp):
         check_relation_rows(project, "ts_snapshot", 30)
 
         # snapshot now has an additional column "last_initial"
-        assert "last_initial" in map(
+        ts_snapshot_columns = map(
             lambda x: x[0], get_relation_columns(project.adapter, "ts_snapshot")
         )
+        assert "last_initial" in ts_snapshot_columns
+        assert "new_date" in ts_snapshot_columns
 
 
 @pytest.mark.iceberg
