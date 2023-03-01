@@ -10,8 +10,7 @@ start-trino:
 
 dbt-trino-tests: start-trino
 	pip install -r dev_requirements.txt
-	tox -r  || ./docker/remove_trino.bash
-	./docker/remove_trino.bash
+	tox -r
 
 start-starburst:
 	docker network create dbt-net || true
@@ -19,8 +18,7 @@ start-starburst:
 
 dbt-starburst-tests: start-starburst
 	pip install -r dev_requirements.txt
-	tox -r || ./docker/remove_starburst.bash
-	./docker/remove_starburst.bash
+	tox -r
 
 dev:
 	pre-commit install
