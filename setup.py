@@ -74,5 +74,6 @@ setup(
     install_requires=[
         "dbt-core~={}".format(dbt_version),
         "trino==0.310.0",
+        "pytz>=2015.7",
     ],
 )
