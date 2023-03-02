@@ -3,7 +3,7 @@ services:
   trino:
     ports:
       - "8080:8080"
-    image: "starburstdata/starburst-enterprise:402-e.0"
+    image: "starburstdata/starburst-enterprise:405-e"
     volumes:
       - ./docker/starburst/etc:/etc/starburst
       - ./docker/starburst/catalog:/etc/starburst/catalog
