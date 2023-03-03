@@ -29,15 +29,20 @@
 {% macro trino__list_relations_without_caching(relation) %}
   {% call statement('list_relations_without_caching', fetch_result=True) -%}
     select
-      table_catalog as database,
-      table_name as name,
-      table_schema as schema,
-      case when table_type = 'BASE TABLE' then 'table'
-           when table_type = 'VIEW' then 'view'
-           else table_type
+      t.table_catalog as database,
+      t.table_name as name,
+      t.table_schema as schema,
+      case when mv.name is not null then 'materializedview'
+           when t.table_type = 'BASE TABLE' then 'table'
+           when t.table_type = 'VIEW' then 'view'
+           else t.table_type
       end as table_type
-    from {{ relation.information_schema() }}.tables
-    where table_schema = '{{ relation.schema | lower }}'
+    from {{ relation.information_schema() }}.tables t
+    left join system.metadata.materialized_views mv
+          on mv.catalog_name = t.table_catalog and mv.schema_name = t.table_schema and mv.name = t.table_name
+    where t.table_schema = '{{ relation.schema | lower }}'
+          and (mv.catalog_name is null or mv.catalog_name =  '{{ relation.database | lower }}')
+          and (mv.schema_name is null or mv.schema_name =  '{{ relation.schema | lower }}')
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
@@ -111,8 +116,9 @@
 
 
 {% macro trino__drop_relation(relation) -%}
+  {% set relation_type = 'materialized view' if relation.type == 'materializedview' else relation.type %}
   {% call statement('drop_relation', auto_begin=False) -%}
-    drop {{ relation.type }} if exists {{ relation }}
+    drop {{ relation_type }} if exists {{ relation }}
   {%- endcall %}
 {% endmacro %}
 
@@ -144,8 +150,9 @@
 
 
 {% macro trino__rename_relation(from_relation, to_relation) -%}
+  {% set from_relation_type = 'materialized view' if from_relation.type == 'materializedview' else from_relation.type %}
   {% call statement('rename_relation') -%}
-    alter {{ from_relation.type }} {{ from_relation }} rename to {{ to_relation }}
+    alter {{ from_relation_type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}
 {% endmacro %}
 
@@ -217,4 +224,36 @@
     {%- endset -%}
     {% do run_query(sql) %}
   {% endfor %}
+{% endmacro %}
+
+
+{% macro create_or_replace_view() %}
+  {%- set identifier = model['alias'] -%}
+
+  {%- set old_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) -%}
+  {%- set exists_as_view = (old_relation is not none and old_relation.is_view) -%}
+
+  {%- set target_relation = api.Relation.create(
+      identifier=identifier, schema=schema, database=database,
+      type='view') -%}
+  {% set grant_config = config.get('grants') %}
+
+  {{ run_hooks(pre_hooks) }}
+
+  -- If there is another object delete it
+  {%- if old_relation is not none and not old_relation.is_view -%}
+    {{ handle_existing_table(should_full_refresh(), old_relation) }}
+  {%- endif -%}
+
+  -- build model
+  {% call statement('main') -%}
+    {{ get_create_view_as_sql(target_relation, sql) }}
+  {%- endcall %}
+
+  {% set should_revoke = should_revoke(exists_as_view, full_refresh_mode=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=True) %}
+
+  {{ run_hooks(post_hooks) }}
+
+  {{ return({'relations': [target_relation]}) }}
 {% endmacro %}
