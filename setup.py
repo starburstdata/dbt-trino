@@ -86,7 +86,7 @@ setup(
     },
     install_requires=[
         "dbt-core~={}".format(dbt_version),
-        "trino==0.321.0",
+        "trino==0.322.0",
     ],
     zip_safe=False,
     classifiers=[
