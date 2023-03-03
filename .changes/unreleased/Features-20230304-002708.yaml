@@ -1,0 +1,7 @@
+kind: Features
+body: Support Materialized view replacement
+time: 2023-03-04T00:27:08.158991+01:00
+custom:
+  Author: mdesmet
+  Issue: ""
+  PR: "256"
