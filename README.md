@@ -335,6 +335,40 @@ NOTE that this functionality works on incremental models that use partitioning:
 }}
 ```
 
+##### Materialized view
+
+The adapter also supports [materialized views](https://trino.io/docs/current/sql/create-materialized-view.html).
+At every subsequent `dbt run` command, the materialized view is [refreshed](https://trino.io/docs/current/sql/refresh-materialized-view.html).
+
+You can also define custom properties for the materialized view through the `properties` config.
+
+This materialization supports the [full_refresh](https://docs.getdbt.com/reference/resource-configs/full_refresh) config and flag.
+Whenever you want to rebuild your materialized view, e.g. when changing underlying SQL query, run `dbt run --full-refresh`.
+
+
+In model add:
+```jinja2
+{{
+  config(
+    materialized = 'materialized_view',
+    properties = {
+      'format': "'PARQUET'"
+    },
+  )
+}}
+```
+
+or in `dbt_project.yaml`:
+
+```yaml
+models:
+  path:
+    materialized: materialized_view
+    properties:
+      format: "'PARQUET'"
+```
+
+
 ##### Snapshots
 
 Commonly, analysts need to "look back in time" at some previous state of data in their mutable tables. While some source data systems are built in a way that makes accessing historical data possible, this is often not the case. dbt provides a mechanism, snapshots, which records changes to a mutable table over time.
