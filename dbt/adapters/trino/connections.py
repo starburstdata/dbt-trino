@@ -283,7 +283,7 @@ class ConnectionWrapper(object):
         self._prepared_statements_enabled = prepared_statements_enabled
 
     def cursor(self):
-        self._cursor = self.handle.cursor(experimental_python_types=True)
+        self._cursor = self.handle.cursor()
         return self
 
     def cancel(self):
