@@ -86,7 +86,7 @@ setup(
     },
     install_requires=[
         "dbt-core~={}".format(dbt_version),
-        "trino~=0.318.0",
+        "trino~=0.322",
         "pyyaml>=5.4",  # TODO: remove when migrating to dbt 1.3
     ],
     zip_safe=False,
