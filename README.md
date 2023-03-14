@@ -1,7 +1,19 @@
-<p float="left">
-  <img src="https://raw.githubusercontent.com/dbt-labs/dbt/ec7dee39f793aa4f7dd3dae37282cc87664813e4/etc/dbt-logo-full.svg" width="45%" />
-  <img src="https://trino.io/assets/trino-og.png" width="50%" />
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/Starburst_Logo_White+Blue.svg" width="98%">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/Starburst_Logo_Black+Blue.svg" width="98%">
+  <img alt="Starburst" src="assets/images/Starburst_Logo_Black+Blue.svg">
+</picture>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/dbt-signature_tm_light.svg" width="45%">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/dbt-signature_tm.svg" width="45%">
+  <img alt="dbt" src="assets/images/dbt-signature_tm.svg">
+</picture>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/trino-logo-dk-bg.svg" width="50%">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/trino-logo-w-bk.svg" width="50%">
+  <img alt="trino" src="assets/images/trino-logo-w-bk.svg">
+</picture>
 
 [![Build Status](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml/badge.svg)](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml?query=workflow%3A%22dbt-trino+tests%22+branch%3Amaster+event%3Apush) [![db-presto-trino Slack](https://img.shields.io/static/v1?logo=slack&logoColor=959DA5&label=Slack&labelColor=333a41&message=join%20conversation&color=3AC358)](https://getdbt.slack.com/channels/db-presto-trino)
 
