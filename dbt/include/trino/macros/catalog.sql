@@ -38,7 +38,7 @@
         ),
 
         table_comment as (
-
+            {%- for schema in schemas %}
             select
                 catalog_name as "table_database",
                 schema_name as "table_schema",
@@ -51,7 +51,11 @@
                 and
                 schema_name != 'information_schema'
                 and
-                schema_name in ('{{ schemas | join("','") | lower }}')
+                schema_name = '{{ schema | lower }}'
+            {% if not loop.last %}
+            union all
+            {% endif %}
+            {%- endfor %}
         )
 
         select *
