@@ -41,11 +41,11 @@ This dbt plugin has been tested against `Trino` version `411`, `Starburst Enterp
 
 ## Setup & Configuration
 
-For information on installing and configuring your profile to authenticate to Trino or Starburst, please refer to the dbt doc's page: "[Starburst and Trino Setup](https://docs.getdbt.com/reference/warehouse-setups/trino-setup)"
+For information on installing and configuring your profile to authenticate to Trino or Starburst, please refer to [Starburst and Trino Setup](https://docs.getdbt.com/reference/warehouse-setups/trino-setup) in the dbt docs.
 
 ### Trino- and Starburst-specific configuration
 
-For Trino- and Starburst-specific configuration please refer to "[Starburst (Trino) configurations](https://docs.getdbt.com/reference/resource-configs/trino-configs)" on the dbt docs site
+For Trino- and Starburst-specific configuration, you can refer to [Starburst (Trino) configurations](https://docs.getdbt.com/reference/resource-configs/trino-configs) on the dbt docs site.
 
 ## Contributing
 
