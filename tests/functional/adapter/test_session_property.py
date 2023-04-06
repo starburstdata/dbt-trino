@@ -31,7 +31,6 @@ class TestSessionProperty:
         return {"session_property_model.sql": self.session_property_model(set_session_property)}
 
     def test_custom_schema_trino(self, project):
-
         # Run models.
         results = run_dbt(["run"], expect_pass=True)
         assert len(results) == 1

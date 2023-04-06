@@ -463,7 +463,6 @@ class TrinoConnectionManager(SQLConnectionManager):
         connection.handle.cancel()
 
     def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
-
         connection = None
         cursor = None
 
