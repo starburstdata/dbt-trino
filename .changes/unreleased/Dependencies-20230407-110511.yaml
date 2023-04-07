@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Bump mypy from 1.1.1 to 1.2.0
+time: 2023-04-07T11:05:11.255362+02:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "277"
