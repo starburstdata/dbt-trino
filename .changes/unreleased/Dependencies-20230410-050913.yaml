@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update pytest requirement from ~=7.2 to ~=7.3"
+time: 2023-04-10T05:09:13.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 283
