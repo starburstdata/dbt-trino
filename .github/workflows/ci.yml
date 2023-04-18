@@ -28,6 +28,13 @@ jobs:
 
       - name: "Run pre-commit checks"
         run: pre-commit run --all-files
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v3
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v3
   test:
     runs-on: ubuntu-latest
     strategy:
