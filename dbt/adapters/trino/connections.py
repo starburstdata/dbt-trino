@@ -508,3 +508,7 @@ class TrinoConnectionManager(SQLConnectionManager):
         status = self.get_response(cursor)
         table = self.get_result_from_cursor(cursor)
         return status, table
+
+    @classmethod
+    def data_type_code_to_name(cls, type_code) -> str:
+        return type_code.split("(")[0].upper()

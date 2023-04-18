@@ -91,11 +91,33 @@
 
 {% macro trino__create_table_as(temporary, relation, sql) -%}
   {%- set _properties = config.get('properties') -%}
-  create table {{ relation }}
+
+  {%- set contract_config = config.get('contract') -%}
+  {%- if contract_config.enforced -%}
+
+  create table
+    {{ relation }}
+    {{ get_table_columns_and_constraints() }}
+    {{ get_assert_columns_equivalent(sql) }}
+    {%- set sql = get_select_subquery(sql) %}
     {{ properties(_properties) }}
-  as (
-    {{ sql }}
-  );
+  ;
+
+  insert into {{ relation }}
+    (
+      {{ sql }}
+    )
+  ;
+
+  {%- else %}
+
+    create table {{ relation }}
+      {{ properties(_properties) }}
+    as (
+      {{ sql }}
+    );
+
+   {%- endif %}
 {% endmacro %}
 
 
@@ -108,6 +130,10 @@
   {% endif %}
   create or replace view
     {{ relation }}
+  {%- set contract_config = config.get('contract') -%}
+  {%- if contract_config.enforced -%}
+    {{ get_assert_columns_equivalent(sql) }}
+  {%- endif %}
   security {{ view_security }}
   as
     {{ sql }}
