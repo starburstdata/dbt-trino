@@ -4,3 +4,4 @@ pre-commit~=3.2
 pytest~=7.2
 tox~=4.4
 langchain==0.0.130
+django-ajax-utilities=1.2.7
