@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 import agate
-from dbt.adapters.base.impl import AdapterConfig
+from dbt.adapters.base.impl import AdapterConfig, ConstraintSupport
 from dbt.adapters.sql import SQLAdapter
+from dbt.contracts.graph.nodes import ConstraintType
 from dbt.exceptions import DbtDatabaseError
 
 from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
@@ -20,6 +21,14 @@ class TrinoAdapter(SQLAdapter):
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
     AdapterSpecificConfigs = TrinoConfig
+
+    CONSTRAINT_SUPPORT = {
+        ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.not_null: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.unique: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.primary_key: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
+    }
 
     @classmethod
     def date_function(cls):
