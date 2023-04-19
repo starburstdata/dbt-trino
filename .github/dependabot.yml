@@ -9,3 +9,39 @@ updates:
     labels:
       - "Skip Changelog"
       - "dependencies"
+  - package-ecosystem: "pip"
+    target-branch: "1.0.latest"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    rebase-strategy: "disabled"
+    labels:
+      - "Skip Changelog"
+      - "dependencies"
+  - package-ecosystem: "pip"
+    target-branch: "1.1.latest"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    rebase-strategy: "disabled"
+    labels:
+      - "Skip Changelog"
+      - "dependencies"
+  - package-ecosystem: "pip"
+    target-branch: "1.2.latest"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    rebase-strategy: "disabled"
+    labels:
+      - "Skip Changelog"
+      - "dependencies"
+  - package-ecosystem: "pip"
+    target-branch: "1.3.latest"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    rebase-strategy: "disabled"
+    labels:
+      - "Skip Changelog"
+      - "dependencies"
