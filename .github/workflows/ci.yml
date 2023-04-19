@@ -36,10 +36,7 @@ jobs:
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v3
         with:
-          fail-on-scopes:
-            - "runtime"
-            - "development"
-            - "unknown"
+          fail-on-scopes: "runtime, development, unknown"
   test:
     runs-on: ubuntu-latest
     strategy:
