@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update dbt-tests-adapter requirement from ~=1.4.5 to ~=1.4.6"
+time: 2023-04-20T05:04:30.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 288
