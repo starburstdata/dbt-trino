@@ -1,4 +1,9 @@
 import pytest
+from dbt.tests.adapter.persist_docs.test_persist_docs import (
+    BasePersistDocs,
+    BasePersistDocsColumnMissing,
+    BasePersistDocsCommentOnQuotedColumn,
+)
 from dbt.tests.util import run_dbt
 
 from tests.functional.adapter.persist_docs.fixtures import (
@@ -128,3 +133,15 @@ class TestPersistDocsIncremental(TestPersistDocsBase):
         # test tests
         results = run_dbt(["test"], expect_pass=True)
         assert len(results) == 4
+
+
+class TestPersistDocs(BasePersistDocs):
+    pass
+
+
+class TestPersistDocsColumnMissing(BasePersistDocsColumnMissing):
+    pass
+
+
+class TestPersistDocsCommentOnQuotedColumn(BasePersistDocsCommentOnQuotedColumn):
+    pass
