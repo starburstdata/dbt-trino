@@ -28,6 +28,28 @@ class TrinoColumn(Column):
 
         return super().data_type
 
+    def is_string(self) -> bool:
+        return self.dtype.lower() in ["varchar", "char", "varbinary", "json"]
+
+    def is_float(self) -> bool:
+        return self.dtype.lower() in [
+            "real",
+            "double precision",
+            "double",
+        ]
+
+    def is_integer(self) -> bool:
+        return self.dtype.lower() in [
+            "tinyint",
+            "smallint",
+            "integer",
+            "int",
+            "bigint",
+        ]
+
+    def is_numeric(self) -> bool:
+        return self.dtype.lower() == "decimal"
+
     @classmethod
     def string_type(cls, size: int) -> str:
         return "varchar({})".format(size)
