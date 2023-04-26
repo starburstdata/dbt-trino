@@ -24,7 +24,7 @@ class TrinoAdapter(SQLAdapter):
 
     CONSTRAINT_SUPPORT = {
         ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
-        ConstraintType.not_null: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.not_null: ConstraintSupport.ENFORCED,
         ConstraintType.unique: ConstraintSupport.NOT_SUPPORTED,
         ConstraintType.primary_key: ConstraintSupport.NOT_SUPPORTED,
         ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,

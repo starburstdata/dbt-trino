@@ -1,19 +1,3 @@
-# model breaking constraints
-trino_model_char_value_to_int_column = """
-{{
-  config(
-    materialized = "table"
-  )
-}}
-
-select
-  -- char value for 'id', which is integer type
-  'char_value' as id,
-  -- change the color as well (to test rollback)
-  'red' as color,
-  '2019-01-01' as date_day
-"""
-
 trino_model_schema_yml = """
 version: 2
 models:
@@ -27,6 +11,7 @@ models:
         data_type: integer
         description: hello
         constraints:
+          - type: not_null
           - type: check
             expression: (id > 0)
         tests:
@@ -44,6 +29,7 @@ models:
         data_type: integer
         description: hello
         constraints:
+          - type: not_null
           - type: check
             expression: (id > 0)
         tests:
@@ -61,6 +47,7 @@ models:
         data_type: integer
         description: hello
         constraints:
+          - type: not_null
           - type: check
             expression: (id > 0)
         tests:
@@ -78,6 +65,7 @@ models:
         data_type: integer
         description: hello
         constraints:
+          - type: not_null
           - type: check
             expression: (id > 0)
         tests:
