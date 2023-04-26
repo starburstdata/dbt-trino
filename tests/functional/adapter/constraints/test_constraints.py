@@ -22,13 +22,12 @@ from dbt.tests.adapter.constraints.test_constraints import (
 
 from tests.functional.adapter.constraints.fixtures import (
     trino_constrained_model_schema_yml,
-    trino_model_char_value_to_int_column,
     trino_model_schema_yml,
 )
 
 _expected_sql_trino = """
 create table <model_identifier> (
-    id integer,
+    id integer not null,
     color varchar,
     date_day varchar
 ) ;
@@ -74,6 +73,7 @@ class TrinoColumnEqualSetup:
         ]
 
 
+@pytest.mark.iceberg
 class TestTrinoTableConstraintsColumnsEqual(
     TrinoColumnEqualSetup, BaseTableConstraintsColumnsEqual
 ):
@@ -96,6 +96,7 @@ class TestTrinoViewConstraintsColumnsEqual(TrinoColumnEqualSetup, BaseViewConstr
         }
 
 
+@pytest.mark.iceberg
 class TestTrinoIncrementalConstraintsColumnsEqual(
     TrinoColumnEqualSetup, BaseIncrementalConstraintsColumnsEqual
 ):
@@ -108,6 +109,7 @@ class TestTrinoIncrementalConstraintsColumnsEqual(
         }
 
 
+@pytest.mark.iceberg
 class TestTrinoTableConstraintsRuntimeDdlEnforcement(BaseConstraintsRuntimeDdlEnforcement):
     @pytest.fixture(scope="class")
     def models(self):
@@ -121,6 +123,7 @@ class TestTrinoTableConstraintsRuntimeDdlEnforcement(BaseConstraintsRuntimeDdlEn
         return _expected_sql_trino
 
 
+@pytest.mark.iceberg
 class TestTrinoTableConstraintsRollback(BaseConstraintsRollback):
     @pytest.fixture(scope="class")
     def models(self):
@@ -129,20 +132,12 @@ class TestTrinoTableConstraintsRollback(BaseConstraintsRollback):
             "constraints_schema.yml": trino_model_schema_yml,
         }
 
-    # We are trying to load char value to integer column to break constraint.
-    # In BaseConstraintsRollback it is checked by violating not-null constraint,
-    # But not-null constraint is not supported in dbt-trino
-    @pytest.fixture(scope="class")
-    def null_model_sql(self):
-        return trino_model_char_value_to_int_column
-
     @pytest.fixture(scope="class")
     def expected_error_messages(self):
-        return [
-            "Please ensure the name, data_type, and number of columns in your contract match the columns in your model's definition."
-        ]
+        return ["NULL value not allowed for NOT NULL column: id"]
 
 
+@pytest.mark.iceberg
 class TestTrinoIncrementalConstraintsRuntimeDdlEnforcement(
     BaseIncrementalConstraintsRuntimeDdlEnforcement
 ):
@@ -158,6 +153,7 @@ class TestTrinoIncrementalConstraintsRuntimeDdlEnforcement(
         return _expected_sql_trino
 
 
+@pytest.mark.iceberg
 class TestTrinoIncrementalConstraintsRollback(BaseIncrementalConstraintsRollback):
     @pytest.fixture(scope="class")
     def models(self):
@@ -166,20 +162,12 @@ class TestTrinoIncrementalConstraintsRollback(BaseIncrementalConstraintsRollback
             "constraints_schema.yml": trino_model_schema_yml,
         }
 
-    # We are trying to load char value to integer column to break constraint.
-    # In BaseConstraintsRollback it is checked by violating not-null constraint,
-    # But not-null constraint is not supported in dbt-trino
-    @pytest.fixture(scope="class")
-    def null_model_sql(self):
-        return trino_model_char_value_to_int_column
-
     @pytest.fixture(scope="class")
     def expected_error_messages(self):
-        return [
-            "Please ensure the name, data_type, and number of columns in your contract match the columns in your model's definition."
-        ]
+        return ["NULL value not allowed for NOT NULL column: id"]
 
 
+@pytest.mark.iceberg
 class TestTrinoModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnforcement):
     @pytest.fixture(scope="class")
     def models(self):
@@ -192,7 +180,7 @@ class TestTrinoModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnf
     def expected_sql(self):
         return """
 create table <model_identifier> (
-    id integer,
+    id integer not null,
     color varchar,
     date_day varchar
 ) ;
