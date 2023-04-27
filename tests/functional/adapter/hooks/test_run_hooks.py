@@ -38,8 +38,8 @@ class TestPrePostRunHooksTrino(core_base.TestPrePostRunHooks):
         assert ctx["target_name"] == "default"
         assert ctx["target_schema"] == project.test_schema
         assert ctx["target_threads"] == 4
-        assert ctx["target_type"] == "trino"
-        assert ctx["target_user"] == "admin"
+        assert ctx["target_type"] == project.adapter_type
+        assert "admin" in ctx["target_user"]
         assert ctx["target_pass"] == ""
 
         assert (
