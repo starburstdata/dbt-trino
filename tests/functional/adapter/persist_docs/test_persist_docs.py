@@ -135,6 +135,9 @@ class TestPersistDocsIncremental(TestPersistDocsBase):
         assert len(results) == 4
 
 
+# TODO investigate why it is failing on galaxy, but not on Trino on iceberg
+# TrinoUserError(type=USER_ERROR, name=NOT_SUPPORTED, message="This connector does not support setting view comments")
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocs(BasePersistDocs):
     pass
 
