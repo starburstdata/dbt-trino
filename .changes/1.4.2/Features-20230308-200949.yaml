@@ -1,7 +1,0 @@
-kind: Features
-body: Add query, query_id and rows_affected in adapter response
-time: 2023-03-08T20:09:49.516088+01:00
-custom:
-  Author: mdesmet aezomz louis-zhang-unity3d
-  Issue: "186"
-  PR: "262"

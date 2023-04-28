@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Adjustment to dbt-core 1.4.1
-time: 2023-01-30T09:21:57.706754+01:00
-custom:
-  Author: damian3031
-  Issue: "213"
-  PR: "214"

@@ -1,7 +1,0 @@
-kind: Dependencies
-body: Bump black from 22.12.0 to 23.3.0
-time: 2023-04-06T15:59:07.829542+02:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "277"

@@ -1,7 +1,0 @@
-kind: Dependencies
-body: Update to use trino-python-client 0.321.0
-time: 2023-01-30T16:05:46.699468+01:00
-custom:
-  Author: damian3031
-  Issue: "213"
-  PR: "214"
