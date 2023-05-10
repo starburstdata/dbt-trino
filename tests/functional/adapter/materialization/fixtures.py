@@ -10,6 +10,19 @@ model_sql = """
 select * from {{ ref('seed') }}
 """
 
+model_cte_sql = """
+with source_data as (
+    select 1 as id, 'aaa' as field1, 'bbb' as field2, 111 as field3, 'TTT' as field4
+)
+select id
+       ,field1
+       ,field2
+       ,field3
+       ,field4
+from source_data
+"""
+
+
 profile_yml = """
 version: 2
 models:

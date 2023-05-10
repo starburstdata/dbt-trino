@@ -66,9 +66,9 @@
   {%- set _properties = config.get('properties') -%}
   create or replace materialized view {{ target_relation }}
     {{ properties(_properties) }}
-  as (
+  as
   {{ sql }}
-  );
+  ;
 {%- endmacro -%}
 
 
