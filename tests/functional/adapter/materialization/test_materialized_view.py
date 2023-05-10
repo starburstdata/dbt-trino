@@ -6,7 +6,11 @@ from dbt.tests.util import (
     run_sql_with_adapter,
 )
 
-from tests.functional.adapter.materialization.fixtures import model_sql, seed_csv
+from tests.functional.adapter.materialization.fixtures import (
+    model_cte_sql,
+    model_sql,
+    seed_csv,
+)
 
 
 @pytest.mark.iceberg
@@ -47,6 +51,41 @@ select 1 a""",
             "my_table": "table",
         }
         check_relation_types(project.adapter, expected)
+
+
+@pytest.mark.iceberg
+class TestIcebergMaterializedViewWithCTE:
+    # Configuration in dbt_project.yml
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "mv_cte_test",
+            "models": {
+                "+materialized": "materialized_view",
+            },
+            "seeds": {
+                "+column_types": {"some_date": "timestamp(6)"},
+            },
+        }
+
+    # Everything that goes in the "seeds" directory
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {
+            "seed.csv": seed_csv,
+        }
+
+    # Everything that goes in the "models" directory
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "mat_view.sql": model_cte_sql,
+        }
+
+    def test_mv_with_cte_is_created(self, project):
+        # Create MV
+        results = run_dbt(["run"], expect_pass=True)
+        assert len(results) == 1
 
 
 @pytest.mark.iceberg
