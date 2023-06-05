@@ -58,7 +58,17 @@
             {%- endfor %}
         )
 
-        select *
+        select
+            table_database,
+            table_schema,
+            table_name,
+            table_type,
+            table_owner,
+            column_name,
+            column_index,
+            column_type,
+            column_comment,
+            table_comment
         from tables
         join columns using ("table_database", "table_schema", "table_name")
         join table_comment using ("table_database", "table_schema", "table_name")
