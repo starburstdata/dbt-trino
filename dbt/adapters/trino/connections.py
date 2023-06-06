@@ -482,6 +482,8 @@ class TrinoConnectionManager(SQLConnectionManager):
             if without_comments == "":
                 continue
 
+            individual_query = self._add_query_comment(individual_query)
+
             parent = super(TrinoConnectionManager, self)
             connection, cursor = parent.add_query(
                 individual_query, auto_begin, bindings, abridge_sql_log
