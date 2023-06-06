@@ -2,4 +2,4 @@ dbt-tests-adapter~=1.5.0
 mypy==1.3.0  # patch updates have historically introduced breaking changes
 pre-commit~=3.3
 pytest~=7.3
-tox~=4.5
+tox~=4.6
