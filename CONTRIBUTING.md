@@ -44,9 +44,9 @@ source env/bin/activate
 
 This will create and activate a new Python virtual environment.
 
-#### Docker and `docker-compose`
+#### Docker and `docker compose`
 
-Docker and `docker-compose` are both used in testing. Specific instructions for you OS can be found [here](https://docs.docker.com/get-docker/).
+Docker and `docker compose` are both used in testing. Specific instructions for you OS can be found [here](https://docs.docker.com/get-docker/).
 
 ## Running `dbt-trino` in development
 
