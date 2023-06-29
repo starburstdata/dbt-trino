@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Update to Trino 0.326
+time: 2023-06-30T10:43:22.959978+02:00
+custom:
+  Author: Fokko
+  Issue: "316"
+  PR: "315"
