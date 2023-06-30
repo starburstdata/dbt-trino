@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Set the table comment when creating the table
+time: 2023-06-30T12:29:50.043761+02:00
+custom:
+  Author: Fokko
+  Issue: "318"
+  PR: "317"

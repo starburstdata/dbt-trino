@@ -88,6 +88,11 @@
   {%- endif -%}
 {%- endmacro -%}
 
+{% macro comment(comment) %}
+  {%- if comment is not none and comment|length > 0 -%}
+      comment '{{ comment | replace("'", "''") }}'
+  {%- endif -%}
+{%- endmacro -%}
 
 {% macro trino__create_table_as(temporary, relation, sql) -%}
   {%- set _properties = config.get('properties') -%}
@@ -100,6 +105,7 @@
     {{ get_table_columns_and_constraints() }}
     {{ get_assert_columns_equivalent(sql) }}
     {%- set sql = get_select_subquery(sql) %}
+    {{ comment(model.get('description')) }}
     {{ properties(_properties) }}
   ;
 
@@ -112,6 +118,7 @@
   {%- else %}
 
     create table {{ relation }}
+      {{ comment(model.get('description')) }}
       {{ properties(_properties) }}
     as (
       {{ sql }}
