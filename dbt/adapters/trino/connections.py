@@ -1,6 +1,7 @@
 import decimal
 import os
 import re
+import time
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -505,11 +506,34 @@ class TrinoConnectionManager(SQLConnectionManager):
 
         return connection, cursor
 
-    def execute(self, sql, auto_begin=False, fetch=False):
-        _, cursor = self.add_query(sql, auto_begin)
-        status = self.get_response(cursor)
-        table = self.get_result_from_cursor(cursor)
-        return status, table
+    def execute(
+        self,
+        sql: str,
+        auto_begin: bool =False,
+        fetch: bool =False,
+        max_retries=trino.constants.DEFAULT_MAX_ATTEMPTS,
+        retry_delay=1,
+    ):
+        retry_count = 0
+        while retry_count < max_retries:
+            try:
+                _, cursor = self.add_query(sql, auto_begin)
+                status = self.get_response(cursor)
+                table = self.get_result_from_cursor(cursor)
+                return status, table
+
+            except DbtDatabaseError:
+                retry_count += 1
+                if retry_count < max_retries:
+                    time.sleep(retry_delay)
+                    logger.info(f"Retrying query ({retry_count}/{max_retries})...")
+                else:
+                    raise
+
+            except Exception as exc:
+                raise exc
+
+        raise DbtRuntimeError("Failed to execute the query after maximum retries.")
 
     @classmethod
     def data_type_code_to_name(cls, type_code) -> str:
