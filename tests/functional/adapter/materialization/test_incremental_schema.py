@@ -9,6 +9,8 @@ from tests.functional.adapter.materialization.fixtures import (
     incremental_fail_sql,
     incremental_ignore_sql,
     incremental_ignore_target_sql,
+    incremental_sync_all_columns_diff_data_types_sql,
+    incremental_sync_all_columns_diff_data_types_target_sql,
     incremental_sync_all_columns_sql,
     incremental_sync_all_columns_target_sql,
     model_a_sql,
@@ -20,6 +22,8 @@ from tests.functional.adapter.materialization.fixtures import (
     select_from_incremental_append_new_columns_target_sql,
     select_from_incremental_ignore_sql,
     select_from_incremental_ignore_target_sql,
+    select_from_incremental_sync_all_columns_diff_data_types_sql,
+    select_from_incremental_sync_all_columns_diff_data_types_target_sql,
     select_from_incremental_sync_all_columns_sql,
     select_from_incremental_sync_all_columns_target_sql,
 )
@@ -45,6 +49,8 @@ class OnSchemaChangeBase:
             "incremental_fail.sql": incremental_fail_sql,
             "incremental_sync_all_columns.sql": incremental_sync_all_columns_sql,
             "incremental_sync_all_columns_target.sql": incremental_sync_all_columns_target_sql,
+            "incremental_sync_all_columns_diff_data_types.sql": incremental_sync_all_columns_diff_data_types_sql,
+            "incremental_sync_all_columns_diff_data_types_target.sql": incremental_sync_all_columns_diff_data_types_target_sql,
             "schema.yml": schema_base_yml,
         }
 
@@ -60,6 +66,8 @@ class OnSchemaChangeBase:
             "select_from_incremental_ignore_target.sql": select_from_incremental_ignore_target_sql,
             "select_from_incremental_sync_all_columns.sql": select_from_incremental_sync_all_columns_sql,
             "select_from_incremental_sync_all_columns_target.sql": select_from_incremental_sync_all_columns_target_sql,
+            "select_from_incremental_sync_all_columns_diff_data_types.sql": select_from_incremental_sync_all_columns_diff_data_types_sql,
+            "select_from_incremental_sync_all_columns_diff_data_types_target.sql": select_from_incremental_sync_all_columns_diff_data_types_target_sql,
         }
 
     def list_tests_and_assert(self, include, exclude, expected_tests):
@@ -170,6 +178,24 @@ class OnSchemaChangeBase:
             project, select, exclude, expected, compare_source, compare_target
         )
 
+    def run_incremental_sync_all_columns_data_type_change(self, project):
+        select = "model_a incremental_sync_all_columns_diff_data_types incremental_sync_all_columns_diff_data_types_target"
+        compare_source = "incremental_sync_all_columns_diff_data_types"
+        compare_target = "incremental_sync_all_columns_diff_data_types_target"
+        exclude = None
+        expected = [
+            "select_from_a",
+            "select_from_incremental_sync_all_columns_diff_data_types",
+            "select_from_incremental_sync_all_columns_diff_data_types_target",
+            "unique_model_a_id",
+            "unique_incremental_sync_all_columns_diff_data_types_id",
+            "unique_incremental_sync_all_columns_diff_data_types_target_id",
+        ]
+        self.list_tests_and_assert(select, exclude, expected)
+        self.run_tests_and_assert(
+            project, select, exclude, expected, compare_source, compare_target
+        )
+
     def run_incremental_fail_on_schema_change(self, _):
         select = "model_a incremental_fail"
         run_dbt(["run", "--models", select, "--full-refresh"])
@@ -185,6 +211,9 @@ class OnSchemaChangeBase:
 
     def test_run_incremental_sync_all_columns(self, project):
         self.run_incremental_sync_all_columns(project)
+
+    def test_run_incremental_sync_all_columns_data_type_change(self, project):
+        self.run_incremental_sync_all_columns_data_type_change(project)
 
     def test_run_incremental_fail_on_schema_change(self, project):
         self.run_incremental_fail_on_schema_change(project)
@@ -215,3 +244,9 @@ class TestDeltaOnSchemaChange(OnSchemaChangeBase):
     @pytest.mark.xfail(reason="This connector does not support dropping columns")
     def test_run_incremental_sync_all_columns(self, project):
         super(TestDeltaOnSchemaChange, self).test_run_incremental_sync_all_columns(project)
+
+    @pytest.mark.xfail(reason="This connector does not support dropping columns")
+    def test_run_incremental_sync_all_columns_data_type_change(self, project):
+        super(
+            TestDeltaOnSchemaChange, self
+        ).test_run_incremental_sync_all_columns_data_type_change(project)
