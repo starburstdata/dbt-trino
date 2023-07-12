@@ -95,6 +95,18 @@ models:
       - name: id
         tests:
           - unique
+
+  - name: incremental_sync_all_columns_diff_data_types
+    columns:
+      - name: id
+        tests:
+          - unique
+
+  - name: incremental_sync_all_columns_diff_data_types_target
+    columns:
+      - name: id
+        tests:
+          - unique
 """
 
 model_a_sql = """\
@@ -335,6 +347,50 @@ from source_data
 order by id
 """
 
+incremental_sync_all_columns_diff_data_types_sql = """\
+{{
+    config(
+        materialized='incremental',
+        unique_key='id',
+        on_schema_change='sync_all_columns'
+    )
+}}
+
+WITH source_data AS (SELECT * FROM {{ ref('model_a') }} )
+
+{% if is_incremental() %}
+
+SELECT id,
+       cast(id as varchar) "field1" -- to validate data type changes
+
+FROM source_data WHERE id NOT IN (SELECT id from {{ this }} )
+
+{% else %}
+
+select id,
+       id "field1"
+
+from source_data where id <= 3
+order by id
+{% endif %}
+"""
+
+incremental_sync_all_columns_diff_data_types_target_sql = """\
+{{
+    config(
+        materialized='table'
+    )
+}}
+
+WITH source_data AS (SELECT * FROM {{ ref('model_a') }} )
+
+select id,
+       cast(id as varchar) "field1"
+
+from source_data
+order by id
+"""
+
 select_from_a_sql = "select * from {{ ref('model_a') }} where false"
 
 select_from_incremental_append_new_columns_sql = (
@@ -365,4 +421,12 @@ select_from_incremental_sync_all_columns_sql = (
 
 select_from_incremental_sync_all_columns_target_sql = (
     "select * from {{ ref('incremental_sync_all_columns_target') }} where false"
+)
+
+select_from_incremental_sync_all_columns_diff_data_types_sql = (
+    "select * from {{ ref('incremental_sync_all_columns_diff_data_types') }} where false"
+)
+
+select_from_incremental_sync_all_columns_diff_data_types_target_sql = (
+    "select * from {{ ref('incremental_sync_all_columns_diff_data_types_target') }} where false"
 )
