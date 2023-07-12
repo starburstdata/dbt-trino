@@ -509,10 +509,10 @@ class TrinoConnectionManager(SQLConnectionManager):
     def execute(
         self,
         sql: str,
-        auto_begin: bool =False,
-        fetch: bool =False,
+        auto_begin: bool = False,
+        fetch: bool = False,
         max_retries=trino.constants.DEFAULT_MAX_ATTEMPTS,
-        retry_delay=1,
+        retry_delay: int =1,
     ):
         retry_count = 0
         while retry_count < max_retries:
