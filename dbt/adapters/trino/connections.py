@@ -512,7 +512,7 @@ class TrinoConnectionManager(SQLConnectionManager):
         auto_begin: bool = False,
         fetch: bool = False,
         max_retries=trino.constants.DEFAULT_MAX_ATTEMPTS,
-        retry_delay: int =1,
+        retry_delay: int = 1,
     ):
         retry_count = 0
         while retry_count < max_retries:
