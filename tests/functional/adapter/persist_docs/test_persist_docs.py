@@ -66,9 +66,6 @@ class TestPersistDocsTable(TestPersistDocsBase):
         assert len(results) == 4
 
 
-# TODO Galaxy tests skipped on type=USER_ERROR, name=PERMISSION_DENIED,
-# message="Access Denied: Cannot comment view"
-@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocsView(TestPersistDocsBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -135,9 +132,6 @@ class TestPersistDocsIncremental(TestPersistDocsBase):
         assert len(results) == 4
 
 
-# TODO investigate why it is failing on galaxy, but not on Trino on iceberg
-# TrinoUserError(type=USER_ERROR, name=NOT_SUPPORTED, message="This connector does not support setting view comments")
-@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocs(BasePersistDocs):
     pass
 
