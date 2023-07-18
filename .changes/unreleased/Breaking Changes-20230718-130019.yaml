@@ -1,0 +1,7 @@
+kind: Breaking Changes
+body: Drop support for Python 3.7
+time: 2023-07-18T13:00:19.915667+02:00
+custom:
+  Author: damian3031
+  Issue: "314"
+  PR: "331"
