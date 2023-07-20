@@ -11,5 +11,6 @@ create table {schema}.on_run_hook (
     target_pass      VARCHAR,
     target_threads   INTEGER,
     run_started_at   VARCHAR,
-    invocation_id    VARCHAR
+    invocation_id    VARCHAR,
+    thread_id        VARCHAR
 );

@@ -16,7 +16,7 @@
     {{ log("No existing materialized view found, creating materialized view...", info=true) }}
     {%- set build_sql = create_materialized_view_as(target_relation) %}
 
-  {% elif full_refresh_mode or existing_relation.type != "materializedview" %}
+  {% elif full_refresh_mode or existing_relation.type != "materialized_view" %}
     {{ log("Found a " ~ existing_relation.type ~ " with same name. Dropping it...", info=true) }}
     {#-- Make sure the backup doesn't exist so we don't encounter issues with the rename below #}
     {% set backup_identifier = existing_relation.identifier ~ "__dbt_backup" %}
