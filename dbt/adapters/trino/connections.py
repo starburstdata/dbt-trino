@@ -482,8 +482,6 @@ class TrinoConnectionManager(SQLConnectionManager):
             if without_comments == "":
                 continue
 
-            individual_query = self._add_query_comment(individual_query)
-
             parent = super(TrinoConnectionManager, self)
             connection, cursor = parent.add_query(
                 individual_query, auto_begin, bindings, abridge_sql_log
@@ -504,12 +502,6 @@ class TrinoConnectionManager(SQLConnectionManager):
             )
 
         return connection, cursor
-
-    def execute(self, sql, auto_begin=False, fetch=False):
-        _, cursor = self.add_query(sql, auto_begin)
-        status = self.get_response(cursor)
-        table = self.get_result_from_cursor(cursor)
-        return status, table
 
     @classmethod
     def data_type_code_to_name(cls, type_code) -> str:

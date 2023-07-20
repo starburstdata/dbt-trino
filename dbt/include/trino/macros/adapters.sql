@@ -32,7 +32,7 @@
       t.table_catalog as database,
       t.table_name as name,
       t.table_schema as schema,
-      case when mv.name is not null then 'materializedview'
+      case when mv.name is not null then 'materialized_view'
            when t.table_type = 'BASE TABLE' then 'table'
            when t.table_type = 'VIEW' then 'view'
            else t.table_type
@@ -149,7 +149,7 @@
 
 
 {% macro trino__drop_relation(relation) -%}
-  {% set relation_type = 'materialized view' if relation.type == 'materializedview' else relation.type %}
+  {% set relation_type = relation.type|replace("_", " ") %}
   {% call statement('drop_relation', auto_begin=False) -%}
     drop {{ relation_type }} if exists {{ relation }}
   {%- endcall %}
@@ -183,7 +183,7 @@
 
 
 {% macro trino__rename_relation(from_relation, to_relation) -%}
-  {% set from_relation_type = 'materialized view' if from_relation.type == 'materializedview' else from_relation.type %}
+  {% set from_relation_type = from_relation.type|replace("_", " ") %}
   {% call statement('rename_relation') -%}
     alter {{ from_relation_type }} {{ from_relation }} rename to {{ to_relation }}
   {%- endcall %}

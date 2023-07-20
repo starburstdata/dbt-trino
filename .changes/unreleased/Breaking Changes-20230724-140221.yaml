@@ -1,0 +1,9 @@
+kind: Breaking Changes
+body: Renamed relation type 'materializedview' to 'materialized_view' to be consistent
+  with dbt-core 1.6. If you have any custom macro where you check if relation type
+  equals to 'materializedview', change it to 'materialized_view'
+time: 2023-07-24T14:02:21.439344+02:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "332"

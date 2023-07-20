@@ -18,7 +18,7 @@ class TestIcebergMaterializedViewExists:
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
-            "name": "materializedview",
+            "name": "materialized_view",
         }
 
     @pytest.fixture(scope="class")
@@ -37,8 +37,8 @@ select 1 a""",
 
         # check relation types
         expected = {
-            "my_table": "materializedview",
-            "my_view": "materializedview",
+            "my_table": "materialized_view",
+            "my_view": "materialized_view",
         }
         check_relation_types(project.adapter, expected)
 
@@ -176,7 +176,7 @@ class TestIcebergMaterializedViewDropAndCreate:
         return {
             "mat_view_overrides_table.sql": model_sql,
             "mat_view_overrides_view.sql": model_sql,
-            "mat_view_overrides_materializedview.sql": model_sql,
+            "mat_view_overrides_materialized_view.sql": model_sql,
         }
 
     def test_mv_overrides_relation(self, project):
@@ -184,7 +184,7 @@ class TestIcebergMaterializedViewDropAndCreate:
         project.adapter.execute("CREATE VIEW mat_view_overrides_view AS SELECT 3 c")
         project.adapter.execute("CREATE TABLE mat_view_overrides_table AS SELECT 4 d")
         project.adapter.execute(
-            "CREATE MATERIALIZED VIEW mat_view_overrides_materializedview AS SELECT 5 e"
+            "CREATE MATERIALIZED VIEW mat_view_overrides_materialized_view AS SELECT 5 e"
         )
 
         # Seed seed
@@ -197,9 +197,9 @@ class TestIcebergMaterializedViewDropAndCreate:
 
         # Check if MVs were created correctly
         expected = {
-            "mat_view_overrides_view": "materializedview",
-            "mat_view_overrides_table": "materializedview",
-            "mat_view_overrides_materializedview": "materializedview",
+            "mat_view_overrides_view": "materialized_view",
+            "mat_view_overrides_table": "materialized_view",
+            "mat_view_overrides_materialized_view": "materialized_view",
         }
         check_relation_types(project.adapter, expected)
 
@@ -209,7 +209,7 @@ class TestIcebergMaterializedViewDropAndCreate:
                 "seed",
                 "mat_view_overrides_view",
                 "mat_view_overrides_table",
-                "mat_view_overrides_materializedview",
+                "mat_view_overrides_materialized_view",
             ],
         )
 
