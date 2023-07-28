@@ -6,22 +6,30 @@ from dbt.tests.adapter.constraints.fixtures import (
     my_model_sql,
     my_model_view_wrong_name_sql,
     my_model_view_wrong_order_sql,
+    my_model_with_quoted_column_name_sql,
     my_model_wrong_name_sql,
     my_model_wrong_order_sql,
 )
 from dbt.tests.adapter.constraints.test_constraints import (
+    BaseConstraintQuotedColumn,
     BaseConstraintsRollback,
     BaseConstraintsRuntimeDdlEnforcement,
     BaseIncrementalConstraintsColumnsEqual,
     BaseIncrementalConstraintsRollback,
     BaseIncrementalConstraintsRuntimeDdlEnforcement,
+    BaseIncrementalContractSqlHeader,
     BaseModelConstraintsRuntimeEnforcement,
     BaseTableConstraintsColumnsEqual,
+    BaseTableContractSqlHeader,
     BaseViewConstraintsColumnsEqual,
 )
 
 from tests.functional.adapter.constraints.fixtures import (
     trino_constrained_model_schema_yml,
+    trino_model_contract_header_schema_yml,
+    trino_model_contract_sql_header_sql,
+    trino_model_incremental_contract_sql_header_sql,
+    trino_model_quoted_column_schema_yml,
     trino_model_schema_yml,
 )
 
@@ -167,6 +175,24 @@ class TestTrinoIncrementalConstraintsRollback(BaseIncrementalConstraintsRollback
         return ["NULL value not allowed for NOT NULL column: id"]
 
 
+class TestTrinoTableContractSqlHeader(BaseTableContractSqlHeader):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_contract_sql_header.sql": trino_model_contract_sql_header_sql,
+            "constraints_schema.yml": trino_model_contract_header_schema_yml,
+        }
+
+
+class TestTrinoIncrementalContractSqlHeader(BaseIncrementalContractSqlHeader):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model_contract_sql_header.sql": trino_model_incremental_contract_sql_header_sql,
+            "constraints_schema.yml": trino_model_contract_header_schema_yml,
+        }
+
+
 @pytest.mark.iceberg
 class TestTrinoModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnforcement):
     @pytest.fixture(scope="class")
@@ -198,4 +224,34 @@ insert into <model_identifier>
     ) as model_subq
 )
 ;
+"""
+
+
+@pytest.mark.iceberg
+class TestTrinoConstraintQuotedColumn(BaseConstraintQuotedColumn):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_with_quoted_column_name_sql,
+            "constraints_schema.yml": trino_model_quoted_column_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
+    def expected_sql(self):
+        return """
+create table <model_identifier> (
+    id integer not null,
+    "from" varchar not null,
+    date_day varchar
+) ;
+insert into <model_identifier>
+(
+    select id, "from", date_day
+    from (
+        select
+          'blue' as "from",
+          1 as id,
+          '2019-01-01' as date_day
+    ) as model_subq
+);
 """
