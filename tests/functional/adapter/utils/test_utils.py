@@ -11,6 +11,7 @@ from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampA
 from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd
 from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
+from dbt.tests.adapter.utils.test_equals import BaseEquals
 from dbt.tests.adapter.utils.test_escape_single_quotes import (
     BaseEscapeSingleQuotesQuote,
 )
@@ -26,6 +27,7 @@ from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
+from dbt.tests.adapter.utils.test_validate_sql import BaseValidateSqlMethod
 
 from tests.functional.adapter.fixture_datediff import (
     models__test_datediff_sql,
@@ -146,6 +148,10 @@ class TestDateTrunc(BaseDateTrunc):
         }
 
 
+class TestEquals(BaseEquals):
+    pass
+
+
 class TestEscapeSingleQuotes(BaseEscapeSingleQuotesQuote):
     pass
 
@@ -195,4 +201,8 @@ class TestSplitPart(BaseSplitPart):
 
 
 class TestStringLiteral(BaseStringLiteral):
+    pass
+
+
+class TestValidateSqlMethod(BaseValidateSqlMethod):
     pass
