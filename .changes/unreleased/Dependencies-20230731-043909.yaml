@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update dbt-tests-adapter requirement from ~=1.6.0rc1 to ~=1.6.0rc2"
+time: 2023-07-31T04:39:09.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 336
