@@ -67,6 +67,14 @@ class CustomSchemaBase(ABC):
             )
         }
 
+    @pytest.fixture(scope="function", autouse=True)
+    def teardown_method(self, project):
+        yield
+        relation = project.adapter.Relation.create(
+            database=project.database, schema=f"{project.test_schema}_{self.custom_schema_name}"
+        )
+        project.adapter.drop_schema(relation)
+
     def test_custom_schema_trino(self, project):
         # Seed seeds, run models.
         results = run_dbt(["seed"], expect_pass=True)

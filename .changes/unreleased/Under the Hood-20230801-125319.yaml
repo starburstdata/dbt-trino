@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Add schema teardown method where necessary
+time: 2023-08-01T12:53:19.864514+02:00
+custom:
+  Author: damian3031
+  Issue: "267"
+  PR: "335"

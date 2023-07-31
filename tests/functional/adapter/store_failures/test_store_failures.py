@@ -45,6 +45,15 @@ class TestStoreFailuresTable:
             "table_store_failures.yml": table_profile_yml,
         }
 
+    @pytest.fixture(autouse=True)
+    def teardown_method(self, project):
+        yield
+        with project.adapter.connection_named("__test"):
+            relation = project.adapter.Relation.create(
+                database=project.database, schema=f"{project.test_schema}_dbt_test__audit"
+            )
+            project.adapter.drop_schema(relation)
+
     def test_run_seed_test(self, project):
         # seed seeds
         results = run_dbt(["seed"], expect_pass=True)
