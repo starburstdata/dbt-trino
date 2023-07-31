@@ -13,8 +13,27 @@ from tests.functional.adapter.materialization.fixtures import (
 )
 
 
+# TODO: teardown_method is needed to properly remove relations and schemas after tests.
+#  It could be refactored and simplified when CASCADE will be supported in Iceberg, delta, hive connectors
 @pytest.mark.iceberg
-class TestIcebergMaterializedViewExists:
+class TestIcebergMaterializedViewBase:
+    @pytest.fixture(scope="function", autouse=True)
+    def teardown_method(self, project):
+        yield
+        # Drop materialized views first, then drop schema
+        sql = "select * from system.metadata.materialized_views"
+        results = run_sql_with_adapter(project.adapter, sql, fetch="all")
+        for mv in results:
+            project.run_sql(f"drop materialized view {mv[0]}.{mv[1]}.{mv[2]}")
+
+        relation = project.adapter.Relation.create(
+            database=project.database, schema=project.test_schema
+        )
+        project.adapter.drop_schema(relation)
+
+
+@pytest.mark.iceberg
+class TestIcebergMaterializedViewExists(TestIcebergMaterializedViewBase):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
@@ -54,7 +73,7 @@ select 1 a""",
 
 
 @pytest.mark.iceberg
-class TestIcebergMaterializedViewWithCTE:
+class TestIcebergMaterializedViewWithCTE(TestIcebergMaterializedViewBase):
     # Configuration in dbt_project.yml
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -89,7 +108,7 @@ class TestIcebergMaterializedViewWithCTE:
 
 
 @pytest.mark.iceberg
-class TestIcebergMaterializedViewCreate:
+class TestIcebergMaterializedViewCreate(TestIcebergMaterializedViewBase):
     # Configuration in dbt_project.yml
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -148,7 +167,7 @@ class TestIcebergMaterializedViewCreate:
 
 
 @pytest.mark.iceberg
-class TestIcebergMaterializedViewDropAndCreate:
+class TestIcebergMaterializedViewDropAndCreate(TestIcebergMaterializedViewBase):
     # Configuration in dbt_project.yml
     @pytest.fixture(scope="class")
     def project_config_update(self):
@@ -216,7 +235,7 @@ class TestIcebergMaterializedViewDropAndCreate:
 
 @pytest.mark.iceberg
 @pytest.mark.skip_profile("starburst_galaxy")
-class TestIcebergMaterializedViewProperties:
+class TestIcebergMaterializedViewProperties(TestIcebergMaterializedViewBase):
     # Configuration in dbt_project.yml
     @pytest.fixture(scope="class")
     def project_config_update(self):
