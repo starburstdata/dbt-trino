@@ -1,7 +1,0 @@
-kind: Dependencies
-body: Update dbt-tests-adapter requirement from ~=1.5.0 to ~=1.5.2
-time: 2023-07-07T13:51:57.323433+02:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "320"

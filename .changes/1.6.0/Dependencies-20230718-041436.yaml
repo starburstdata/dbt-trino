@@ -1,5 +1,5 @@
 kind: Dependencies
-body: "Update dbt-tests-adapter requirement from ~=1.5.2 to ~=1.5.3"
+body: "Update dbt-tests-adapter requirement from ~=1.5.2 to ~=1.6.0"
 time: 2023-07-18T04:14:36.00000Z
 custom:
   Author: dependabot[bot]

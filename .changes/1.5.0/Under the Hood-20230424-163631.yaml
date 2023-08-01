@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Add new tests from dbt-tests-adapter 1.5
-time: 2023-04-24T16:36:31.991179+02:00
-custom:
-  Author: damian3031
-  Issue: "284"
-  PR: "289"

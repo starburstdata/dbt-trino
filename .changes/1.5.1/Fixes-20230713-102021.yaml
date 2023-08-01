@@ -1,7 +1,0 @@
-kind: Fixes
-body: Fix sync_all_columns schema change strategy for incremental models
-time: 2023-07-13T10:20:21.52287-04:00
-custom:
-  Author: posulliv
-  Issue: "326"
-  PR: "324"
