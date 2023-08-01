@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Added columns types checking methods for Trino
-time: 2023-04-24T16:38:15.069495+02:00
-custom:
-  Author: damian3031
-  Issue: "284"
-  PR: "289"

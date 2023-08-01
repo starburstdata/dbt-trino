@@ -1,7 +1,0 @@
-kind: Dependencies
-body: Upgrade dbt-core to 1.5.0
-time: 2023-04-28T09:41:36.72146+02:00
-custom:
-  Author: damian3031
-  Issue: "284"
-  PR: "295"
