@@ -8,7 +8,32 @@ from dbt.tests.util import run_dbt
 
 @pytest.mark.iceberg
 class TestSimpleCopyBase(SimpleCopyBase):
-    pass
+    def test_simple_copy_with_materialized_views(self, project):
+        project.run_sql(f"create table {project.test_schema}.unrelated_table (id int)")
+        sql = f"""
+            create materialized view {project.test_schema}.unrelated_materialized_view as (
+                select * from {project.test_schema}.unrelated_table
+            )
+        """
+        project.run_sql(sql)
+        sql = f"""
+            create view {project.test_schema}.unrelated_view as (
+                select * from {project.test_schema}.unrelated_materialized_view
+            )
+        """
+        project.run_sql(sql)
+        results = run_dbt(["seed"])
+        assert len(results) == 1
+        results = run_dbt()
+        assert len(results) == 7
+
+        # clean up
+        # TODO: check if this clean-up is still needed
+        #  after implementing CASCADE in iceberg, delta, hive connectors
+        #  if not, entire method could be deleted
+        project.run_sql("drop view unrelated_view")
+        project.run_sql("drop materialized view unrelated_materialized_view")
+        project.run_sql("drop table unrelated_table")
 
 
 # Trino implementation of dbt.tests.fixtures.project.TestProjInfo.get_tables_in_schema
