@@ -331,6 +331,17 @@ class ConnectionWrapper(object):
 
         return None
 
+    def fetchmany(self, size):
+        if self._cursor is None:
+            return None
+
+        if self._fetch_result is not None:
+            ret = self._fetch_result[:size]
+            self._fetch_result = None
+            return ret
+
+        return None
+
     def execute(self, sql, bindings=None):
         if not self._prepared_statements_enabled and bindings is not None:
             # DEPRECATED: by default prepared statements are used.
