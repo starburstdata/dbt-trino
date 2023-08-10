@@ -89,8 +89,12 @@
 {%- endmacro -%}
 
 {% macro comment(comment) %}
-  {%- if comment is not none and comment|length > 0 -%}
-      comment '{{ comment | replace("'", "''") }}'
+  {%- set persist_docs = model['config'].get('persist_docs') -%}
+  {%- if persist_docs -%}
+    {%- set persist_relation = persist_docs.get('relation') -%}
+    {%- if persist_relation and comment is not none and comment|length > 0 -%}
+        comment '{{ comment | replace("'", "''") }}'
+    {%- endif -%}
   {%- endif -%}
 {%- endmacro -%}
 
