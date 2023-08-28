@@ -1,10 +1,11 @@
 import pytest
 from dbt.tests.adapter.persist_docs.test_persist_docs import (
     BasePersistDocs,
+    BasePersistDocsBase,
     BasePersistDocsColumnMissing,
     BasePersistDocsCommentOnQuotedColumn,
 )
-from dbt.tests.util import run_dbt
+from dbt.tests.util import run_dbt, run_sql_with_adapter
 
 from tests.functional.adapter.persist_docs.fixtures import (
     incremental_model,
@@ -142,3 +143,60 @@ class TestPersistDocsColumnMissing(BasePersistDocsColumnMissing):
 
 class TestPersistDocsCommentOnQuotedColumn(BasePersistDocsCommentOnQuotedColumn):
     pass
+
+
+class BasePersistDocsDisabled(BasePersistDocsBase):
+    def test_persist_docs_disabled(self, project):
+        sql = f"""select * from system.metadata.table_comments
+        where catalog_name = '{project.database}'
+        and schema_name = '{project.test_schema}'
+        and table_name = 'table_model'
+        and comment is not null
+        """
+        result = run_sql_with_adapter(project.adapter, sql, fetch="all")
+        assert len(result) == 0
+
+
+class TestPersistDocsDisabledByDefault(BasePersistDocsDisabled):
+    """
+    Without providing `persist_docs` config, table comments shouldn't be added by default.
+    """
+
+    pass
+
+
+class TestPersistDocsRelationSetToFalse(BasePersistDocsDisabled):
+    """
+    With `persist_docs.relation` config set to False, table comments shouldn't be added.
+    """
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "models": {
+                "test": {
+                    "+persist_docs": {
+                        "relation": False,
+                        "columns": True,
+                    },
+                }
+            }
+        }
+
+
+class TestPersistDocsRelationNotSet(BasePersistDocsDisabled):
+    """
+    Without providing `persist_docs.relation` config, table comments shouldn't be added by default.
+    """
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "models": {
+                "test": {
+                    "+persist_docs": {
+                        "columns": True,
+                    },
+                }
+            }
+        }
