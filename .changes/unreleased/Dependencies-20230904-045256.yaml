@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update pre-commit requirement from ~=3.3 to ~=3.4"
+time: 2023-09-04T04:52:56.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 349
