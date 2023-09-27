@@ -38,11 +38,12 @@
            else t.table_type
       end as table_type
     from {{ relation.information_schema() }}.tables t
-    left join system.metadata.materialized_views mv
+    left join (
+            select * from system.metadata.materialized_views
+            where catalog_name = '{{ relation.database | lower }}'
+              and schema_name = '{{ relation.schema | lower }}') mv
           on mv.catalog_name = t.table_catalog and mv.schema_name = t.table_schema and mv.name = t.table_name
     where t.table_schema = '{{ relation.schema | lower }}'
-          and (mv.catalog_name is null or mv.catalog_name =  '{{ relation.database | lower }}')
-          and (mv.schema_name is null or mv.schema_name =  '{{ relation.schema | lower }}')
   {% endcall %}
   {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
