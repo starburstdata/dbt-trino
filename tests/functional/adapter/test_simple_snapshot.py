@@ -93,3 +93,62 @@ class TestIcebergSnapshotCheck(TrinoSnapshotCheck):
 @pytest.mark.delta
 class TestDeltaSnapshotCheck(TrinoSnapshotCheck):
     pass
+
+
+@pytest.mark.iceberg
+class TestIcebergSimpleSnapshotLocationProperty(TrinoSimpleSnapshot):
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "seeds": {
+                "+column_types": {"updated_at": "timestamp(6)"},
+            },
+            "snapshots": {
+                "+properties": {
+                    "location": "'s3://datalake/TestIcebergSimpleSnapshotLocationProperty'"
+                },
+            },
+        }
+
+
+@pytest.mark.delta
+class TestDeltaSimpleSnapshotLocationProperty(TrinoSimpleSnapshot):
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "snapshots": {
+                "+properties": {
+                    "location": "'s3://datalake/TestDeltaSimpleSnapshotLocationProperty'"
+                },
+            },
+        }
+
+
+@pytest.mark.iceberg
+class TestIcebergSnapshotCheckLocationProperty(TrinoSnapshotCheck):
+    @pytest.fixture(scope="class")
+    def macros(self):
+        return {"iceberg.sql": iceberg_macro_override_sql}
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "snapshots": {
+                "+properties": {
+                    "location": "'s3://datalake/TestIcebergSnapshotCheckLocationProperty'"
+                },
+            },
+        }
+
+
+@pytest.mark.delta
+class TestDeltaSnapshotCheckLocationProperty(TrinoSnapshotCheck):
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "snapshots": {
+                "+properties": {
+                    "location": "'s3://datalake/TestDeltaSnapshotCheckLocationProperty'"
+                },
+            },
+        }

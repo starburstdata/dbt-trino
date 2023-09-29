@@ -7,7 +7,8 @@
 
 {% macro trino__post_snapshot(staging_relation) %}
   -- Clean up the snapshot temp table
-  {% do drop_relation(staging_relation) %}
+  {%- set snapshot_tmp_relation_type = config.get('snapshot_tmp_relation_type', 'view') -%}
+  {% do drop_relation(staging_relation.incorporate(type=snapshot_tmp_relation_type)) %}
 {% endmacro %}
 
 {% macro trino__snapshot_merge_sql(target, source, insert_cols) -%}
@@ -31,4 +32,25 @@
             {%- if not loop.last %}, {% endif %}
             {%- endfor %})
 
+{% endmacro %}
+
+
+{% macro build_snapshot_staging_table(strategy, sql, target_relation) %}
+    {% set temp_relation = make_temp_relation(target_relation) %}
+
+    {% set select = snapshot_staging_table(strategy, sql, target_relation) %}
+
+    {# --Based on configuration, materialize temporary relation as a view or as a table-- #}
+    {%- set snapshot_tmp_relation_type = config.get('snapshot_tmp_relation_type', 'view') -%}
+    {% if snapshot_tmp_relation_type == 'view' %}
+        {% do run_query(create_view_as(temp_relation, select)) %}
+    {% elif snapshot_tmp_relation_type == 'table' %}
+        {% do run_query(create_table_as(True, temp_relation, select)) %}
+    {% else %}
+        {% do exceptions.raise_compiler_error(
+          "Invalid snapshot_tmp_relation_type, should be view or table, got " ~ snapshot_tmp_relation_type
+        ) %}
+    {% endif %}
+
+    {% do return(temp_relation) %}
 {% endmacro %}
