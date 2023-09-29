@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Remove redundant DISTINCT from schema listing query
+time: 2023-09-29T21:17:58.859993+02:00
+custom:
+  Author: findepi
+  Issue: ""
+  PR: "356"
