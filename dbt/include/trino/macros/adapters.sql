@@ -215,7 +215,7 @@
 
 {% macro trino__list_schemas(database) -%}
   {% call statement('list_schemas', fetch_result=True, auto_begin=False) %}
-    select distinct schema_name
+    select schema_name
     from {{ information_schema_name(database) }}.schemata
   {% endcall %}
   {{ return(load_result('list_schemas').table) }}
