@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Query table_comments without unrolling with UNION ALL
+time: 2023-10-03T16:14:28.238801+02:00
+custom:
+  Author: findepi
+  Issue: ""
+  PR: "357"

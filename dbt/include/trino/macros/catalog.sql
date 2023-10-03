@@ -67,7 +67,6 @@
 
 
 {% macro trino__get_catalog_table_comment_schemas_sql(information_schema, schemas) -%}
-    {%- for schema in schemas %}
     select
         catalog_name as "table_database",
         schema_name as "table_schema",
@@ -79,11 +78,7 @@
         and
         schema_name != 'information_schema'
         and
-        schema_name = '{{ schema | lower }}'
-    {%- if not loop.last %}
-    union all
-    {% endif -%}
-    {%- endfor -%}
+        schema_name in ('{{ schemas | join("','") | lower }}')
 {%- endmacro %}
 
 
