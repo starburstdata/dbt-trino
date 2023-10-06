@@ -1,5 +1,5 @@
-dbt-tests-adapter~=1.6.0
-mypy==1.4.1  # patch updates have historically introduced breaking changes
-pre-commit~=3.3
+dbt-tests-adapter~=1.6.5
+mypy==1.5.1  # patch updates have historically introduced breaking changes
+pre-commit~=3.4
 pytest~=7.4
-tox~=4.6
+tox~=4.11
