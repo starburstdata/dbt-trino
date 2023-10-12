@@ -1,4 +1,4 @@
-dbt-tests-adapter~=1.6.5
+dbt-tests-adapter~=1.6.6
 mypy==1.5.1  # patch updates have historically introduced breaking changes
 pre-commit~=3.4
 pytest~=7.4
