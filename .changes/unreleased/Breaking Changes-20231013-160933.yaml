@@ -1,0 +1,7 @@
+kind: Breaking Changes
+body: Update dbt-core to 1.7.0rc1
+time: 2023-10-13T16:09:33.989035+02:00
+custom:
+  Author: damian3031
+  Issue: "361"
+  PR: "363"

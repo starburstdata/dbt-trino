@@ -7,7 +7,7 @@ import os
 from unittest import TestCase, mock
 
 from dbt.config.project import PartialProject
-from hologram import ValidationError
+from dbt.dataclass_schema import ValidationError
 
 
 def normalize(path):
@@ -156,6 +156,7 @@ class ContractTestCase(TestCase):
             cls = self.ContractType
 
         with self.assertRaises(ValidationError):
+            cls.validate(dct)
             cls.from_dict(dct)
 
 
