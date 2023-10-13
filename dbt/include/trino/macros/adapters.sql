@@ -153,11 +153,9 @@
 {% endmacro %}
 
 
-{% macro trino__drop_relation(relation) -%}
+{%- macro trino__get_drop_sql(relation) -%}
   {% set relation_type = relation.type|replace("_", " ") %}
-  {% call statement('drop_relation', auto_begin=False) -%}
     drop {{ relation_type }} if exists {{ relation }}
-  {%- endcall %}
 {% endmacro %}
 
 

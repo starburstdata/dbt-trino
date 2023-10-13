@@ -35,7 +35,7 @@ from tests.functional.adapter.constraints.fixtures import (
 
 _expected_sql_trino = """
 create table <model_identifier> (
-    "id" integer not null,
+    "id" int not null,
     color varchar,
     date_day varchar
 ) ;
@@ -206,7 +206,7 @@ class TestTrinoModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnf
     def expected_sql(self):
         return """
 create table <model_identifier> (
-    "id" integer not null,
+    "id" int not null,
     color varchar,
     date_day varchar
 ) ;
@@ -240,7 +240,7 @@ class TestTrinoConstraintQuotedColumn(BaseConstraintQuotedColumn):
     def expected_sql(self):
         return """
 create table <model_identifier> (
-    id integer not null,
+    id int not null,
     "from" varchar not null,
     date_day varchar
 ) ;
