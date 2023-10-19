@@ -3,6 +3,12 @@ from typing import Dict, Optional
 
 import agate
 from dbt.adapters.base.impl import AdapterConfig, ConstraintSupport
+from dbt.adapters.capability import (
+    Capability,
+    CapabilityDict,
+    CapabilitySupport,
+    Support,
+)
 from dbt.adapters.sql import SQLAdapter
 from dbt.contracts.graph.nodes import ConstraintType
 from dbt.exceptions import DbtDatabaseError
@@ -29,6 +35,14 @@ class TrinoAdapter(SQLAdapter):
         ConstraintType.primary_key: ConstraintSupport.NOT_SUPPORTED,
         ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
     }
+
+    _capabilities: CapabilityDict = CapabilityDict(
+        {
+            Capability.SchemaMetadataByRelations: CapabilitySupport(support=Support.Full),
+            # No information about last table modification in information_schema.tables
+            Capability.TableLastModifiedMetadata: CapabilitySupport(support=Support.Unsupported),
+        }
+    )
 
     @classmethod
     def date_function(cls):
