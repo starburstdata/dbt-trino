@@ -1,0 +1,7 @@
+kind: Fixes
+body: Fix materialized view cleanup bug.
+time: 2023-10-20T11:23:17.134994-04:00
+custom:
+  Author: wjhrdy
+  Issue: "366"
+  PR: "367"

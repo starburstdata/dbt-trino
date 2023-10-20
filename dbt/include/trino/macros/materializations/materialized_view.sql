@@ -13,10 +13,10 @@
 
     {% if existing_relation is not none %}
         {{ log("Found a " ~ existing_relation.type ~ " with same name. Will drop it", info=true) }}
-        alter {{ existing_relation.type|replace("_", " ") }} {{ existing_relation }} rename to {{ backup_relation.include(database=False, schema=False) }};
+        alter {{ existing_relation.type|replace("_", " ") }} {{ existing_relation }} rename to {{ backup_relation }};
     {% endif %}
 
-    alter materialized view {{ intermediate_relation }} rename to {{ relation.include(database=False, schema=False) }};
+    alter materialized view {{ intermediate_relation }} rename to {{ relation }};
 
 {% endmacro %}
 
