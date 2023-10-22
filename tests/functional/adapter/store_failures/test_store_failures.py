@@ -1,4 +1,8 @@
 import pytest
+from dbt.tests.adapter.store_test_failures_tests import basic
+from dbt.tests.adapter.store_test_failures_tests.test_store_test_failures import (
+    TestStoreTestFailures,
+)
 from dbt.tests.util import run_dbt
 
 from tests.functional.adapter.store_failures.fixtures import (
@@ -66,3 +70,31 @@ class TestStoreFailuresTable:
         # test tests 2nd times
         results = run_dbt(["test"], expect_pass=True)
         assert len(results) == 5
+
+
+class TestTrinoTestStoreTestFailures(TestStoreTestFailures):
+    pass
+
+
+class TestStoreTestFailuresAsInteractions(basic.StoreTestFailuresAsInteractions):
+    pass
+
+
+class TestStoreTestFailuresAsProjectLevelOff(basic.StoreTestFailuresAsProjectLevelOff):
+    pass
+
+
+class TestStoreTestFailuresAsProjectLevelView(basic.StoreTestFailuresAsProjectLevelView):
+    pass
+
+
+class TestStoreTestFailuresAsGeneric(basic.StoreTestFailuresAsGeneric):
+    pass
+
+
+class TestStoreTestFailuresAsProjectLevelEphemeral(basic.StoreTestFailuresAsProjectLevelEphemeral):
+    pass
+
+
+class TestStoreTestFailuresAsExceptions(basic.StoreTestFailuresAsExceptions):
+    pass
