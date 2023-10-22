@@ -16,6 +16,8 @@ from dbt.tests.adapter.utils.test_escape_single_quotes import (
     BaseEscapeSingleQuotesQuote,
 )
 from dbt.tests.adapter.utils.test_except import BaseExcept
+from dbt.tests.adapter.utils.test_generate_series import BaseGenerateSeries
+from dbt.tests.adapter.utils.test_get_powers_of_two import BaseGetPowersOfTwo
 from dbt.tests.adapter.utils.test_hash import BaseHash
 from dbt.tests.adapter.utils.test_intersect import BaseIntersect
 from dbt.tests.adapter.utils.test_last_day import BaseLastDay
@@ -157,6 +159,14 @@ class TestEscapeSingleQuotes(BaseEscapeSingleQuotesQuote):
 
 
 class TestExcept(BaseExcept):
+    pass
+
+
+class TestGenerateSeries(BaseGenerateSeries):
+    pass
+
+
+class TestGetPowersOfTwo(BaseGetPowersOfTwo):
     pass
 
 
