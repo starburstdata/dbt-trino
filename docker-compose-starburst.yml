@@ -3,10 +3,12 @@ services:
   trino:
     ports:
       - "8080:8080"
-    image: "starburstdata/starburst-enterprise:423-e.3"
+    image: "starburstdata/starburst-enterprise:427-e"
     volumes:
       - ./docker/starburst/etc:/etc/starburst
       - ./docker/starburst/catalog:/etc/starburst/catalog
+    environment:
+      - _JAVA_OPTIONS=-Dfile.encoding=UTF-8
 
   postgres:
     ports:
