@@ -14,9 +14,7 @@ TRINO_VARCHAR_MAX_LENGTH = 2147483646
 class TrinoColumn(Column):
     TYPE_LABELS: ClassVar[Dict[str, str]] = {
         "STRING": "VARCHAR",
-        "TIMESTAMP": "TIMESTAMP",
         "FLOAT": "DOUBLE",
-        "INTEGER": "INT",
     }
 
     @property
