@@ -18,41 +18,6 @@
 ### Contributors
 - [@damian3031](https://github.com/damian3031) ([#363](https://github.com/starburstdata/dbt-trino/pull/363), [#368](https://github.com/starburstdata/dbt-trino/pull/368), [#368](https://github.com/starburstdata/dbt-trino/pull/368), [#368](https://github.com/starburstdata/dbt-trino/pull/368))
 - [@wjhrdy](https://github.com/wjhrdy) ([#367](https://github.com/starburstdata/dbt-trino/pull/367))
-## dbt-trino 1.6.2 - October 10, 2023
-### Fixes
-- Only set the comment when persist_docs.relation is set ([#317](https://github.com/starburstdata/dbt-trino/issues/317), [#343](https://github.com/starburstdata/dbt-trino/pull/343))
-- Fix materialized_views filters when listing relations ([#353](https://github.com/starburstdata/dbt-trino/pull/353))
-### Under the Hood
-- Remove redundant DISTINCT from schema listing query ([#356](https://github.com/starburstdata/dbt-trino/pull/356))
-### Dependencies
-- Update requirements: dbt-tests-adapter from 1.6.0 to 1.6.5 tox from 4.6 to 4.11 pre-commit from 3.3 to 3.4 mypy from 1.4.1 to 1.5.1
- ([#9999](https://github.com/starburstdata/dbt-trino/pull/9999))
-
-### Contributors
-- [@Fokko](https://github.com/Fokko) ([#343](https://github.com/starburstdata/dbt-trino/pull/343))
-- [@damian3031](https://github.com/damian3031) ([#9999](https://github.com/starburstdata/dbt-trino/pull/9999))
-- [@findepi](https://github.com/findepi) ([#353](https://github.com/starburstdata/dbt-trino/pull/353), [#356](https://github.com/starburstdata/dbt-trino/pull/356))
-## dbt-trino 1.6.1 - August 09, 2023
-### Fixes
-- Implemented fetchmany ([#341](https://github.com/starburstdata/dbt-trino/pull/341))
-
-### Contributors
-- [@damian3031](https://github.com/damian3031) ([#341](https://github.com/starburstdata/dbt-trino/pull/341))
-## dbt-trino 1.6.0 - August 01, 2023
-### Breaking Changes
-- Drop support for Python 3.7 ([#314](https://github.com/starburstdata/dbt-trino/issues/314), [#331](https://github.com/starburstdata/dbt-trino/pull/331))
-- Update dbt-core to 1.6.0 ([#332](https://github.com/starburstdata/dbt-trino/pull/332))
-- Renamed relation type 'materializedview' to 'materialized_view' to be consistent with dbt-core 1.6. If you have any custom macro where you check if relation type equals to 'materializedview', change it to 'materialized_view' ([#332](https://github.com/starburstdata/dbt-trino/pull/332))
-### Under the Hood
-- Refactored materialized view macros ([#333](https://github.com/starburstdata/dbt-trino/pull/333))
-- Add new tests from dbt-tests-adapter ([#335](https://github.com/starburstdata/dbt-trino/pull/335))
-- Add schema teardown method where necessary ([#267](https://github.com/starburstdata/dbt-trino/issues/267), [#335](https://github.com/starburstdata/dbt-trino/pull/335))
-### Dependencies
-- Update dbt-tests-adapter requirement from ~=1.5.2 to ~=1.6.0 ([#330](https://github.com/starburstdata/dbt-trino/pull/330))
-
-### Contributors
-- [@damian3031](https://github.com/damian3031) ([#331](https://github.com/starburstdata/dbt-trino/pull/331), [#332](https://github.com/starburstdata/dbt-trino/pull/332), [#332](https://github.com/starburstdata/dbt-trino/pull/332), [#333](https://github.com/starburstdata/dbt-trino/pull/333), [#335](https://github.com/starburstdata/dbt-trino/pull/335), [#335](https://github.com/starburstdata/dbt-trino/pull/335))
-- [@dependabot[bot]](https://github.com/dependabot[bot]) ([#330](https://github.com/starburstdata/dbt-trino/pull/330))
 ## Previous Releases
 
 For information on prior major and minor releases, see their changelogs:
