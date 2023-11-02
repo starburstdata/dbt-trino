@@ -53,12 +53,17 @@ For Trino- and Starburst-specific configuration, you can refer to [Starburst (Tr
 - Want to help us build dbt-trino? Check out the [Contributing Guide](https://github.com/starburstdata/dbt-trino/blob/HEAD/CONTRIBUTING.md)
 
 ### Release process
+First 5 steps are ONLY relevant for bumping __minor__ version:
+1. Create `1.x.latest` branch from the latest tag corresponding to current minor version, e.g. `git checkout -b 1.6.latest v1.6.2` (when bumping to 1.7). Push branch to remote. This branch will be used for potential backports.
+2. Create new branch (Do not push below commits to `1.x.latest`). Add a new entry in `.changes/0.0.0.md` that points to the newly created latest branch.
+3. Run `changie merge` to update `README.md`. Commit.
+4. Bump version of `dbt-tests-adapter`. Commit.
+5. Merge these 2 commits into the master branch. Add a `Skip Changlelog` label to the PR.
 
-Before doing a release, it is required to bump the dbt-trino version by triggering release workflow `version-bump.yml`. The major and minor part of the dbt version are used to associate dbt-trino's version with the dbt version.
-
-Next step is to merge the bump PR and making sure that test suite pass.
-
-Finally, to release `dbt-trino` to PyPi and GitHub trigger release workflow `release.yml`.
+Continue with the next steps for a __minor__ version bump. Start from this point for a __patch__ version bump:
+1. Run `Version Bump` workflow. The major and minor part of the dbt version are used to associate dbt-trino's version with the dbt version.
+2. Merge the bump PR. Make sure that test suite pass.
+3. Run `dbt-trino release` workflow to release `dbt-trino` to PyPi and GitHub.
 
 ### Backport process
 
