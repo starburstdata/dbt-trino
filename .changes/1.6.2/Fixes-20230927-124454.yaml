@@ -1,7 +1,0 @@
-kind: Fixes
-body: Fix materialized_views filters when listing relations
-time: 2023-09-27T12:44:54.858517+02:00
-custom:
-  Author: findepi
-  Issue: ""
-  PR: "353"

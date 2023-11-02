@@ -1,7 +1,0 @@
-kind: Fixes
-body: Only set the comment when persist_docs.relation is set
-time: 2023-08-10T23:37:38.828664+02:00
-custom:
-  Author: Fokko
-  Issue: "317"
-  PR: "343"
