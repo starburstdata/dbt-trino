@@ -37,7 +37,7 @@ This repository represents a fork of the [dbt-presto](https://github.com/dbt-lab
 
 ## Compatibility
 
-This dbt plugin has been tested against `Trino` version `430`, `Starburst Enterprise` version `427-e` and `Starburst Galaxy`.
+This dbt plugin has been tested against `Trino` version `435`, `Starburst Enterprise` version `429-e.0` and `Starburst Galaxy`.
 
 ## Setup & Configuration
 
