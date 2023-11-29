@@ -99,13 +99,19 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{% macro trino__create_table_as(temporary, relation, sql) -%}
+{% macro trino__create_table_as(temporary, relation, sql, replace=False) -%}
   {%- set _properties = config.get('properties') -%}
+
+  {%- if replace -%}
+    {%- set or_replace = ' or replace' -%}
+  {%- else -%}
+    {%- set or_replace = '' -%}
+  {%- endif -%}
 
   {%- set contract_config = config.get('contract') -%}
   {%- if contract_config.enforced -%}
 
-  create table
+  create{{ or_replace }} table
     {{ relation }}
     {{ get_table_columns_and_constraints() }}
     {{ get_assert_columns_equivalent(sql) }}
@@ -122,7 +128,7 @@
 
   {%- else %}
 
-    create table {{ relation }}
+    create{{ or_replace }} table {{ relation }}
       {{ comment(model.get('description')) }}
       {{ properties(_properties) }}
     as (
