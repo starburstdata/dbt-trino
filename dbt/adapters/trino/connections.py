@@ -44,6 +44,8 @@ class TrinoCredentialsFactory:
                 return TrinoJwtCredentials
             elif method == "oauth":
                 return TrinoOauthCredentials
+            elif method == "oauth_console":
+                return TrinoOauthConsoleCredentials
         return TrinoNoneCredentials
 
     @classmethod
@@ -268,6 +270,35 @@ class TrinoOauthCredentials(TrinoCredentials):
     @property
     def method(self):
         return "oauth"
+
+    def trino_auth(self):
+        return self.OAUTH
+
+
+@dataclass
+class TrinoOauthConsoleCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
+    roles: Optional[Dict[str, str]] = None
+    cert: Optional[str] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
+    OAUTH = trino.auth.OAuth2Authentication(
+        redirect_auth_url_handler=trino.auth.ConsoleRedirectHandler()
+    )
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "oauth_console"
 
     def trino_auth(self):
         return self.OAUTH

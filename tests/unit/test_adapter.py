@@ -18,6 +18,7 @@ from dbt.adapters.trino.connections import (
     TrinoKerberosCredentials,
     TrinoLdapCredentials,
     TrinoNoneCredentials,
+    TrinoOauthConsoleCredentials,
     TrinoOauthCredentials,
 )
 
@@ -395,6 +396,34 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.cert, "/path/to/cert")
         self.assertEqual(connection.credentials.prepared_statements_enabled, True)
         self.assertEqual(credentials.client_tags, ["dev", "oauth"])
+        self.assertEqual(credentials.timezone, "UTC")
+
+    def test_oauth_console_authentication(self):
+        connection = self.acquire_connection_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "oauth_console",
+                "schema": "dbt_test_schema",
+                "cert": "/path/to/cert",
+                "client_tags": ["dev", "oauth_console"],
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "4h",
+                    "exchange_compression": True,
+                },
+                "timezone": "UTC",
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoOauthConsoleCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(connection.credentials.prepared_statements_enabled, True)
+        self.assertEqual(credentials.client_tags, ["dev", "oauth_console"])
         self.assertEqual(credentials.timezone, "UTC")
 
 
