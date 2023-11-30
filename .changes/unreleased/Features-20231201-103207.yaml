@@ -1,0 +1,7 @@
+kind: Features
+body: Add oauth_console authentication type
+time: 2023-12-01T10:32:07.070436+01:00
+custom:
+  Author: hovaesco
+  Issue: ""
+  PR: "379"
