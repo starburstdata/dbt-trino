@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Raise explicit error if location property is specified for snapshot
+time: 2023-12-06T17:17:42.048225+01:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "380"

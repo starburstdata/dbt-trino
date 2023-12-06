@@ -1,3 +1,12 @@
+{% materialization snapshot, adapter='trino' %}
+    {% if config.get('properties') %}
+        {% if config.get('properties').get('location') %}
+            {%- do exceptions.raise_compiler_error("Specifying 'location' property in snapshots is not supported.") -%}
+        {% endif %}
+    {% endif %}
+    {{ return(materialization_snapshot_default()) }}
+{% endmaterialization %}
+
 {% macro trino__snapshot_hash_arguments(args) -%}
   lower(to_hex(md5(to_utf8(concat({%- for arg in args -%}
     coalesce(cast({{ arg }} as varchar), ''){% if not loop.last %}, '|',{% endif -%}
