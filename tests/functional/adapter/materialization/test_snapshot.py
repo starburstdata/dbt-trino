@@ -164,3 +164,26 @@ class TestDeltaSnapshotTimestampTrino(BaseTrinoSnapshotTimestamp):
             "newcolumns.csv": seeds_newcolumns_csv,
             "added.csv": seeds_added_csv,
         }
+
+
+class TestSnapshotLocationPropertyExceptionTrino(BaseSnapshotCheckCols):
+    """
+    Specifying 'location' property in snapshots is not supported.
+    """
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "snapshot_location_property_exception",
+            "snapshots": {
+                "+properties": {
+                    "location": "some_location",
+                },
+            },
+        }
+
+    def test_snapshot_check_cols(self, project):
+        results = run_dbt(["snapshot"], expect_pass=False)
+        for result in results:
+            assert result.status == "error"
+            assert "Specifying 'location' property in snapshots is not supported" in result.message
