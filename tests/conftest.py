@@ -117,12 +117,23 @@ def trino_connection(dbt_profile_target):
         )
 
 
-def get_engine_type():
-    conn = trino.dbapi.connect(host="localhost", port=8080, user="dbt-trino")
+def get_engine_type(trino_connection):
+    conn = trino_connection
+    if "galaxy.starburst.io" in conn.host:
+        return "starburst_galaxy"
     cur = conn.cursor()
     cur.execute("SELECT version()")
     version = cur.fetchone()
     if "-e" in version[0]:
-        return "starburst"
+        return "starburst_enterprise"
     else:
         return "trino"
+
+
+@pytest.fixture(autouse=True)
+def skip_by_engine_type(request, trino_connection):
+    engine_type = get_engine_type(trino_connection)
+    if request.node.get_closest_marker("skip_engine"):
+        for skip_engine_type in request.node.get_closest_marker("skip_engine").args:
+            if skip_engine_type == engine_type:
+                pytest.skip(f"skipped on {engine_type} engine")
