@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Upgrade Trino to 439, SEP to 435-e.1
+time: 2024-03-06T12:16:31.319795+01:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "388"
