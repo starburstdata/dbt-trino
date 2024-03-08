@@ -1,13 +1,15 @@
 import string
 import unittest
+from multiprocessing import get_context
 from unittest import TestCase
 from unittest.mock import MagicMock, Mock, patch
 
 import agate
 import dbt.flags as flags
 import trino
-from dbt.clients import agate_helper
-from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectError
+from dbt.adapters.exceptions.connection import FailedToConnectError
+from dbt_common.clients import agate_helper
+from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.column import TRINO_VARCHAR_MAX_LENGTH, TrinoColumn
@@ -70,7 +72,7 @@ class TestTrinoAdapter(unittest.TestCase):
 
     @property
     def adapter(self):
-        self._adapter = TrinoAdapter(self.config)
+        self._adapter = TrinoAdapter(self.config, get_context("spawn"))
         return self._adapter
 
     def test_acquire_connection(self):
@@ -144,7 +146,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
 
         config = config_from_parts_or_dicts(project_cfg, profile_cfg)
 
-        return TrinoAdapter(config).acquire_connection("dummy")
+        return TrinoAdapter(config, get_context("spawn")).acquire_connection("dummy")
 
     def assert_default_connection_credentials(self, credentials):
         self.assertEqual(credentials.type, "trino")
@@ -447,7 +449,7 @@ class TestPreparedStatementsEnabled(TestCase):
         }
 
         config = config_from_parts_or_dicts(project_cfg, profile_cfg)
-        adapter = TrinoAdapter(config)
+        adapter = TrinoAdapter(config, get_context("spawn"))
         connection = adapter.acquire_connection("dummy")
         return connection
 
@@ -501,8 +503,6 @@ class TestPreparedStatementsEnabled(TestCase):
 
 class TestAdapterConversions(TestCase):
     def _get_tester_for(self, column_type):
-        from dbt.clients import agate_helper
-
         if column_type is agate.TimeDelta:  # dbt never makes this!
             return agate.TimeDelta()
 

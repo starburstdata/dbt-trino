@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar, Dict
 
 from dbt.adapters.base.column import Column
-from dbt.exceptions import DbtRuntimeError
+from dbt_common.exceptions import DbtRuntimeError
 
 # Taken from the MAX_LENGTH variable in
 # https://github.com/trinodb/trino/blob/master/core/trino-spi/src/main/java/io/trino/spi/type/VarcharType.java

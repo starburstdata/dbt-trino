@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from dbt.adapters.base.relation import BaseRelation, Policy
-from dbt.contracts.relation import ComponentName
+from dbt.adapters.contracts.relation import ComponentName
 
 
 @dataclass(frozen=True, eq=False, repr=False)
