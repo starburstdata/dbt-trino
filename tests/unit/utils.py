@@ -7,7 +7,7 @@ import os
 from unittest import TestCase, mock
 
 from dbt.config.project import PartialProject
-from dbt.dataclass_schema import ValidationError
+from dbt_common.dataclass_schema import ValidationError
 
 
 def normalize(path):

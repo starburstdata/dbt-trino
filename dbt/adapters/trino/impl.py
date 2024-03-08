@@ -10,8 +10,8 @@ from dbt.adapters.capability import (
     Support,
 )
 from dbt.adapters.sql import SQLAdapter
-from dbt.contracts.graph.nodes import ConstraintType
-from dbt.exceptions import DbtDatabaseError
+from dbt_common.contracts.constraints import ConstraintType
+from dbt_common.exceptions import DbtDatabaseError
 
 from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
 

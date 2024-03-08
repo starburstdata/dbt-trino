@@ -1,7 +1,6 @@
 import pytest
-from dbt.exceptions import DbtRuntimeError
-from dbt.exceptions import Exception as DbtException
 from dbt.tests.util import run_dbt, run_dbt_and_capture
+from dbt_common.exceptions import DbtBaseException, DbtRuntimeError
 
 from tests.functional.adapter.show.fixtures import (
     models__ephemeral_model,
@@ -73,7 +72,7 @@ class TestShow:
         assert "sample_bool" in log_output
 
     def test_inline_fail(self, project):
-        with pytest.raises(DbtException, match="Error parsing inline query"):
+        with pytest.raises(DbtBaseException, match="Error parsing inline query"):
             run_dbt(["show", "--inline", "select * from {{ ref('third_model') }}"])
 
     def test_inline_fail_database_error(self, project):

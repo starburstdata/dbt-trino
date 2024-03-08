@@ -50,17 +50,8 @@ def _dbt_trino_version():
     return trino_version
 
 
-# require a compatible minor version (~=), prerelease if this is a prerelease
-def _get_dbt_core_version():
-    parts = _get_plugin_version_dict()
-    minor = "{major}.{minor}.0".format(**parts)
-    pre = parts["prekind"] + "1" if parts["prekind"] else ""
-    return f"{minor}{pre}"
-
-
 package_version = _dbt_trino_version()
 description = """The trino adapter plugin for dbt (data build tool)"""
-dbt_version = _get_dbt_core_version()
 
 setup(
     name=package_name,
@@ -85,7 +76,8 @@ setup(
         ]
     },
     install_requires=[
-        "dbt-core~={}".format(dbt_version),
+        "dbt-common>=1.0.0b1,<2.0",
+        "dbt-adapters>=1.0.0b1,<2.0",
         "trino~=0.326",
     ],
     zip_safe=False,

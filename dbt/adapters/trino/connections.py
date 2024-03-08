@@ -10,12 +10,12 @@ from typing import Any, Dict, List, Optional
 
 import sqlparse
 import trino
-from dbt.adapters.base import Credentials
+from dbt.adapters.contracts.connection import AdapterResponse, Credentials
+from dbt.adapters.events.logging import AdapterLogger
+from dbt.adapters.exceptions.connection import FailedToConnectError
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.contracts.connection import AdapterResponse
-from dbt.events import AdapterLogger
-from dbt.exceptions import DbtDatabaseError, DbtRuntimeError, FailedToConnectError
-from dbt.helper_types import Port
+from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
+from dbt_common.helper_types import Port
 from trino.transaction import IsolationLevel
 
 from dbt.adapters.trino.__version__ import version
