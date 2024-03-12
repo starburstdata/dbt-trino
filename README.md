@@ -56,7 +56,7 @@ For Trino- and Starburst-specific configuration, you can refer to [Starburst (Tr
 First 5 steps are ONLY relevant for bumping __minor__ version:
 1. Create `1.x.latest` branch from the latest tag corresponding to current minor version, e.g. `git checkout -b 1.6.latest v1.6.2` (when bumping to 1.7). Push branch to remote. This branch will be used for potential backports.
 2. Create new branch (Do not push below commits to `1.x.latest`). Add a new entry in `.changes/0.0.0.md` that points to the newly created latest branch.
-3. Run `changie merge` to update `README.md`. Commit.
+3. Run `changie merge` to update `README.md`. After that, remove changie files and folders related to current minor version. Commit.
 4. Bump version of `dbt-tests-adapter`. Commit.
 5. Merge these 2 commits into the master branch. Add a `Skip Changlelog` label to the PR.
 
