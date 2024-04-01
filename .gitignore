@@ -10,3 +10,4 @@ docker/dbt/.user.yml
 .DS_Store
 .vscode/
 logs/
+.venv/
