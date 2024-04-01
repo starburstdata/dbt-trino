@@ -17,7 +17,7 @@
   <img alt="trino" src="https://raw.githubusercontent.com/starburstdata/dbt-trino/master/assets/images/trino-logo-w-bk.svg">
 </picture>
 
-[![Build Status](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml/badge.svg)](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml?query=workflow%3A%22dbt-trino+tests%22+branch%3Amaster+event%3Apush) [![db-presto-trino Slack](https://img.shields.io/static/v1?logo=slack&logoColor=959DA5&label=Slack&labelColor=333a41&message=join%20conversation&color=3AC358)](https://getdbt.slack.com/channels/db-presto-trino)
+[![Build Status](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml/badge.svg)](https://github.com/starburstdata/dbt-trino/actions/workflows/ci.yml?query=workflow%3A%22dbt-trino+tests%22+branch%3Amaster+event%3Apush) [![db-starburst-and-trino Slack](https://img.shields.io/static/v1?logo=slack&logoColor=959DA5&label=Slack&labelColor=333a41&message=join%20conversation&color=3AC358)](https://getdbt.slack.com/channels/db-starburst-and-trino)
 
 ## Introduction
 
@@ -49,7 +49,7 @@ For Trino- and Starburst-specific configuration, you can refer to [Starburst (Tr
 
 ## Contributing
 
-- Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-presto-trino](https://getdbt.slack.com/channels/db-presto-trino) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
+- Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-starburst-and-trino](https://getdbt.slack.com/channels/db-starburst-and-trino) channel, or on [Trino slack](https://trino.io/slack.html) in the [#dbt](https://trinodb.slack.com/channels/dbt) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
 - Want to help us build dbt-trino? Check out the [Contributing Guide](https://github.com/starburstdata/dbt-trino/blob/HEAD/CONTRIBUTING.md)
 
 ### Release process
