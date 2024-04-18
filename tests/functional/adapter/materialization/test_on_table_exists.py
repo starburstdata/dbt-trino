@@ -60,10 +60,7 @@ class TestOnTableExistsDrop(BaseOnTableExists):
         check_relations_equal(project.adapter, ["seed", "materialization"])
 
 
-# TODO: Enable for SEP, after support for CORTAS will be added
-@pytest.mark.skip_engine("starburst_enterprise")
-@pytest.mark.iceberg
-class TestOnTableExistsReplace(BaseOnTableExists):
+class BaseOnTableExistsReplace(BaseOnTableExists):
     """
     Testing on_table_exists = `replace` configuration for table materialization,
     using dbt seed, run and tests commands and validate data load correctness.
@@ -98,3 +95,13 @@ class TestOnTableExistsReplace(BaseOnTableExists):
 
         # check if the data was loaded correctly
         check_relations_equal(project.adapter, ["seed", "materialization"])
+
+
+@pytest.mark.iceberg
+class TestOnTableExistsReplaceIceberg(BaseOnTableExistsReplace):
+    pass
+
+
+@pytest.mark.delta
+class TestOnTableExistsReplaceDelta(BaseOnTableExistsReplace):
+    pass
