@@ -9,7 +9,7 @@ start-trino:
 	./docker/init_trino.bash
 
 dbt-trino-tests: start-trino
-	pip install -r dev_requirements.txt
+	pip install -e . -r dev_requirements.txt
 	tox -r
 
 start-starburst:
@@ -17,7 +17,7 @@ start-starburst:
 	./docker/init_starburst.bash
 
 dbt-starburst-tests: start-starburst
-	pip install -r dev_requirements.txt
+	pip install -e . -r dev_requirements.txt
 	tox -r
 
 dev:

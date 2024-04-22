@@ -73,8 +73,7 @@ jobs:
           if [[ ${{ matrix.engine }} == "trino" || ${{ matrix.engine }} == "starburst" ]]; then
             make dbt-${{ matrix.engine }}-tests
           elif [[ ${{ matrix.engine }} == "starburst_galaxy" ]]; then
-            python -m pip install -r dev_requirements.txt
-            pip install -e .
+            python -m pip install -e . -r dev_requirements.txt
             python -m pytest tests/functional --profile starburst_galaxy
           fi
 
