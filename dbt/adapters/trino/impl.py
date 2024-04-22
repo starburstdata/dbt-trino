@@ -41,6 +41,9 @@ class TrinoAdapter(SQLAdapter):
             Capability.SchemaMetadataByRelations: CapabilitySupport(support=Support.Full),
             # No information about last table modification in information_schema.tables
             Capability.TableLastModifiedMetadata: CapabilitySupport(support=Support.Unsupported),
+            Capability.TableLastModifiedMetadataBatch: CapabilitySupport(
+                support=Support.Unsupported
+            ),
         }
     )
 
