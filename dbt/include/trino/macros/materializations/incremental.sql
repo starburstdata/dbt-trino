@@ -20,28 +20,42 @@
 
 {% materialization incremental, adapter='trino', supported_languages=['sql'] -%}
 
-  {#-- Set vars --#}
-  {%- set full_refresh_mode = (should_full_refresh()) -%}
-  {%- set language = model['language'] -%}
-  {% set target_relation = this.incorporate(type='table') %}
-  {% set existing_relation = load_relation(this) %}
-
+  {#-- relations --#}
+  {%- set existing_relation = load_cached_relation(this) -%}
+  {%- set target_relation = this.incorporate(type='table') -%}
   {#-- The temp relation will be a view (faster) or temp table, depending on upsert/merge strategy --#}
-  {%- set unique_key = config.get('unique_key') -%}
-  {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
-  {% set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) %}
-  {% set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) %}
-  -- the temp_ relation should not already exist in the database; get_relation
-  -- will return None in that case. Otherwise, we get a relation that we can drop
-  -- later, before we try to use this name for the current operation.
-  {%- set preexisting_tmp_relation = load_cached_relation(tmp_relation)-%}
+  {%- set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) -%}
+  {%- set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) -%}
+  {%- set intermediate_relation = make_intermediate_relation(target_relation) -%}
+  {%- set backup_relation_type = 'table' if existing_relation is none else existing_relation.type -%}
+  {%- set backup_relation = make_backup_relation(target_relation, backup_relation_type) -%}
 
+  {#-- configs --#}
+  {%- set unique_key = config.get('unique_key') -%}
+  {%- set full_refresh_mode = (should_full_refresh()) -%}
+  {%- set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') -%}
+  {%- set language = model['language'] -%}
+  {%- set on_table_exists = config.get('on_table_exists', 'rename') -%}
+  {% if on_table_exists not in ['rename', 'drop', 'replace'] %}
+      {%- set log_message = 'Invalid value for on_table_exists (%s) specified. Setting default value (%s).' % (on_table_exists, 'rename') -%}
+      {% do log(log_message) %}
+      {%- set on_table_exists = 'rename' -%}
+  {% endif %}
+
+  {#-- the temp_ and backup_ relation should not already exist in the database; get_relation
+  -- will return None in that case. Otherwise, we get a relation that we can drop
+  -- later, before we try to use this name for the current operation.#}
+  {%- set preexisting_tmp_relation = load_cached_relation(tmp_relation)-%}
+  {%- set preexisting_intermediate_relation = load_cached_relation(intermediate_relation)-%}
+  {%- set preexisting_backup_relation = load_cached_relation(backup_relation) -%}
+
+  {#--- grab current tables grants config for comparision later on#}
   {% set grant_config = config.get('grants') %}
 
-  {% set on_schema_change = incremental_validate_on_schema_change(config.get('on_schema_change'), default='ignore') %}
-
-  -- drop the temp relation if it exists already in the database
+  -- drop the temp relations if they exist already in the database
   {{ drop_relation_if_exists(preexisting_tmp_relation) }}
+  {{ drop_relation_if_exists(preexisting_intermediate_relation) }}
+  {{ drop_relation_if_exists(preexisting_backup_relation) }}
 
   {{ run_hooks(pre_hooks) }}
 
@@ -58,11 +72,8 @@
       {{ create_table_as(False, target_relation, compiled_code, language) }}
     {%- endcall -%}
   {% elif full_refresh_mode %}
-    {#-- Can't replace a table - we must drop --#}
-    {% do adapter.drop_relation(existing_relation) %}
-    {%- call statement('main', language=language) -%}
-      {{ create_table_as(False, target_relation, compiled_code, language) }}
-    {%- endcall -%}
+    {#-- Create table with given `on_table_exists` mode #}
+    {% do on_table_exists_logic(on_table_exists, existing_relation, intermediate_relation, backup_relation, target_relation) %}
 
   {% else %}
     {#-- Create the temp relation, either as a view or as a temp table --#}
@@ -86,6 +97,7 @@
     {% endif %}
 
     {#-- Get the incremental_strategy, the macro to use for the strategy, and build the sql --#}
+    {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
     {% set incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) %}
     {% set strategy_sql_macro_func = adapter.get_incremental_strategy_macro(context, incremental_strategy) %}
     {% set strategy_arg_dict = ({'target_relation': target_relation, 'temp_relation': tmp_relation, 'unique_key': unique_key, 'dest_columns': dest_columns, 'incremental_predicates': incremental_predicates }) %}
@@ -94,9 +106,7 @@
       {{ strategy_sql_macro_func(strategy_arg_dict) }}
     {%- endcall -%}
   {% endif %}
-
-  {% do drop_relation_if_exists(tmp_relation) %}
-
+    {% do drop_relation_if_exists(tmp_relation) %}
   {{ run_hooks(post_hooks) }}
 
   {% set should_revoke =
