@@ -87,7 +87,7 @@ jobs:
           git status
 
       - name: Commit version bump to branch
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           author_name: 'Github Build Bot'
           author_email: 'automation@starburstdata.com'
