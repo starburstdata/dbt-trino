@@ -30,7 +30,7 @@ jobs:
           echo The version_number: ${{ github.event.inputs.version_number }}
 
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: actions/setup-python@v4
         with:
