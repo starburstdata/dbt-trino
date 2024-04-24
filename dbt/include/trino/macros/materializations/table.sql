@@ -31,6 +31,22 @@
   -- grab current tables grants config for comparision later on
   {% set grant_config = config.get('grants') %}
 
+  {#-- Create table with given `on_table_exists` mode #}
+  {% do on_table_exists_logic(on_table_exists, existing_relation, intermediate_relation, backup_relation, target_relation) %}
+
+  {% do persist_docs(target_relation, model) %}
+
+  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=True) %}
+  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
+
+  {{ run_hooks(post_hooks) }}
+
+  {{ return({'relations': [target_relation]}) }}
+{% endmaterialization %}
+
+
+{% macro on_table_exists_logic(on_table_exists, existing_relation, intermediate_relation, backup_relation, target_relation) -%}
+  {#-- Create table with given `on_table_exists` mode #}
   {% if on_table_exists == 'rename' %}
       {#-- build modeldock #}
       {% call statement('main') -%}
@@ -64,13 +80,4 @@
         {{ create_table_as(False, target_relation, sql, True) }}
       {%- endcall %}
   {% endif %}
-
-  {% do persist_docs(target_relation, model) %}
-
-  {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=True) %}
-  {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
-
-  {{ run_hooks(post_hooks) }}
-
-  {{ return({'relations': [target_relation]}) }}
-{% endmaterialization %}
+{% endmacro %}
