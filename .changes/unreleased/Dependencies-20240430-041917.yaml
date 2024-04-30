@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update dbt-tests-adapter requirement from ~=1.8.0b1 to ~=1.8.0b2"
+time: 2024-04-30T04:19:17.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 405
