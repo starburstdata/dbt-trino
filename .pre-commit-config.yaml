@@ -16,6 +16,10 @@ repos:
         exclude_types:
           - "markdown"
       - id: check-case-conflict
+  - repo: https://github.com/dbt-labs/pre-commit-hooks
+    rev: v0.1.0a1
+    hooks:
+      - id: dbt-core-in-adapters-check
   - repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:
