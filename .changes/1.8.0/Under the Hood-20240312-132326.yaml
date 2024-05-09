@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Migrate to dbt-common and dbt-adapters package
-time: 2024-03-12T13:23:26.028488+01:00
-custom:
-  Author: damian3031
-  Issue: "387"
-  PR: "390"

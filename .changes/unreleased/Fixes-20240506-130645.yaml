@@ -1,7 +1,0 @@
-kind: Fixes
-body: Stop adding aliases to subqueries when calling with `--empty`
-time: 2024-05-06T13:06:45.642583+02:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "408"
