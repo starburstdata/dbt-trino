@@ -80,7 +80,7 @@ setup(
         "dbt-adapters>=1.1.1,<2.0",
         "trino~=0.328",
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
-        "dbt-core>=1.8.0rc2",
+        "dbt-core>=1.8.0",
     ],
     zip_safe=False,
     classifiers=[

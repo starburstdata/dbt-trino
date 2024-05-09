@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Updated dbt-core to 1.8.0
+time: 2024-05-09T21:37:22.423116+02:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "408"
