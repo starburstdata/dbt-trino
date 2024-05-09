@@ -1,8 +1,0 @@
-kind: Features
-body: on_table_exists modes (rename, drop, replace) determine how table is recreated
-  during a full-refresh run of an incremental model
-time: 2024-04-30T12:07:58.484083+02:00
-custom:
-  Author: damian3031
-  Issue: "395"
-  PR: "406"
