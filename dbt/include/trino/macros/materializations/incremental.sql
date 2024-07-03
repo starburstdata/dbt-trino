@@ -20,16 +20,6 @@
 
 {% materialization incremental, adapter='trino', supported_languages=['sql'] -%}
 
-  {#-- relations --#}
-  {%- set existing_relation = load_cached_relation(this) -%}
-  {%- set target_relation = this.incorporate(type='table') -%}
-  {#-- The temp relation will be a view (faster) or temp table, depending on upsert/merge strategy --#}
-  {%- set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) -%}
-  {%- set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) -%}
-  {%- set intermediate_relation = make_intermediate_relation(target_relation) -%}
-  {%- set backup_relation_type = 'table' if existing_relation is none else existing_relation.type -%}
-  {%- set backup_relation = make_backup_relation(target_relation, backup_relation_type) -%}
-
   {#-- configs --#}
   {%- set unique_key = config.get('unique_key') -%}
   {%- set full_refresh_mode = (should_full_refresh()) -%}
@@ -41,6 +31,20 @@
       {% do log(log_message) %}
       {%- set on_table_exists = 'rename' -%}
   {% endif %}
+  {#-- Get the incremental_strategy and the macro to use for the strategy --#}
+  {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
+  {% set incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) %}
+  {% set strategy_sql_macro_func = adapter.get_incremental_strategy_macro(context, incremental_strategy) %}
+
+  {#-- relations --#}
+  {%- set existing_relation = load_cached_relation(this) -%}
+  {%- set target_relation = this.incorporate(type='table') -%}
+  {#-- The temp relation will be a view (faster) or temp table, depending on upsert/merge strategy --#}
+  {%- set tmp_relation_type = get_incremental_tmp_relation_type(incremental_strategy, unique_key, language) -%}
+  {%- set tmp_relation = make_temp_relation(this).incorporate(type=tmp_relation_type) -%}
+  {%- set intermediate_relation = make_intermediate_relation(target_relation) -%}
+  {%- set backup_relation_type = 'table' if existing_relation is none else existing_relation.type -%}
+  {%- set backup_relation = make_backup_relation(target_relation, backup_relation_type) -%}
 
   {#-- the temp_ and backup_ relation should not already exist in the database; get_relation
   -- will return None in that case. Otherwise, we get a relation that we can drop
@@ -96,12 +100,8 @@
       {% set dest_columns = adapter.get_columns_in_relation(existing_relation) %}
     {% endif %}
 
-    {#-- Get the incremental_strategy, the macro to use for the strategy, and build the sql --#}
-    {% set incremental_strategy = config.get('incremental_strategy') or 'default' %}
-    {% set incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) %}
-    {% set strategy_sql_macro_func = adapter.get_incremental_strategy_macro(context, incremental_strategy) %}
+    {#-- Build the sql --#}
     {% set strategy_arg_dict = ({'target_relation': target_relation, 'temp_relation': tmp_relation, 'unique_key': unique_key, 'dest_columns': dest_columns, 'incremental_predicates': incremental_predicates }) %}
-
     {%- call statement('main') -%}
       {{ strategy_sql_macro_func(strategy_arg_dict) }}
     {%- endcall -%}
