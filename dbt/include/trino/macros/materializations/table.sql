@@ -48,20 +48,27 @@
 {% macro on_table_exists_logic(on_table_exists, existing_relation, intermediate_relation, backup_relation, target_relation) -%}
   {#-- Create table with given `on_table_exists` mode #}
   {% if on_table_exists == 'rename' %}
-      {#-- build modeldock #}
-      {% call statement('main') -%}
-        {{ create_table_as(False, intermediate_relation, sql) }}
-      {%- endcall %}
 
-      {#-- cleanup #}
-      {% if existing_relation is not none %}
+      {#-- table does not exists #}
+      {% if existing_relation is none %}
+          {% call statement('main') -%}
+              {{ create_table_as(False, target_relation, sql) }}
+          {%- endcall %}
+
+      {#-- table does exists #}
+      {% else %}
+          {#-- build modeldock #}
+          {% call statement('main') -%}
+              {{ create_table_as(False, intermediate_relation, sql) }}
+          {%- endcall %}
+
+          {#-- cleanup #}
           {{ adapter.rename_relation(existing_relation, backup_relation) }}
+          {{ adapter.rename_relation(intermediate_relation, target_relation) }}
+
+          {#-- finally, drop the existing/backup relation after the commit #}
+          {{ drop_relation_if_exists(backup_relation) }}
       {% endif %}
-
-      {{ adapter.rename_relation(intermediate_relation, target_relation) }}
-
-      {#-- finally, drop the existing/backup relation after the commit #}
-      {{ drop_relation_if_exists(backup_relation) }}
 
   {% elif on_table_exists == 'drop' %}
       {#-- cleanup #}
