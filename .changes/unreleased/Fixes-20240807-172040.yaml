@@ -1,0 +1,7 @@
+kind: Fixes
+body: Add get_tables_by_pattern macro override
+time: 2024-08-07T17:20:40.646689-03:00
+custom:
+    Author: ndrluis
+    Issue: ""
+    PR: "427"
