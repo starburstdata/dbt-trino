@@ -493,12 +493,20 @@ class TrinoConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_response(cls, cursor) -> TrinoAdapterResponse:
-        message = "SUCCESS"
+        code = cursor._cursor.update_type
+        if code is None:
+            code = "SUCCESS"
+
+        rows_affected = cursor._cursor.rowcount
+        if rows_affected == -1:
+            message = f"{code}"
+        else:
+            message = f"{code} ({rows_affected:_} rows)"
         return TrinoAdapterResponse(
             _message=message,
             query=cursor._cursor.query,
             query_id=cursor._cursor.query_id,
-            rows_affected=cursor._cursor.rowcount,
+            rows_affected=rows_affected,
         )  # type: ignore
 
     def cancel(self, connection):

@@ -1,0 +1,7 @@
+kind: Features
+body: Added update_type and rowcount to dbt commands SQL status in CLI output
+time: 2024-08-12T16:16:25.330055+02:00
+custom:
+  Author: damian3031
+  Issue: "428"
+  PR: "429"
