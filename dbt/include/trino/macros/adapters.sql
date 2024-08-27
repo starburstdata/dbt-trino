@@ -99,8 +99,11 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{% macro trino__create_table_as(temporary, relation, sql, replace=False) -%}
+{% macro trino__create_table_as(temporary, relation, sql, replace=False, properties_update_dict=None) -%}
   {%- set _properties = config.get('properties') -%}
+  {%- if properties_update_dict is not None -%}
+    {%- do _properties.update(properties_update_dict) -%}
+  {%- endif -%}
 
   {%- if replace -%}
     {%- set or_replace = ' or replace' -%}
