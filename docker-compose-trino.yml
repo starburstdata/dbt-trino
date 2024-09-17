@@ -3,7 +3,7 @@ services:
   trino:
     ports:
       - "8080:8080"
-    image: "trinodb/trino:452"
+    image: "trinodb/trino:455"
     volumes:
       - ./docker/trino/etc:/usr/lib/trino/etc:ro
       - ./docker/trino/catalog:/etc/trino/catalog
