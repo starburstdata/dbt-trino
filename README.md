@@ -49,7 +49,7 @@ For Trino- and Starburst-specific configuration, you can refer to [Starburst (Tr
 
 ## Contributing
 
-- Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-starburst-and-trino](https://getdbt.slack.com/channels/db-starburst-and-trino) channel, or on [Trino slack](https://trino.io/slack.html) in the [#dbt](https://trinodb.slack.com/channels/dbt) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
+- Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-starburst-and-trino](https://getdbt.slack.com/channels/db-starburst-and-trino) channel, or on [Trino slack](https://trino.io/slack.html) in the [#python](https://trinodb.slack.com/channels/python) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
 - Want to help us build dbt-trino? Check out the [Contributing Guide](https://github.com/starburstdata/dbt-trino/blob/HEAD/CONTRIBUTING.md)
 
 ### Release process
