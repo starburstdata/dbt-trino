@@ -1,0 +1,7 @@
+kind: Features
+body: add properties_update_dict as optional argument to trino__create_table_as macro
+time: 2024-08-26T22:01:08.103103-06:00
+custom:
+    Author: james-long-mx
+    Issue: "430"
+    PR: "431"
