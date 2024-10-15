@@ -79,6 +79,39 @@
 
 {% macro properties() %}
   {%- set _properties = config.get('properties') -%}
+  {%- set table_format = config.get('table_format') -%}
+  {%- set file_format = config.get('file_format') -%}
+
+  {%- if file_format -%}
+    {%- if _properties -%}
+      {%- if _properties.format -%}
+        {% set msg %}
+          You can specify either 'file_format' or 'properties.format' configurations, but not both.
+        {% endset %}
+        {% do exceptions.raise_compiler_error(msg) %}
+      {%- else -%}
+        {%- do _properties.update({'format': file_format}) -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- set _properties = {'format': file_format} -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if table_format -%}
+    {%- if _properties -%}
+      {%- if _properties.type -%}
+        {% set msg %}
+          You can specify either 'table_format' or 'properties.type' configurations, but not both.
+        {% endset %}
+        {% do exceptions.raise_compiler_error(msg) %}
+      {%- else -%}
+        {%- do _properties.update({'type': table_format}) -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- set _properties = {'type': table_format} -%}
+    {%- endif -%}
+  {%- endif -%}
+
   {%- if _properties is not none -%}
       WITH (
           {%- for key, value in _properties.items() -%}
