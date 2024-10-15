@@ -1,0 +1,7 @@
+kind: Features
+body: Add file_format and table_format configurations
+time: 2024-10-15T17:41:43.584728+02:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "438"
