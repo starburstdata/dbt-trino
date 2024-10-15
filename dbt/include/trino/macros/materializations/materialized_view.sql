@@ -1,7 +1,6 @@
 {%- macro trino__get_create_materialized_view_as_sql(target_relation, sql) -%}
-  {%- set _properties = config.get('properties') -%}
   create materialized view {{ target_relation }}
-    {{ properties(_properties) }}
+    {{ properties() }}
   as
   {{ sql }}
   ;

@@ -58,7 +58,6 @@
 {% macro trino__create_csv_table(model, agate_table) %}
   {%- set column_override = model['config'].get('column_types', {}) -%}
   {%- set quote_seed_column = model['config'].get('quote_columns', None) -%}
-  {%- set _properties = config.get('properties') -%}
 
   {% set sql %}
     create table {{ this.render() }} (
@@ -68,7 +67,7 @@
             {%- set column_name = (col_name | string) -%}
             {{ adapter.quote_seed_column(column_name, quote_seed_column) }} {{ type }} {%- if not loop.last -%}, {%- endif -%}
         {%- endfor -%}
-    ) {{ properties(_properties) }}
+    ) {{ properties() }}
   {% endset %}
 
   {% call statement('_') -%}
@@ -78,10 +77,44 @@
   {{ return(sql) }}
 {% endmacro %}
 
-{% macro properties(properties) %}
-  {%- if properties is not none -%}
+{% macro properties() %}
+  {%- set _properties = config.get('properties') -%}
+  {%- set table_format = config.get('table_format') -%}
+  {%- set file_format = config.get('file_format') -%}
+
+  {%- if file_format -%}
+    {%- if _properties -%}
+      {%- if _properties.format -%}
+        {% set msg %}
+          You can specify either 'file_format' or 'properties.format' configurations, but not both.
+        {% endset %}
+        {% do exceptions.raise_compiler_error(msg) %}
+      {%- else -%}
+        {%- do _properties.update({'format': file_format}) -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- set _properties = {'format': file_format} -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if table_format -%}
+    {%- if _properties -%}
+      {%- if _properties.type -%}
+        {% set msg %}
+          You can specify either 'table_format' or 'properties.type' configurations, but not both.
+        {% endset %}
+        {% do exceptions.raise_compiler_error(msg) %}
+      {%- else -%}
+        {%- do _properties.update({'type': table_format}) -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- set _properties = {'type': table_format} -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if _properties is not none -%}
       WITH (
-          {%- for key, value in properties.items() -%}
+          {%- for key, value in _properties.items() -%}
             {{ key }} = {{ value }}
             {%- if not loop.last -%}{{ ',\n  ' }}{%- endif -%}
           {%- endfor -%}
@@ -100,7 +133,6 @@
 {%- endmacro -%}
 
 {% macro trino__create_table_as(temporary, relation, sql, replace=False) -%}
-  {%- set _properties = config.get('properties') -%}
 
   {%- if replace -%}
     {%- set or_replace = ' or replace' -%}
@@ -117,7 +149,7 @@
     {{ get_assert_columns_equivalent(sql) }}
     {%- set sql = get_select_subquery(sql) %}
     {{ comment(model.get('description')) }}
-    {{ properties(_properties) }}
+    {{ properties() }}
   ;
 
   insert into {{ relation }}
@@ -130,7 +162,7 @@
 
     create{{ or_replace }} table {{ relation }}
       {{ comment(model.get('description')) }}
-      {{ properties(_properties) }}
+      {{ properties() }}
     as (
       {{ sql }}
     );
