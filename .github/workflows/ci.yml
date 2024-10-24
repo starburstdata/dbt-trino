@@ -42,12 +42,15 @@ jobs:
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
         isStarburstBranch:
           - ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.head.repo.full_name, 'starburstdata')) || github.event_name != 'pull_request' }}
         exclude:
           - engine: "starburst_galaxy"
-            python: "3.12"
+            python: "3.13"
             isStarburstBranch: false
+          - engine: "starburst_galaxy"
+            python: "3.12"
           - engine: "starburst_galaxy"
             python: "3.11"
           - engine: "starburst_galaxy"
