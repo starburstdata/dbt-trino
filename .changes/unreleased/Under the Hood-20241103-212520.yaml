@@ -1,0 +1,7 @@
+kind: Under the Hood
+body: Enable SSL verification by default
+time: 2024-11-03T21:25:20.671327+08:00
+custom:
+  Author: mdesmet
+  Issue: "441"
+  PR: "442"
