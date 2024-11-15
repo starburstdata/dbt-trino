@@ -348,3 +348,15 @@
     alter table {{ relation }} rename column {{ adapter.quote(tmp_column) }} to {{ adapter.quote(column_name) }}
   {% endcall %}
 {% endmacro %}
+
+{% macro trino__make_temp_relation(base_relation, suffix) %}
+    {%- set partitioned_by = config.get('properties').get('partitioned_by') -%}
+    {% if partitioned_by %}
+      {%- set suffix = suffix + '_' +  invocation_id | replace('-', '') -%}
+    {% endif %}
+    {%- set temp_identifier = base_relation.identifier ~ suffix -%}
+    {%- set temp_relation = base_relation.incorporate(
+                                path={"identifier": temp_identifier}) -%}
+
+    {{ return(temp_relation) }}
+{% endmacro %}
