@@ -423,6 +423,12 @@ class TrinoAdapterResponse(AdapterResponse):
 
 class TrinoConnectionManager(SQLConnectionManager):
     TYPE = "trino"
+    behavior_flags = None
+
+    def __init__(self, profile, mp_context, behavior_flags=None) -> None:
+        super().__init__(profile, mp_context)
+
+        TrinoConnectionManager.behavior_flags = behavior_flags
 
     @contextmanager
     def exception_handler(self, sql):
@@ -464,6 +470,13 @@ class TrinoConnectionManager(SQLConnectionManager):
             return connection
 
         credentials = connection.credentials
+
+        # set default `cert` value, according to
+        # require_certificate_validation behavior flag
+        if credentials.cert is None:
+            req_cert_val_flag = cls.behavior_flags.require_certificate_validation.setting
+            if req_cert_val_flag:
+                credentials.cert = True
 
         # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.

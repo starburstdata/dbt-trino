@@ -10,6 +10,7 @@ from dbt.adapters.capability import (
     Support,
 )
 from dbt.adapters.sql import SQLAdapter
+from dbt_common.behavior_flags import BehaviorFlag
 from dbt_common.contracts.constraints import ConstraintType
 from dbt_common.exceptions import DbtDatabaseError
 
@@ -46,6 +47,26 @@ class TrinoAdapter(SQLAdapter):
             ),
         }
     )
+
+    def __init__(self, config, mp_context) -> None:
+        super().__init__(config, mp_context)
+        self.connections = self.ConnectionManager(config, mp_context, self.behavior)
+
+    @property
+    def _behavior_flags(self) -> list[BehaviorFlag]:
+        return [
+            {  # type: ignore
+                "name": "require_certificate_validation",
+                "default": False,
+                "description": (
+                    "SSL certificate validation is disabled by default. "
+                    "It is legacy behavior which will be changed in future releases. "
+                    "It is strongly advised to enable `require_certificate_validation` flag "
+                    "or explicitly set `cert` configuration to `True` for security reasons. "
+                    "You may receive an error after that if your SSL setup is incorrect."
+                ),
+            }
+        ]
 
     @classmethod
     def date_function(cls):
