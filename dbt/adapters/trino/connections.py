@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import sqlparse
 import trino
@@ -99,7 +99,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     user: str
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_scheme: HttpScheme = HttpScheme.HTTP
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
@@ -124,7 +124,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     user: Optional[str] = None
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
@@ -154,7 +154,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     impersonation_user: Optional[str] = None
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
@@ -185,7 +185,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     krb5_config: Optional[str] = None
     service_name: Optional[str] = "trino"
     mutual_authentication: Optional[bool] = False
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     force_preemptive: Optional[bool] = False
     hostname_override: Optional[str] = None
@@ -227,7 +227,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     user: Optional[str] = None
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
@@ -253,7 +253,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     user: Optional[str] = None
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
@@ -282,7 +282,7 @@ class TrinoOauthConsoleCredentials(TrinoCredentials):
     user: Optional[str] = None
     client_tags: Optional[List[str]] = None
     roles: Optional[Dict[str, str]] = None
-    cert: Optional[Union[str, bool]] = True
+    cert: Optional[str] = None
     http_headers: Optional[Dict[str, str]] = None
     session_properties: Dict[str, Any] = field(default_factory=dict)
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
