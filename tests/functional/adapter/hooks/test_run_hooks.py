@@ -1,8 +1,12 @@
 import pytest
-from dbt.tests.adapter.hooks import test_run_hooks as core_base
+from dbt.tests.adapter.hooks.test_run_hooks import (
+    BaseAfterRunHooks,
+    BasePrePostRunHooks,
+)
+from dbt.tests.util import run_dbt
 
 
-class TestPrePostRunHooksTrino(core_base.TestPrePostRunHooks):
+class TestPrePostRunHooksTrino(BasePrePostRunHooks):
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
@@ -50,5 +54,6 @@ class TestPrePostRunHooksTrino(core_base.TestPrePostRunHooks):
         ), "invocation_id was not set"
 
 
-class TestAfterRunHooksTrino(core_base.TestAfterRunHooks):
-    pass
+class TestAfterRunHooksTrino(BaseAfterRunHooks):
+    def test_missing_column_pre_hook(self, project):
+        run_dbt(["run"], expect_pass=False)
