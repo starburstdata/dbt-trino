@@ -5,7 +5,12 @@
 
 {% macro trino__get_columns_in_relation(relation) -%}
   {%- set sql -%}
-    describe {{ relation }}
+    select column_name, data_type
+    from {{ relation.information_schema() }}.columns
+    where
+      table_catalog = '{{ relation.database | lower }}'
+      and table_schema = '{{ relation.schema | lower }}'
+      and table_name = '{{ relation.identifier  | lower}}'
   {%- endset -%}
   {%- set result = run_query(sql) -%}
 
@@ -20,7 +25,7 @@
 
   {% set columns = [] %}
   {% for row in result %}
-    {% do columns.append(api.Column.from_description(row['Column'].lower(), row['Type'])) %}
+    {% do columns.append(api.Column.from_description(row['column_name'].lower(), row['data_type'])) %}
   {% endfor %}
   {% do return(columns) %}
 {% endmacro %}
