@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import agate
 from dbt.adapters.base.impl import AdapterConfig, ConstraintSupport
@@ -53,7 +53,7 @@ class TrinoAdapter(SQLAdapter):
         self.connections = self.ConnectionManager(config, mp_context, self.behavior)
 
     @property
-    def _behavior_flags(self) -> list[BehaviorFlag]:
+    def _behavior_flags(self) -> List[BehaviorFlag]:
         return [
             {  # type: ignore
                 "name": "require_certificate_validation",
