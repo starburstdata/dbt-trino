@@ -1,0 +1,7 @@
+kind: Fixes
+body: Fix breaking compatibility with Python 3.8
+time: 2024-11-26T12:52:37.426245+01:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "452"
