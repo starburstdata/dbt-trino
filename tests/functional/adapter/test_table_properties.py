@@ -58,7 +58,7 @@ class TestFileFormatConfig(BaseTableProperties):
             "name": "properties_test",
             "models": {
                 "+materialized": "table",
-                "file_format": "'PARQUET'",
+                "file_format": "parquet",
             },
         }
 
@@ -71,7 +71,7 @@ class TestFileFormatConfig(BaseTableProperties):
         results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
         assert len(results) == 1
         assert "WITH (" in logs
-        assert "format = 'PARQUET'" in logs
+        assert "format = 'parquet'" in logs
 
 
 @pytest.mark.iceberg
@@ -86,7 +86,7 @@ class TestFileFormatConfigAndFormatTablePropertyFail(BaseTableProperties):
                 "+properties": {
                     "format": "'PARQUET'",
                 },
-                "file_format": "'ORC'",
+                "file_format": "orc",
             },
         }
 
@@ -116,7 +116,7 @@ class TestTableFormatConfig(BaseTableProperties):
             "name": "properties_test",
             "models": {
                 "+materialized": "table",
-                "table_format": "'iceberg'",
+                "table_format": "iceberg",
             },
         }
 
@@ -147,7 +147,7 @@ class TestTableFormatConfigAndTypeTablePropertyFail(BaseTableProperties):
                 "+properties": {
                     "type": "'iceberg'",
                 },
-                "table_format": "'iceberg'",
+                "table_format": "iceberg",
             },
         }
 
