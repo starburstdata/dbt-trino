@@ -90,10 +90,10 @@
         {% endset %}
         {% do exceptions.raise_compiler_error(msg) %}
       {%- else -%}
-        {%- do _properties.update({'format': file_format}) -%}
+        {%- do _properties.update({'format': "'" ~ file_format ~ "'"}) -%}
       {%- endif -%}
     {%- else -%}
-      {%- set _properties = {'format': file_format} -%}
+      {%- set _properties = {'format': "'" ~ file_format ~ "'"} -%}
     {%- endif -%}
   {%- endif -%}
 
@@ -105,10 +105,10 @@
         {% endset %}
         {% do exceptions.raise_compiler_error(msg) %}
       {%- else -%}
-        {%- do _properties.update({'type': table_format}) -%}
+        {%- do _properties.update({'type': "'" ~ table_format ~ "'"}) -%}
       {%- endif -%}
     {%- else -%}
-      {%- set _properties = {'type': table_format} -%}
+      {%- set _properties = {'type': "'" ~ table_format ~ "'"} -%}
     {%- endif -%}
   {%- endif -%}
 
