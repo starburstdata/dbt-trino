@@ -229,7 +229,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                 "method": "none",
                 "schema": "dbt_test_schema",
                 "user": "trino_user",
-                "cert": "/path/to/cert",
+                "cert": True,
                 "client_tags": ["dev", "without_http_scheme"],
                 "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                 "session_properties": {
@@ -243,7 +243,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assert_default_connection_credentials(credentials)
         self.assertIsInstance(credentials, TrinoNoneCredentials)
         self.assertEqual(credentials.http_scheme, HttpScheme.HTTP)
-        self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.cert, True)
         self.assertEqual(credentials.client_tags, ["dev", "without_http_scheme"])
         self.assertEqual(credentials.timezone, "UTC")
 
@@ -261,7 +261,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
                     "user": "trino_user",
                     "impersonation_user": "impersonated_user" if is_impersonation else None,
                     "password": "trino_password",
-                    "cert": "/path/to/cert",
+                    "cert": False,
                     "client_tags": ["dev", "ldap"],
                     "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
                     "session_properties": {
@@ -276,7 +276,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             self.assertIsInstance(credentials, TrinoLdapCredentials)
             self.assert_default_connection_credentials(credentials)
             self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
-            self.assertEqual(credentials.cert, "/path/to/cert")
+            self.assertEqual(credentials.cert, False)
             self.assertEqual(connection.handle.handle.user, expected_user)
             self.assertEqual(credentials.client_tags, ["dev", "ldap"])
             self.assertEqual(credentials.timezone, "UTC")
