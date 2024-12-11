@@ -106,6 +106,7 @@ class TrinoNoneCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def method(self):
@@ -130,6 +131,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -160,6 +162,7 @@ class TrinoLdapCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -195,6 +198,7 @@ class TrinoKerberosCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -233,6 +237,7 @@ class TrinoJwtCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -262,6 +267,7 @@ class TrinoOauthCredentials(TrinoCredentials):
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
     )
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -291,6 +297,7 @@ class TrinoOauthConsoleCredentials(TrinoCredentials):
     OAUTH = trino.auth.OAuth2Authentication(
         redirect_auth_url_handler=trino.auth.ConsoleRedirectHandler()
     )
+    suppress_cert_warning: Optional[bool] = None
 
     @property
     def http_scheme(self):
@@ -477,6 +484,11 @@ class TrinoConnectionManager(SQLConnectionManager):
             req_cert_val_flag = cls.behavior_flags.require_certificate_validation.setting
             if req_cert_val_flag:
                 credentials.cert = True
+
+        if credentials.suppress_cert_warning:
+            import urllib3
+
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.
