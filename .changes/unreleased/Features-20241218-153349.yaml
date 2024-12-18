@@ -1,0 +1,7 @@
+kind: Features
+body: Enable setting current value of dbt_valid_to
+time: 2024-12-18T15:33:49.520897+01:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "462"
