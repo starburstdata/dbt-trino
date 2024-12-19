@@ -1,7 +1,0 @@
-kind: Features
-body: Add support for suppressing urllib3 cert warnings from logs
-time: 2024-12-11T09:54:08.828716-08:00
-custom:
-  Author: colin-rogers-dbt
-  Issue: "459"
-  PR: "459"

@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Revert cert default to False. Add require_certificate_validation Behavior Flag
-time: 2024-11-20T19:18:09.725288+01:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "447"

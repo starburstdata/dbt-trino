@@ -1,0 +1,7 @@
+kind: Features
+body: Allow configuring of snapshot column names
+time: 2024-12-18T15:16:45.941759+01:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "462"

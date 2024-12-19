@@ -1,8 +1,0 @@
-kind: Fixes
-body: Fix so that file_format and table_format config values do not require wrapping
-  in single quotes
-time: 2024-12-06T13:22:38.107177+01:00
-custom:
-  Author: damian3031
-  Issue: "454"
-  PR: "455"
