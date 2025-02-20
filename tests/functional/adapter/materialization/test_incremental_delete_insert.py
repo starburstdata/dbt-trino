@@ -1,3 +1,5 @@
+from dbt.tests.util import run_dbt_and_capture
+
 import pytest
 from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     BaseIncrementalUniqueKey,
@@ -47,6 +49,38 @@ models__expected__one_str__overwrite_sql = """
 {{
     config(
         materialized='table'
+    )
+}}
+
+select
+    'CT' as state,
+    'Hartford' as county,
+    'Hartford' as city,
+    cast('2022-02-14' as date) as last_visit_date
+union all
+select 'MA','Suffolk','Boston',DATE '2020-02-12'
+union all
+select 'NJ','Mercer','Trenton',DATE '2022-01-01'
+union all
+select 'NY','Kings','Brooklyn',DATE '2021-04-02'
+union all
+select 'NY','New York','Manhattan',DATE '2021-04-01'
+union all
+select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
+
+"""
+
+models__location_specified = """
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy='delete+insert',
+        unique_key=['state', 'county', 'city'],
+        properties= {
+            "format": "'PARQUET'",
+            "format_version": "2",
+            "location": "'s3a://datalake/model'"
+        }
     )
 }}
 
@@ -146,3 +180,25 @@ class TestDeltaIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
             "models": {"+on_table_exists": "drop", "+incremental_strategy": "delete+insert"},
             "seeds": {"incremental": {"seed": {"+column_types": {"some_date": "date"}}}},
         }
+
+@pytest.mark.iceberg
+class TestIcebergIncrementalDeleteInsertWithLocation():
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "model.sql": models__location_specified,
+        }
+
+    def test_table_properties(self, project):
+
+        # Create model with properties
+        results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        assert len(results) == 1
+        assert "location = 's3a://datalake/model'" in logs
+
+        # Temporary table is created on the second run
+        # So, now we check if the second run is successful and location
+        # is patched correctly
+        results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        assert "location = 's3a://datalake/model__dbt_tmp'" in logs

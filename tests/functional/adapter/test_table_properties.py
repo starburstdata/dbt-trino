@@ -32,6 +32,7 @@ class TestTableProperties(BaseTableProperties):
                 "+properties": {
                     "format": "'PARQUET'",
                     "format_version": "2",
+                    "location": "'s3a://datalake/model'"
                 },
             },
         }
@@ -47,6 +48,7 @@ class TestTableProperties(BaseTableProperties):
         assert "WITH (" in logs
         assert "format = 'PARQUET'" in logs
         assert "format_version = 2" in logs
+        assert "location = 's3a://datalake/model'" in logs
 
 
 @pytest.mark.iceberg
