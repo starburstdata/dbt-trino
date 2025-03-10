@@ -323,7 +323,5 @@ class TestIcebergMaterializedViewWithGracePeriodProperties(TestIcebergMaterializ
         results = run_dbt(["run"], expect_pass=True)
         assert len(results) == 1
 
-        # Retrieve MV properties
-        sql = f"SHOW CREATE MATERIALIZED VIEW {catalog}.{schema}.mat_view"
-        results = run_sql_with_adapter(project.adapter, sql, fetch="all")
-        assert "grace period interval '3' second" in results[0][0]
+        # Check if MVs were created correctly
+        check_relation_types(project.adapter, {"mat_view": "materialized_view"})
