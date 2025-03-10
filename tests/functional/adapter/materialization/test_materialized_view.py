@@ -280,3 +280,37 @@ class TestIcebergMaterializedViewProperties(TestIcebergMaterializedViewBase):
         sql = f"SHOW CREATE MATERIALIZED VIEW {catalog}.{schema}.mat_view"
         results = run_sql_with_adapter(project.adapter, sql, fetch="all")
         assert "format = 'PARQUET'" in results[0][0]
+
+
+@pytest.mark.iceberg
+class TestIcebergMaterializedViewWithGracePeriodProperties(TestIcebergMaterializedViewBase):
+    # Configuration in dbt_project.yml
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "mv_test",
+            "models": {
+                "+materialized": "materialized_view",
+                "+properties": {"format": "'PARQUET'", "grace_period": "INTERVAL '3' SECOND"},
+            },
+        }
+
+    # Everything that goes in the "models" directory
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "mat_view.sql": model_sql,
+        }
+
+    def test_set_mv_properties(self, project):
+        catalog = project.adapter.config.credentials.database
+        schema = project.adapter.config.credentials.schema
+
+        # Create MV
+        results = run_dbt(["run"], expect_pass=True)
+        assert len(results) == 1
+
+        # Retrieve MV properties
+        sql = f"SHOW CREATE MATERIALIZED VIEW {catalog}.{schema}.mat_view"
+        results = run_sql_with_adapter(project.adapter, sql, fetch="all")
+        assert "grace period interval '3' second" in results[0][0]
