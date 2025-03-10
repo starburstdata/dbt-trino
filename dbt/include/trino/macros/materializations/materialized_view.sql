@@ -1,10 +1,10 @@
-%- macro trino__get_create_materialized_view_as_sql(target_relation, sql) -%}
+{%- macro trino__get_create_materialized_view_as_sql(target_relation, sql) -%}
   create materialized view {{ target_relation }}
-  {%- set props = properties() -%}
-  {%- if props is mapping and props.get('grace_period') is not none -%}
-    grace period {{ props['grace_period'] }}
-  {%- endif -%}
-    {{ props }}
+  {%- set grace_period = config.get('grace_period') -%}
+  {%- if grace_period is not none -%}
+    grace period {{ grace_period }}
+  {%- endif %}
+    {{ properties() }}
   as
   {{ sql }}
   ;

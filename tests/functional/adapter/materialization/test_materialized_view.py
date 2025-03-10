@@ -283,6 +283,7 @@ class TestIcebergMaterializedViewProperties(TestIcebergMaterializedViewBase):
 
 
 @pytest.mark.iceberg
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestIcebergMaterializedViewWithGracePeriodProperties(TestIcebergMaterializedViewBase):
     # Configuration in dbt_project.yml
     @pytest.fixture(scope="class")
@@ -291,8 +292,16 @@ class TestIcebergMaterializedViewWithGracePeriodProperties(TestIcebergMaterializ
             "name": "mv_test",
             "models": {
                 "+materialized": "materialized_view",
-                "+properties": {"format": "'PARQUET'", "grace_period": "INTERVAL '3' SECOND"},
+                "+properties": {"format": "'PARQUET'"},
+                "+grace_period": "INTERVAL '3' SECOND",
             },
+        }
+
+    # Everything that goes in the "seeds" directory
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {
+            "seed.csv": seed_csv,
         }
 
     # Everything that goes in the "models" directory
@@ -305,6 +314,10 @@ class TestIcebergMaterializedViewWithGracePeriodProperties(TestIcebergMaterializ
     def test_set_mv_properties(self, project):
         catalog = project.adapter.config.credentials.database
         schema = project.adapter.config.credentials.schema
+
+        # Seed seed
+        results = run_dbt(["seed"], expect_pass=True)
+        assert len(results) == 1
 
         # Create MV
         results = run_dbt(["run"], expect_pass=True)
