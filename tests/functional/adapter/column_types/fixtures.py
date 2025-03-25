@@ -33,6 +33,4 @@ models:
             decimal_col: ['numeric', 'number']
             char_col: ['string', 'not number']
             varchar_col: ['string', 'not number']
-            varbinary_col: ['string', 'not number']
-            json_col: ['string', 'not number']
 """

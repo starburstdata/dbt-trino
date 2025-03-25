@@ -1,0 +1,7 @@
+kind: Fixes
+body: Do not treat VARBINARY and JSON as a string types
+time: 2025-03-25T16:06:27.304206+01:00
+custom:
+  Author: damian3031
+  Issue: "437"
+  PR: "475"
