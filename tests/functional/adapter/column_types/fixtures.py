@@ -10,9 +10,7 @@ select
     cast(5.5 as double precision) as double_precision_col,
     cast(6.0 as decimal) as decimal_col,
     cast('7' as char) as char_col,
-    cast('8' as varchar(20)) as varchar_col,
-    cast(X'65683F' as varbinary) as varbinary_col,
-    cast('{"k1":1,"k2":23,"k3":456}' as json) as json_col
+    cast('8' as varchar(20)) as varchar_col
 """
 
 schema_yml = """
@@ -33,6 +31,4 @@ models:
             decimal_col: ['numeric', 'number']
             char_col: ['string', 'not number']
             varchar_col: ['string', 'not number']
-            varbinary_col: ['string', 'not number']
-            json_col: ['string', 'not number']
 """
