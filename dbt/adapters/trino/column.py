@@ -27,7 +27,7 @@ class TrinoColumn(Column):
         return super().data_type
 
     def is_string(self) -> bool:
-        return self.dtype.lower() in ["varchar", "char"]
+        return self.dtype.lower() in ["varchar", "char", "varbinary", "json"]
 
     def is_float(self) -> bool:
         return self.dtype.lower() in [
