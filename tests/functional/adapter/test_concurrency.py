@@ -6,7 +6,7 @@ from dbt.tests.util import check_relations_equal, rm_file, run_dbt, write_file
 
 
 class TestConcurrencyTrino(BaseConcurrency):
-    def test_concurrency_trino(self, project):
+    def test_concurrency(self, project):
         run_dbt(["seed", "--select", "seed"])
         results = run_dbt(["run"], expect_pass=False)
         assert len(results) == 7
