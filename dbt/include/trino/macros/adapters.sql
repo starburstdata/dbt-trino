@@ -82,7 +82,7 @@
   {{ return(sql) }}
 {% endmacro %}
 
-{% macro properties() %}
+{% macro properties(temporary=False) %}
   {%- set _properties = config.get('properties') -%}
   {%- set table_format = config.get('table_format') -%}
   {%- set file_format = config.get('file_format') -%}
@@ -114,6 +114,19 @@
       {%- endif -%}
     {%- else -%}
       {%- set _properties = {'type': "'" ~ table_format ~ "'"} -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if temporary -%}
+    {%- if _properties -%}
+      {%- if _properties.location -%}
+          {%- if _properties.location[0] == "'" and _properties.location[-1] == "'" -%}
+            {%- set location = _properties.location[1:-1] -%}
+          {%- else -%}
+            {%- set location = _properties.location -%}
+          {%- endif -%}
+          {%- do _properties.update({'location': "'" ~ location ~ "__dbt_tmp'"}) -%}
+      {%- endif -%}
     {%- endif -%}
   {%- endif -%}
 
@@ -154,7 +167,7 @@
     {{ get_assert_columns_equivalent(sql) }}
     {%- set sql = get_select_subquery(sql) %}
     {{ comment(model.get('description')) }}
-    {{ properties() }}
+    {{ properties(temporary) }}
   ;
 
   insert into {{ relation }}
@@ -167,7 +180,7 @@
 
     create{{ or_replace }} table {{ relation }}
       {{ comment(model.get('description')) }}
-      {{ properties() }}
+      {{ properties(temporary) }}
     as (
       {{ sql }}
     );

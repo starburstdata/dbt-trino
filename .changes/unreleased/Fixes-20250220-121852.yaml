@@ -1,0 +1,7 @@
+kind: Fixes
+body: fix delete+insert materialization behaviour with specified location
+time: 2025-02-20T12:18:52.200467772+03:00
+custom:
+    Author: yakovlevvs
+    Issue: "467"
+    PR: "468"
