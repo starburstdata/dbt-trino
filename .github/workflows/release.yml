@@ -92,4 +92,4 @@ jobs:
           pip install -r dev_requirements.txt
           pip install twine wheel setuptools
           python setup.py sdist bdist_wheel
-          twine upload --non-interactive dist/dbt_trino-${{env.version_number}}-py3-none-any.whl dist/dbt-trino-${{env.version_number}}.tar.gz
+          twine upload --non-interactive dist/dbt_trino-${{env.version_number}}-py3-none-any.whl dist/dbt_trino-${{env.version_number}}.tar.gz
