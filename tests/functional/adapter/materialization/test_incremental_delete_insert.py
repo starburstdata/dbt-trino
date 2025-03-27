@@ -1,3 +1,5 @@
+from dbt.tests.util import run_dbt_and_capture
+
 import pytest
 from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     BaseIncrementalUniqueKey,
@@ -13,6 +15,13 @@ from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     models__unary_unique_key_list_sql,
     seeds__seed_csv,
 )
+
+from dbt.tests.adapter.incremental.test_incremental_predicates import (
+    BaseIncrementalPredicates,
+    models__delete_insert_incremental_predicates_sql,
+    seeds__expected_delete_insert_incremental_predicates_csv,
+)
+
 
 seeds__duplicate_insert_sql = """
 -- Insert statement which when applied to seed.csv triggers the inplace
@@ -93,6 +102,39 @@ select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
 
 """
 
+models__delete_insert_separate_keys_sql= """
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy='delete+insert',
+        unique_key=['id', 'col']
+    )
+}}
+select 1 as id, 1 as col
+union all
+select 1 as id, 3 as col
+union all
+select 3 as id, 1 as col
+union all
+select 3 as id, 3 as col
+
+{% if is_incremental() %}
+
+except
+(select 1 as id, 1 as col
+union all
+select 3 as id, 3 as col)
+
+{% endif %}
+"""
+
+seeds__expected_delete_insert_separate_keys_csv = """id,col
+1,1
+1,3
+3,1
+3,3
+"""
+
 
 class TrinoIncrementalUniqueKey(BaseIncrementalUniqueKey):
     @pytest.fixture(scope="class")
@@ -146,3 +188,34 @@ class TestDeltaIncrementalDeleteInsert(TrinoIncrementalUniqueKey):
             "models": {"+on_table_exists": "drop", "+incremental_strategy": "delete+insert"},
             "seeds": {"incremental": {"seed": {"+column_types": {"some_date": "date"}}}},
         }
+
+@pytest.mark.iceberg
+class TestIcebergSeparateUniqueKeys(BaseIncrementalPredicates):
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {
+            "expected_delete_insert_incremental_predicates.csv": seeds__expected_delete_insert_incremental_predicates_csv,
+            "expected_delete_insert_separate_keys.csv": seeds__expected_delete_insert_separate_keys_csv
+        }
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "delete_insert_incremental_predicates.sql": models__delete_insert_incremental_predicates_sql,
+            "delete_insert_separate_keys.sql": models__delete_insert_separate_keys_sql
+        }
+
+
+    def test__incremental_predicates_separate_keys(self, project):
+        """seed should match model after two incremental runs"""
+
+        expected_fields = self.get_expected_fields(
+            relation="expected_delete_insert_separate_keys", seed_rows=4
+        )
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="expected_delete_insert_separate_keys",
+            incremental_model="delete_insert_separate_keys",
+            update_sql_file=None,
+        )
+        self.check_scenario_correctness(expected_fields, test_case_fields, project)
