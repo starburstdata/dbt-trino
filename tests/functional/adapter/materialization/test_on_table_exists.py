@@ -80,6 +80,47 @@ class TestOnTableExistsRename(BaseOnTableExists):
         check_relations_equal(project.adapter, ["seed", "materialization"])
 
 
+class TestOnTableExistsSkip(BaseOnTableExists):
+    """
+    Testing on_table_exists = `skip` configuration for table materialization,
+    using dbt seed, run and tests commands and validate data load correctness.
+    """
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "table_rename",
+            "models": {"+materialized": "table", "+on_table_exists": "skip"},
+            "seeds": {
+                "+column_types": {"some_date": "timestamp(6)"},
+            },
+        }
+
+    # The actual sequence of dbt commands and assertions
+    # pytest will take care of all "setup" + "teardown"
+    def test_run_seed_test(self, project):
+        # seed seeds
+        results = run_dbt(["seed"], expect_pass=True)
+        assert len(results) == 1
+        # run models two times to check on_table_exists = 'skip'
+        results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        assert len(results) == 1
+        assert (
+            f'create table "{project.database}"."{project.test_schema}"."materialization"' in logs
+        )
+        assert "alter table" not in logs
+        results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        assert len(results) == 1
+        assert "drop table" not in logs
+        assert "create table" not in logs
+        # test tests
+        results = run_dbt(["test"], expect_pass=True)
+        assert len(results) == 3
+
+        # check if the data was loaded correctly
+        check_relations_equal(project.adapter, ["seed", "materialization"])
+
+
 class TestOnTableExistsRenameIncrementalFullRefresh(BaseOnTableExists):
     """
     Testing on_table_exists = `rename` configuration for incremental materialization and full refresh flag,
