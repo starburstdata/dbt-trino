@@ -1,6 +1,6 @@
 {% materialization table, adapter = 'trino' %}
   {%- set on_table_exists = config.get('on_table_exists', 'rename') -%}
-  {% if on_table_exists not in ['rename', 'drop', 'replace'] %}
+  {% if on_table_exists not in ['rename', 'drop', 'replace', 'skip'] %}
       {%- set log_message = 'Invalid value for on_table_exists (%s) specified. Setting default value (%s).' % (on_table_exists, 'rename') -%}
       {% do log(log_message) %}
       {%- set on_table_exists = 'rename' -%}
@@ -84,7 +84,14 @@
   {% elif on_table_exists == 'replace' %}
       {#-- build model #}
       {% call statement('main') -%}
-        {{ create_table_as(False, target_relation, sql, True) }}
+        {{ create_table_as(False, target_relation, sql, 'replace') }}
       {%- endcall %}
+
+  {% elif on_table_exists == 'skip' %}
+      {#-- build model #}
+      {% call statement('main') -%}
+        {{ create_table_as(False, target_relation, sql, 'skip') }}
+      {%- endcall %}
+
   {% endif %}
 {% endmacro %}
