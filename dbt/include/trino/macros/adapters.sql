@@ -137,18 +137,20 @@
   {%- endif -%}
 {%- endmacro -%}
 
-{% macro trino__create_table_as(temporary, relation, sql, replace=False) -%}
+{% macro trino__create_table_as(temporary, relation, sql, on_exists=None) -%}
 
-  {%- if replace -%}
+  {%- set or_replace = '' -%}
+  {%- set if_not_exists = '' -%}
+  {%- if on_exists == 'replace' -%}
     {%- set or_replace = ' or replace' -%}
-  {%- else -%}
-    {%- set or_replace = '' -%}
+  {%- elif on_exists == 'skip' -%}
+    {%- set if_not_exists = ' if not exists' -%}
   {%- endif -%}
 
   {%- set contract_config = config.get('contract') -%}
   {%- if contract_config.enforced -%}
 
-  create{{ or_replace }} table
+  create{{ or_replace }} table{{ if_not_exists }}
     {{ relation }}
     {{ get_table_columns_and_constraints() }}
     {{ get_assert_columns_equivalent(sql) }}
@@ -165,14 +167,14 @@
 
   {%- else %}
 
-    create{{ or_replace }} table {{ relation }}
+    create{{ or_replace }} table{{ if_not_exists }} {{ relation }}
       {{ comment(model.get('description')) }}
       {{ properties() }}
     as (
       {{ sql }}
     );
 
-   {%- endif %}
+  {%- endif %}
 {% endmacro %}
 
 

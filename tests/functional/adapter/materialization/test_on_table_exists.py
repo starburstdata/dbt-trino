@@ -106,13 +106,15 @@ class TestOnTableExistsSkip(BaseOnTableExists):
         results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
         assert len(results) == 1
         assert (
-            f'create table "{project.database}"."{project.test_schema}"."materialization"' in logs
+            f'create table if not exists "{project.database}"."{project.test_schema}"."materialization"' in logs
         )
         assert "alter table" not in logs
         results, logs = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
         assert len(results) == 1
         assert "drop table" not in logs
-        assert "create table" not in logs
+        assert (
+            f'create table if not exists "{project.database}"."{project.test_schema}"."materialization"' in logs
+        )
         # test tests
         results = run_dbt(["test"], expect_pass=True)
         assert len(results) == 3

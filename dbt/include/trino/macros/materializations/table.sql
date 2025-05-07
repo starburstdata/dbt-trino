@@ -84,28 +84,14 @@
   {% elif on_table_exists == 'replace' %}
       {#-- build model #}
       {% call statement('main') -%}
-        {{ create_table_as(False, target_relation, sql, True) }}
+        {{ create_table_as(False, target_relation, sql, 'replace') }}
       {%- endcall %}
 
   {% elif on_table_exists == 'skip' %}
-
-      {#-- table does not exists #}
-      {% if existing_relation is none %}
-        {#-- build model #}
-        {% call statement('main') -%}
-          {{ create_table_as(False, target_relation, sql) }}
-        {%- endcall %}
-
-      {#-- table does exists #}
-      {% else %}
-        {#-- do nothing #}
-        {%- set log_message = 'table %s already exists. skipping.' % (existing_relation) -%}
-        {% do log(log_message) %}
-        {% call statement('main') -%}
-          select 1
-        {%- endcall %}
-
-      {% endif %}
+      {#-- build model #}
+      {% call statement('main') -%}
+        {{ create_table_as(False, target_relation, sql, 'skip') }}
+      {%- endcall %}
 
   {% endif %}
 {% endmacro %}
