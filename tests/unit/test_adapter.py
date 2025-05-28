@@ -68,7 +68,7 @@ class TestTrinoAdapter(unittest.TestCase):
 
         self.config = config_from_parts_or_dicts(project_cfg, profile_cfg)
         self.assertEqual(self.config.query_comment.comment, "dbt")
-        self.assertEqual(self.config.query_comment.append, False)
+        self.assertEqual(self.config.query_comment.append, None)
 
     @property
     def adapter(self):
