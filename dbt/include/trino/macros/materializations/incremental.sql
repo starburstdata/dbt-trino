@@ -125,11 +125,15 @@
     {% if unique_key %}
         {% if unique_key is sequence and unique_key is not string %}
             delete from {{ target }}
-            where
+            where exists (
+                select 1
+                from {{ source }}
+                where
                 {% for key in unique_key %}
-                    {{ target }}.{{ key }} in (select {{ key }} from {{ source }})
+                    {{ target }}.{{ key }} = {{ source }}.{{ key }}
                     {{ "and " if not loop.last }}
                 {% endfor %}
+                )
                 {% if incremental_predicates %}
                     {% for predicate in incremental_predicates %}
                         and {{ predicate }}
