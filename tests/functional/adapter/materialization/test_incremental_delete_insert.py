@@ -1,4 +1,9 @@
 import pytest
+from dbt.tests.adapter.incremental.test_incremental_predicates import (
+    BaseIncrementalPredicates,
+    models__delete_insert_incremental_predicates_sql,
+    seeds__expected_delete_insert_incremental_predicates_csv,
+)
 from dbt.tests.adapter.incremental.test_incremental_unique_id import (
     BaseIncrementalUniqueKey,
     models__duplicated_unary_unique_key_list_sql,
@@ -124,6 +129,39 @@ select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
 
 """
 
+models__delete_insert_composite_keys_sql = """
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy='delete+insert',
+        unique_key=['id', 'col']
+    )
+}}
+select 1 as id, 1 as col
+union all
+select 1 as id, 3 as col
+union all
+select 3 as id, 1 as col
+union all
+select 3 as id, 3 as col
+
+{% if is_incremental() %}
+
+except
+(select 1 as id, 1 as col
+union all
+select 3 as id, 3 as col)
+
+{% endif %}
+"""
+
+seeds__expected_delete_insert_composite_keys_csv = """id,col
+1,1
+1,3
+3,1
+3,3
+"""
+
 
 class TrinoIncrementalUniqueKey(BaseIncrementalUniqueKey):
     @pytest.fixture(scope="class")
@@ -204,3 +242,34 @@ class TestIcebergIncrementalDeleteInsertWithLocation:
             f'create table "{project.database}"."{project.test_schema}"."model__dbt_tmp"' in logs
         )
         assert "location = 's3a://datalake/model__dbt_tmp'" in logs
+
+
+@pytest.mark.iceberg
+class TestIcebergCompositeUniqueKeys(BaseIncrementalPredicates):
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {
+            "expected_delete_insert_incremental_predicates.csv": seeds__expected_delete_insert_incremental_predicates_csv,
+            "expected_delete_insert_composite_keys.csv": seeds__expected_delete_insert_composite_keys_csv,
+        }
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "delete_insert_incremental_predicates.sql": models__delete_insert_incremental_predicates_sql,
+            "delete_insert_composite_keys.sql": models__delete_insert_composite_keys_sql,
+        }
+
+    def test__incremental_predicates_composite_keys(self, project):
+        """seed should match model after two incremental runs"""
+
+        expected_fields = self.get_expected_fields(
+            relation="expected_delete_insert_composite_keys", seed_rows=4
+        )
+        test_case_fields = self.get_test_fields(
+            project,
+            seed="expected_delete_insert_composite_keys",
+            incremental_model="delete_insert_composite_keys",
+            update_sql_file=None,
+        )
+        self.check_scenario_correctness(expected_fields, test_case_fields, project)
