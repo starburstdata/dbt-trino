@@ -7,5 +7,5 @@ cd ..
 set -exo pipefail
 
 docker compose -f docker-compose-starburst.yml build
-docker compose -f docker-compose-starburst.yml up -d
+docker compose -f docker-compose-starburst.yml up -d --quiet-pull
 timeout 5m bash -c -- 'while ! docker compose -f docker-compose-starburst.yml logs trino 2>&1 | tail -n 1 | grep "SERVER STARTED"; do sleep 2; done'
