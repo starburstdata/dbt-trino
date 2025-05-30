@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Bump dbt-tests-adapter to 1.15.1
+time: 2025-05-30T14:38:39.707293+02:00
+custom:
+  Author: damian3031
+  Issue: ""
+  PR: "484"
