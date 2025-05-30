@@ -71,6 +71,8 @@ union all
 select 'NY','New York','Manhattan',DATE '2021-04-01'
 union all
 select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
+union all
+select 'CO','Denver',null,DATE '2021-06-18'
 
 """
 
@@ -96,6 +98,8 @@ union all
 select 'NY','New York','Manhattan',DATE '2021-04-01'
 union all
 select 'PA','Philadelphia','Philadelphia',DATE '2021-05-21'
+union all
+select 'CO','Denver',null,DATE '2021-06-18'
 
 """
 
