@@ -13,7 +13,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Test release
         run: |
@@ -22,9 +22,9 @@ jobs:
           pip install -r dev_requirements.txt
           pip install twine wheel setuptools
           python setup.py sdist bdist_wheel
-          pip install dist/dbt-trino-*.tar.gz
+          pip install dist/dbt_trino-*.tar.gz
           pip install dist/dbt_trino-*-py3-none-any.whl
-          twine check dist/dbt_trino-*-py3-none-any.whl dist/dbt-trino-*.tar.gz
+          twine check dist/dbt_trino-*-py3-none-any.whl dist/dbt_trino-*.tar.gz
 
   github-release:
     name: GitHub release
@@ -37,7 +37,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Get dbt-trino version
         run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Get dbt-trino version
         run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
