@@ -70,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: github-release
     environment: PypiProd
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,9 +85,6 @@ jobs:
         run: echo "version_number=$(cat dbt/adapters/trino/__version__.py | sed -n 's/version = "\(.*\)\"/\1/p')" >> $GITHUB_ENV
 
       - name: Release to pypi
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           python3 -m venv env
           source env/bin/activate
