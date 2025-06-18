@@ -1,0 +1,7 @@
+kind: Fixes
+body: Fixes behavior of adding/removing columns when column names require quoting.
+time: 2025-06-17T19:52:59.780969-07:00
+custom:
+    Author: conor-mcavoy
+    Issue: "491"
+    PR: "490"
