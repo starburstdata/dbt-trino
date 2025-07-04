@@ -11,6 +11,8 @@ from tests.functional.adapter.materialization.fixtures import (
     incremental_ignore_target_sql,
     incremental_sync_all_columns_diff_data_types_sql,
     incremental_sync_all_columns_diff_data_types_target_sql,
+    incremental_sync_all_columns_quoted_sql,
+    incremental_sync_all_columns_quoted_target_sql,
     incremental_sync_all_columns_sql,
     incremental_sync_all_columns_target_sql,
     model_a_sql,
@@ -24,6 +26,8 @@ from tests.functional.adapter.materialization.fixtures import (
     select_from_incremental_ignore_target_sql,
     select_from_incremental_sync_all_columns_diff_data_types_sql,
     select_from_incremental_sync_all_columns_diff_data_types_target_sql,
+    select_from_incremental_sync_all_columns_quoted_sql,
+    select_from_incremental_sync_all_columns_quoted_target_sql,
     select_from_incremental_sync_all_columns_sql,
     select_from_incremental_sync_all_columns_target_sql,
 )
@@ -49,6 +53,8 @@ class OnSchemaChangeBase:
             "incremental_fail.sql": incremental_fail_sql,
             "incremental_sync_all_columns.sql": incremental_sync_all_columns_sql,
             "incremental_sync_all_columns_target.sql": incremental_sync_all_columns_target_sql,
+            "incremental_sync_all_columns_quoted.sql": incremental_sync_all_columns_quoted_sql,
+            "incremental_sync_all_columns_quoted_target.sql": incremental_sync_all_columns_quoted_target_sql,
             "incremental_sync_all_columns_diff_data_types.sql": incremental_sync_all_columns_diff_data_types_sql,
             "incremental_sync_all_columns_diff_data_types_target.sql": incremental_sync_all_columns_diff_data_types_target_sql,
             "schema.yml": schema_base_yml,
@@ -66,6 +72,8 @@ class OnSchemaChangeBase:
             "select_from_incremental_ignore_target.sql": select_from_incremental_ignore_target_sql,
             "select_from_incremental_sync_all_columns.sql": select_from_incremental_sync_all_columns_sql,
             "select_from_incremental_sync_all_columns_target.sql": select_from_incremental_sync_all_columns_target_sql,
+            "select_from_incremental_sync_all_columns_quoted.sql": select_from_incremental_sync_all_columns_quoted_sql,
+            "select_from_incremental_sync_all_columns_quoted_target.sql": select_from_incremental_sync_all_columns_quoted_target_sql,
             "select_from_incremental_sync_all_columns_diff_data_types.sql": select_from_incremental_sync_all_columns_diff_data_types_sql,
             "select_from_incremental_sync_all_columns_diff_data_types_target.sql": select_from_incremental_sync_all_columns_diff_data_types_target_sql,
         }
@@ -178,6 +186,24 @@ class OnSchemaChangeBase:
             project, select, exclude, expected, compare_source, compare_target
         )
 
+    def run_incremental_sync_all_columns_quoted(self, project):
+        select = "model_a incremental_sync_all_columns_quoted incremental_sync_all_columns_quoted_target"
+        compare_source = "incremental_sync_all_columns_quoted"
+        compare_target = "incremental_sync_all_columns_quoted_target"
+        exclude = None
+        expected = [
+            "select_from_a",
+            "select_from_incremental_sync_all_columns_quoted",
+            "select_from_incremental_sync_all_columns_quoted_target",
+            "unique_model_a_id",
+            "unique_incremental_sync_all_columns_quoted_id",
+            "unique_incremental_sync_all_columns_quoted_target_id",
+        ]
+        self.list_tests_and_assert(select, exclude, expected)
+        self.run_tests_and_assert(
+            project, select, exclude, expected, compare_source, compare_target
+        )
+
     def run_incremental_sync_all_columns_data_type_change(self, project):
         select = "model_a incremental_sync_all_columns_diff_data_types incremental_sync_all_columns_diff_data_types_target"
         compare_source = "incremental_sync_all_columns_diff_data_types"
@@ -211,6 +237,7 @@ class OnSchemaChangeBase:
 
     def test_run_incremental_sync_all_columns(self, project):
         self.run_incremental_sync_all_columns(project)
+        self.run_incremental_sync_all_columns_quoted(project)
 
     def test_run_incremental_sync_all_columns_data_type_change(self, project):
         self.run_incremental_sync_all_columns_data_type_change(project)

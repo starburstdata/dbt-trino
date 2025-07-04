@@ -96,6 +96,18 @@ models:
         tests:
           - unique
 
+  - name: incremental_sync_all_columns_quoted
+    columns:
+      - name: id
+        tests:
+          - unique
+
+  - name: incremental_sync_all_columns_quoted_target
+    columns:
+      - name: id
+        tests:
+          - unique
+
   - name: incremental_sync_all_columns_diff_data_types
     columns:
       - name: id
@@ -347,6 +359,58 @@ from source_data
 order by id
 """
 
+incremental_sync_all_columns_quoted_sql = """\
+{{
+    config(
+        materialized='incremental',
+        unique_key='id',
+        on_schema_change='sync_all_columns'
+
+    )
+}}
+
+WITH source_data AS (SELECT * FROM {{ ref('model_a') }} )
+
+{% if is_incremental() %}
+
+SELECT id,
+       cast(field1 as varchar) as field1,
+       cast(field3 as varchar) as "3field3", -- to validate new fields
+       cast(field4 as varchar) AS "4field4" -- to validate new fields
+
+FROM source_data WHERE id NOT IN (SELECT id from {{ this }} )
+
+{% else %}
+
+select id,
+       cast(field1 as varchar) as field1,
+       cast(field2 as varchar) as "2field2"
+
+from source_data where id <= 3
+
+{% endif %}
+"""
+
+incremental_sync_all_columns_quoted_target_sql = """\
+{{
+    config(materialized='table')
+}}
+
+with source_data as (
+
+    select * from {{ ref('model_a') }}
+
+)
+select id
+       ,cast(field1 as varchar) as field1
+       --,field2
+       ,cast(case when id <= 3 then null else field3 end as varchar) as "3field3"
+       ,cast(case when id <= 3 then null else field4 end as varchar) as "4field4"
+
+from source_data
+order by id
+"""
+
 incremental_sync_all_columns_diff_data_types_sql = """\
 {{
     config(
@@ -421,6 +485,14 @@ select_from_incremental_sync_all_columns_sql = (
 
 select_from_incremental_sync_all_columns_target_sql = (
     "select * from {{ ref('incremental_sync_all_columns_target') }} where false"
+)
+
+select_from_incremental_sync_all_columns_quoted_sql = (
+    "select * from {{ ref('incremental_sync_all_columns_quoted') }} where false"
+)
+
+select_from_incremental_sync_all_columns_quoted_target_sql = (
+    "select * from {{ ref('incremental_sync_all_columns_quoted_target') }} where false"
 )
 
 select_from_incremental_sync_all_columns_diff_data_types_sql = (
