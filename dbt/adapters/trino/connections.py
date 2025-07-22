@@ -18,6 +18,9 @@ from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
 from dbt_common.helper_types import Port
 from trino.transaction import IsolationLevel
 
+import threading
+import time
+
 from dbt.adapters.trino.__version__ import version
 
 logger = AdapterLogger("Trino")
@@ -325,6 +328,7 @@ class ConnectionWrapper(object):
         self._cursor = None
         self._fetch_result = None
         self._prepared_statements_enabled = prepared_statements_enabled
+        self.query_id = []
 
     def cursor(self):
         self._cursor = self.handle.cursor()
@@ -381,19 +385,41 @@ class ConnectionWrapper(object):
         return None
 
     def execute(self, sql, bindings=None):
-        if not self._prepared_statements_enabled and bindings is not None:
-            # DEPRECATED: by default prepared statements are used.
-            # Code is left as an escape hatch if prepared statements
-            # are failing.
-            bindings = tuple(self._escape_value(b) for b in bindings)
-            sql = sql % bindings
+        def _run_query():
+            try:
+                if not self._prepared_statements_enabled and bindings is not None:
+                    # DEPRECATED: by default prepared statements are used.
+                    # Code is left as an escape hatch if prepared statements
+                    # are failing.
+                    safe_bindings = tuple(self._escape_value(b) for b in bindings)
+                    self._cursor.execute(sql % safe_bindings)
+                else:
+                    self._cursor.execute(sql, params=bindings)
+            finally:
+                self._done_event.set()
 
-            result = self._cursor.execute(sql)
-        else:
-            result = self._cursor.execute(sql, params=bindings)
+        # Shared state
+        self._done_event = threading.Event()
+        self._query_thread = threading.Thread(target=_run_query)
+        self._query_thread.start()
 
+        query_id = None
+        # Wait for the query_id to be available
+        for _ in range(50):  # wait up to 5 seconds
+            query = getattr(self._cursor, '_query', None)
+            query_id = getattr(query, 'query_id', None) if query else None
+            if query_id:
+                self.query_id.append(query_id)
+                logger.debug(f"[debug] Got Trino query_id: {query_id}")
+                break
+            time.sleep(0.1)
+
+        self._done_event.wait()
         self._fetch_result = self._cursor.fetchall()
-        return result
+
+        if query_id is not None:
+            self.query_id.remove(query_id)
+        return self._fetch_result
 
     @property
     def description(self):
@@ -535,6 +561,30 @@ class TrinoConnectionManager(SQLConnectionManager):
         )  # type: ignore
 
     def cancel(self, connection):
+        query_ids = getattr(connection.handle, 'query_id', [])
+        if len(query_ids) == 0:
+            logger.info("No query ID found in thread context.")
+            connection.handle.cancel()
+            return
+
+        for query_id in query_ids:
+            logger.info(f"Attempting to cancel Trino query using SQL: {query_id}")
+            kill_sql = f"CALL system.runtime.kill_query('{query_id}', 'Cancelled by dbt')"
+            # Open a new connection for the kill command
+            kill_conn = self.get_thread_connection()
+            cursor = kill_conn.handle.cursor()
+
+            try:
+                cursor.execute(kill_sql)
+                logger.info(f"Successfully cancelled Trino query: {query_id}")
+            except Exception as e:
+                logger.warning(f"Failed to cancel Trino query {query_id} via SQL: {e}")
+            finally:
+                # Ensure the cursor is closed after the operation
+                cursor.close()
+                kill_conn.handle.close()
+                connection.handle.cancel()
+
         connection.handle.cancel()
 
     def add_query(self, sql, auto_begin=True, bindings=None, abridge_sql_log=False):
