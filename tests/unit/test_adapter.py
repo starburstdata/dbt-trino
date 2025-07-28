@@ -26,6 +26,40 @@ from dbt.adapters.trino.connections import (
 
 from .utils import config_from_parts_or_dicts, mock_connection
 
+from dbt.adapters.trino.connections import TrinoConnectionManager
+
+class TestTrinoConnectionManagerCancel(TestCase):
+    @patch("dbt.adapters.trino.connections.trino.dbapi.connect", return_value=MagicMock())
+    def test_cancel_query_executes_kill_and_closes(self, mock_trino_connect):
+        manager = TrinoConnectionManager(profile=None, mp_context=get_context("spawn"))
+        fake_query_id = "20240601_123456_00001_abcde"
+
+        mock_cursor = MagicMock()
+        mock_handle = MagicMock()
+        mock_handle.query_id = [fake_query_id]
+        mock_handle.cursor.return_value = mock_cursor
+
+        connection = MagicMock()
+        connection.handle = mock_handle
+
+        mock_kill_cursor = MagicMock()
+        mock_kill_handle = MagicMock()
+        mock_kill_handle.cursor.return_value = mock_kill_cursor
+        mock_kill_connection = MagicMock()
+        mock_kill_connection.handle = mock_kill_handle
+
+        with patch.object(manager, "get_thread_connection", return_value=mock_kill_connection), \
+             patch("dbt.adapters.trino.connections.logger") as mock_logger:
+            manager.cancel(connection)
+
+            kill_sql = f"CALL system.runtime.kill_query('{fake_query_id}', 'Cancelled by dbt')"
+            mock_kill_cursor.execute.assert_called_with(kill_sql)
+            mock_kill_cursor.close.assert_called_once()
+            mock_kill_handle.close.assert_called_once()
+            mock_handle.cancel.assert_called()
+            mock_logger.info.assert_any_call(f"Attempting to cancel Trino query using SQL: {fake_query_id}")
+            mock_logger.info.assert_any_call(f"Successfully cancelled Trino query: {fake_query_id}")
+
 
 class TestTrinoAdapter(unittest.TestCase):
     def setUp(self):
