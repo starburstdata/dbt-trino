@@ -1,0 +1,7 @@
+kind: Fixes
+body: Handle when model['config'] is null
+time: 2025-08-28T19:24:02.928502+01:00
+custom:
+    Author: mattiamatrix
+    Issue: ""
+    PR: "499"
