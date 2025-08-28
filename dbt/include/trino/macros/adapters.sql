@@ -136,7 +136,7 @@
 {%- endmacro -%}
 
 {% macro comment(comment) %}
-  {%- set persist_docs = model['config'].get('persist_docs') -%}
+  {%- set persist_docs = model.get('config', {}).get('persist_docs') -%}
   {%- if persist_docs -%}
     {%- set persist_relation = persist_docs.get('relation') -%}
     {%- if persist_relation and comment is not none and comment|length > 0 -%}
