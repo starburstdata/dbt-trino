@@ -3,18 +3,28 @@ from typing import Dict, List, Optional
 
 import agate
 from dbt.adapters.base.impl import AdapterConfig, ConstraintSupport
+from dbt.adapters.base.meta import available
 from dbt.adapters.capability import (
     Capability,
     CapabilityDict,
     CapabilitySupport,
     Support,
 )
+from dbt.adapters.catalogs import CatalogRelation
+from dbt.adapters.contracts.relation import RelationConfig
 from dbt.adapters.sql import SQLAdapter
 from dbt_common.behavior_flags import BehaviorFlag
 from dbt_common.contracts.constraints import ConstraintType
 from dbt_common.exceptions import DbtDatabaseError
 
-from dbt.adapters.trino import TrinoColumn, TrinoConnectionManager, TrinoRelation
+from dbt.adapters.trino import (
+    TrinoColumn,
+    TrinoConnectionManager,
+    TrinoRelation,
+    constants,
+    parse_model,
+)
+from dbt.adapters.trino.catalogs import TrinoCatalogIntegration
 
 
 @dataclass
@@ -28,6 +38,10 @@ class TrinoAdapter(SQLAdapter):
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
     AdapterSpecificConfigs = TrinoConfig
+
+    CATALOG_INTEGRATIONS = [
+        TrinoCatalogIntegration,
+    ]
 
     CONSTRAINT_SUPPORT = {
         ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
@@ -51,6 +65,7 @@ class TrinoAdapter(SQLAdapter):
     def __init__(self, config, mp_context) -> None:
         super().__init__(config, mp_context)
         self.connections = self.ConnectionManager(config, mp_context, self.behavior)
+        self.add_catalog_integration(constants.DEFAULT_TRINO_CATALOG)
 
     @property
     def _behavior_flags(self) -> List[BehaviorFlag]:
@@ -103,3 +118,23 @@ class TrinoAdapter(SQLAdapter):
 
     def valid_incremental_strategies(self):
         return ["append", "merge", "delete+insert", "microbatch"]
+
+    @available
+    def build_catalog_relation(self, model: RelationConfig) -> Optional[CatalogRelation]:
+        """
+        Builds a relation for a given configuration.
+
+        This method uses the provided configuration to determine the appropriate catalog
+        integration and config parser for building the relation. It defaults to the trino
+        catalog if none is provided in the configuration for backward compatibility.
+
+        Args:
+            model (RelationConfig): `config.model` (not `model`) from the jinja context
+
+        Returns:
+            Any: The constructed relation object generated through the catalog integration and parser
+        """
+        if catalog := parse_model.catalog_name(model):
+            catalog_integration = self.get_catalog_integration(catalog)
+            return catalog_integration.build_relation(model)
+        return None
