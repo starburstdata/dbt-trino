@@ -133,6 +133,9 @@ class TestPersistDocsIncremental(TestPersistDocsBase):
         assert len(results) == 4
 
 
+# TODO: Trying to COMMENT ON COLUMN with a comment that includes '*/'
+# results in an error. This happens only for views.
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocs(BasePersistDocs):
     pass
 
@@ -165,6 +168,9 @@ class TestPersistDocsDisabledByDefault(BasePersistDocsDisabled):
     pass
 
 
+# TODO: Trying to COMMENT ON COLUMN with a comment that includes '*/'
+# results in an error. This happens only for views.
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocsRelationSetToFalse(BasePersistDocsDisabled):
     """
     With `persist_docs.relation` config set to False, table comments shouldn't be added.
@@ -184,6 +190,9 @@ class TestPersistDocsRelationSetToFalse(BasePersistDocsDisabled):
         }
 
 
+# TODO: Trying to COMMENT ON COLUMN with a comment that includes '*/'
+# results in an error. This happens only for views.
+@pytest.mark.skip_profile("starburst_galaxy")
 class TestPersistDocsRelationNotSet(BasePersistDocsDisabled):
     """
     Without providing `persist_docs.relation` config, table comments shouldn't be added by default.
