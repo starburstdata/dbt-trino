@@ -1,7 +1,0 @@
-kind: Under the Hood
-body: Update trino__get_columns_in_relation to use information_schema.columns
-time: 2024-11-05T08:36:13.788945-05:00
-custom:
-  Author: posulliv
-  Issue: "443"
-  PR: "444"

@@ -1,7 +1,0 @@
-kind: Breaking Changes
-body: Drop support for Python 3.8
-time: 2024-10-24T17:22:50.717059+02:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "439"
