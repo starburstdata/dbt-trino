@@ -1,7 +1,0 @@
-kind: Fixes
-body: Fix handling of composite unique_key in incremental models
-time: 2025-03-12T00:03:46.198336572+03:00
-custom:
-    Author: yakovlevvs
-    Issue: "465"
-    PR: "473"
