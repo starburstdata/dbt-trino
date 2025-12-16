@@ -3,6 +3,7 @@ from dbt.tests.adapter.simple_snapshot.test_snapshot import (
     BaseSimpleSnapshot,
     BaseSnapshotCheck,
 )
+from dbt.tests.fixtures.project import TestProjInfo
 from dbt.tests.util import run_dbt
 
 iceberg_macro_override_sql = """
@@ -13,7 +14,7 @@ iceberg_macro_override_sql = """
 
 
 class TrinoSimpleSnapshot(BaseSimpleSnapshot):
-    def test_updates_are_captured_by_snapshot(self, project):
+    def test_updates_are_captured_by_snapshot(self, project: TestProjInfo) -> None:
         """
         Update the last 5 records. Show that all ids are current, but the last 5 reflect updates.
         """
@@ -26,7 +27,7 @@ class TrinoSimpleSnapshot(BaseSimpleSnapshot):
             ids_with_closed_out_snapshot_records=range(16, 21),
         )
 
-    def test_new_column_captured_by_snapshot(self, project):
+    def test_new_column_captured_by_snapshot(self, project: TestProjInfo) -> None:
         """
         Add a column to `fact` and populate the last 10 records with a non-null value.
         Show that all ids are current, but the last 10 reflect updates and the first 10 don't
@@ -47,8 +48,20 @@ class TrinoSimpleSnapshot(BaseSimpleSnapshot):
         )
 
 
+    def test_staging_table_is_recreated(self, project: TestProjInfo) -> None:
+        """
+        It may happen that staging temporary table still exists, from previous run.
+        Snapshot should work properly even in such situation.
+        """
+
+        project.run_sql(f"create table {project.test_schema}.snapshot__dbt_tmp (id int)")
+
+        run_dbt(["snapshot"])
+
+
+
 class TrinoSnapshotCheck(BaseSnapshotCheck):
-    def test_column_selection_is_reflected_in_snapshot(self, project):
+    def test_column_selection_is_reflected_in_snapshot(self, project: TestProjInfo) -> None:
         """
         Update the first 10 records on a non-tracked column.
         Update the middle 10 records on a tracked column. (hence records 6-10 are updated on both)
