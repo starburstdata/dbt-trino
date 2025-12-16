@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump actions/setup-python from 5 to 6"
+time: 2025-09-08T04:12:15.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 500
