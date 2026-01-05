@@ -59,6 +59,7 @@ class TrinoAdapter(SQLAdapter):
             Capability.TableLastModifiedMetadataBatch: CapabilitySupport(
                 support=Support.Unsupported
             ),
+            Capability.MicrobatchConcurrency: CapabilitySupport(support=Support.Full),
         }
     )
 
