@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Bump dbt-adapters>=1.16,<2.0
+time: 2026-01-15T09:22:26.968512-08:00
+custom:
+    Author: zqureshi
+    Issue: "507"
+    PR: "507"
