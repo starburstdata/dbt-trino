@@ -1,7 +1,0 @@
-kind: Features
-body: table materialization on_table_exists=skip option
-time: 2025-06-02T21:22:47.837474-04:00
-custom:
-    Author: choyrim
-    Issue: "479"
-    PR: "481"

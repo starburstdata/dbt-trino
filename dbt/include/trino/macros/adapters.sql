@@ -86,6 +86,10 @@
   {%- set _properties = config.get('properties') -%}
   {%- set table_format = config.get('table_format') -%}
   {%- set file_format = config.get('file_format') -%}
+  {%- set catalog_relation = adapter.build_catalog_relation(config.model) -%}
+  {%- set catalog_table_format = catalog_relation.table_format -%}
+  {%- set catalog_file_format = catalog_relation.file_format -%}
+  {%- set catalog_storage_uri = catalog_relation.storage_uri -%}
 
   {%- if file_format -%}
     {%- if _properties -%}
@@ -99,6 +103,12 @@
       {%- endif -%}
     {%- else -%}
       {%- set _properties = {'format': "'" ~ file_format ~ "'"} -%}
+    {%- endif -%}
+  {%- elif (not _properties.format) and catalog_file_format -%}
+    {%- if _properties -%}
+      {%- do _properties.update({'format': "'" ~ catalog_file_format ~ "'"}) -%}
+    {%- else -%}
+      {%- set _properties = {'format': "'" ~ catalog_file_format ~ "'"} -%}
     {%- endif -%}
   {%- endif -%}
 
@@ -114,6 +124,21 @@
       {%- endif -%}
     {%- else -%}
       {%- set _properties = {'type': "'" ~ table_format ~ "'"} -%}
+    {%- endif -%}
+  {%- elif (not _properties.type) and (catalog_table_format is not none) -%}
+    {%- if _properties -%}
+      {%- do _properties.update({'type': "'" ~ catalog_table_format ~ "'"}) -%}
+    {%- else -%}
+      {%- set _properties = {'type': "'" ~ catalog_table_format ~ "'"} -%}
+    {%- endif -%}
+  {%- endif -%}
+
+
+  {%- if not _properties.location and catalog_storage_uri -%}
+    {%- if _properties -%}
+      {%- do _properties.update({'location': "'" ~ catalog_storage_uri ~ "'"}) -%}
+    {%- else -%}
+      {%- set _properties = {'location': "'" ~ catalog_storage_uri ~ "'"} -%}
     {%- endif -%}
   {%- endif -%}
 

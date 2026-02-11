@@ -1,7 +1,0 @@
-kind: Features
-body: To allow to set grace period for mv
-time: 2025-03-10T15:57:41.485966118+03:00
-custom:
-    Author: AlexandrKhabarov
-    Issue: ""
-    PR: "472"

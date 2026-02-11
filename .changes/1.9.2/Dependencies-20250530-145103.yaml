@@ -1,7 +1,0 @@
-kind: Dependencies
-body: Bump dbt-common to 1.25.0
-time: 2025-05-30T14:51:03.097835+02:00
-custom:
-  Author: damian3031
-  Issue: ""
-  PR: "484"

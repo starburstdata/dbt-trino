@@ -13,6 +13,18 @@ def pytest_addoption(parser):
     parser.addoption("--profile", action="store", default="trino_starburst", type=str)
 
 
+# Skip tests for profiles marked with @pytest.mark.skip_profile
+# See pytest docs for skipping based on command-line options:
+# https://docs.pytest.org/en/latest/example/simple.html#control-skipping-of-tests-according-to-command-line-option
+def pytest_collection_modifyitems(config, items):
+    profile_type = config.getoption("--profile")
+    for item in items:
+        if skip_profile_marker := item.get_closest_marker("skip_profile"):
+            if profile_type in skip_profile_marker.args:
+                skip_profile = pytest.mark.skip(reason=f"skipped on {profile_type} profile")
+                item.add_marker(skip_profile)
+
+
 # The profile dictionary, used to write out profiles.yml
 @pytest.fixture(scope="class")
 def dbt_profile_target(request):
@@ -83,15 +95,6 @@ def get_galaxy_target():
         "schema": "default",
         "timezone": "UTC",
     }
-
-
-@pytest.fixture(autouse=True)
-def skip_by_profile_type(request):
-    profile_type = request.config.getoption("--profile")
-    if request.node.get_closest_marker("skip_profile"):
-        for skip_profile_type in request.node.get_closest_marker("skip_profile").args:
-            if skip_profile_type == profile_type:
-                pytest.skip(f"skipped on {profile_type} profile")
 
 
 @pytest.fixture(scope="class")
