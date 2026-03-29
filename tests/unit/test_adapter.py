@@ -22,6 +22,7 @@ from dbt.adapters.trino.connections import (
     TrinoNoneCredentials,
     TrinoOauthConsoleCredentials,
     TrinoOauthCredentials,
+    TrinoGcpAdcCredentials,
 )
 
 from .utils import config_from_parts_or_dicts, mock_connection
@@ -445,6 +446,37 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.client_tags, ["dev", "oauth_console"])
         self.assertEqual(credentials.timezone, "UTC")
         self.assertEqual(credentials.suppress_cert_warning, False)
+
+    def test_gcp_adc_authentication(self):
+        connection = self.acquire_connection_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "gcp_adc",
+                "schema": "dbt_test_schema",
+                "cert": "/path/to/cert",
+                "client_tags": ["dev", "gcp_adc"],
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "4h",
+                    "exchange_compression": True,
+                },
+                "timezone": "UTC",
+                "suppress_cert_warning": False,
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoGcpAdcCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(connection.credentials.prepared_statements_enabled, True)
+        self.assertEqual(credentials.client_tags, ["dev", "gcp_adc"])
+        self.assertEqual(credentials.timezone, "UTC")
+        self.assertEqual(credentials.suppress_cert_warning, False)
+        self.assertEqual(credentials.scopes, ["openid", "https://www.googleapis.com/auth/userinfo.email"])
 
 
 class TestPreparedStatementsEnabled(TestCase):

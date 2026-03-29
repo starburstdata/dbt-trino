@@ -46,6 +46,8 @@ class TrinoCredentialsFactory:
                 return TrinoOauthCredentials
             elif method == "oauth_console":
                 return TrinoOauthConsoleCredentials
+            elif method == "gcp_adc":
+                return TrinoGcpAdcCredentials
         return TrinoNoneCredentials
 
     @classmethod
@@ -90,6 +92,9 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
     @abstractmethod
     def trino_auth(self) -> Optional[trino.auth.Authentication]:
         pass
+
+    def http_session(self):
+        return None
 
 
 @dataclass
@@ -311,6 +316,49 @@ class TrinoOauthConsoleCredentials(TrinoCredentials):
         return self.OAUTH
 
 
+@dataclass
+class TrinoGcpAdcCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: Optional[str] = None
+    client_tags: Optional[List[str]] = None
+    roles: Optional[Dict[str, str]] = None
+    cert: Optional[Union[str, bool]] = None
+    http_headers: Optional[Dict[str, str]] = None
+    session_properties: Dict[str, Any] = field(default_factory=dict)
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
+    scopes: List[str] = field(
+        default_factory=lambda: ["openid", "https://www.googleapis.com/auth/userinfo.email"]
+    )
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "gcp_adc"
+
+    def trino_auth(self):
+        return trino.constants.DEFAULT_AUTH
+
+    def http_session(self):
+        try:
+            import google.auth
+            from google.auth.transport.requests import AuthorizedSession
+        except ImportError:
+            raise DbtRuntimeError(
+                "The 'google-auth' library is required for the gcp_adc method. "
+                "Please install it with: pip install google-auth"
+            )
+
+        credentials, project_id = google.auth.default(scopes=self.scopes)
+        return AuthorizedSession(credentials)
+
+
 class ConnectionWrapper(object):
     """Wrap a Trino connection in a way that accomplishes two tasks:
 
@@ -506,6 +554,7 @@ class TrinoConnectionManager(SQLConnectionManager):
             http_headers=credentials.http_headers,
             session_properties=credentials.session_properties,
             auth=credentials.trino_auth(),
+            http_session=credentials.http_session(),
             max_attempts=credentials.retries,
             isolation_level=IsolationLevel.AUTOCOMMIT,
             source=f"dbt-trino-{version}",

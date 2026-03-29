@@ -82,6 +82,9 @@ setup(
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
         "dbt-core>=1.8.0",
     ],
+    extras_require={
+        "gcp": ["google-auth>=2.49.1"],
+    },
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
