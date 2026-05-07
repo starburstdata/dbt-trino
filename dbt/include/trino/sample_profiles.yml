@@ -3,7 +3,7 @@ default:
 
     dev:
       type: trino
-      method: none  # optional, one of {none | ldap | kerberos}
+      method: none  # optional, one of {none | ldap | kerberos | gssapi | jwt | certificate | oauth | oauth_console}
       user: [dev_user]
       password: [password]  # required if method is ldap or kerberos
       database: [database name]
@@ -14,7 +14,7 @@ default:
 
     prod:
       type: trino
-      method: none  # optional, one of {none | ldap | kerberos}
+      method: none  # optional, one of {none | ldap | kerberos | gssapi | jwt | certificate | oauth | oauth_console}
       user: [prod_user]
       password: [prod_password]  # required if method is ldap or kerberos
       database: [database name]

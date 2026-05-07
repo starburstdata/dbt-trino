@@ -1,0 +1,7 @@
+kind: Features
+body: Add `gssapi` authentication method backed by trino-python-client's `GSSAPIAuthentication` class. Supports `kinit`-style credential cache auth in addition to keytab, and exposes mutual_authentication as a case-insensitive string ("REQUIRED" | "OPTIONAL" | "DISABLED").
+time: 2026-05-07T06:50:38.855Z
+custom:
+  Author: hb1915
+  Issue: ""
+  PR: ""

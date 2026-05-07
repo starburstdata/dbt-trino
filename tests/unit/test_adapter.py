@@ -16,6 +16,7 @@ from dbt.adapters.trino.column import TRINO_VARCHAR_MAX_LENGTH, TrinoColumn
 from dbt.adapters.trino.connections import (
     HttpScheme,
     TrinoCertificateCredentials,
+    TrinoGssapiCredentials,
     TrinoJwtCredentials,
     TrinoKerberosCredentials,
     TrinoLdapCredentials,
@@ -319,6 +320,73 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.client_tags, ["dev", "kerberos"])
         self.assertEqual(credentials.timezone, "UTC")
         self.assertEqual(credentials.suppress_cert_warning, False)
+
+
+    def test_gssapi_authentication(self):
+        connection = self.acquire_connection_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "gssapi",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "principal": "trino_user@EXAMPLE.COM",
+                "krb5_config": "/etc/krb5.conf",
+                "service_name": "trino",
+                "hostname_override": "database.example.com",
+                "mutual_authentication": "OPTIONAL",
+                "force_preemptive": True,
+                "delegate": True,
+                "cert": "/path/to/cert",
+                "client_tags": ["dev", "gssapi"],
+                "http_headers": {"X-Trino-Client-Info": "dbt-trino"},
+                "session_properties": {
+                    "query_max_run_time": "4h",
+                    "exchange_compression": True,
+                },
+                "timezone": "UTC",
+                "suppress_cert_warning": False,
+            }
+        )
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoGssapiCredentials)
+        self.assert_default_connection_credentials(credentials)
+        self.assertEqual(credentials.http_scheme, HttpScheme.HTTPS)
+        self.assertEqual(credentials.cert, "/path/to/cert")
+        self.assertEqual(credentials.client_tags, ["dev", "gssapi"])
+        self.assertEqual(credentials.principal, "trino_user@EXAMPLE.COM")
+        self.assertEqual(credentials.service_name, "trino")
+        self.assertEqual(credentials.hostname_override, "database.example.com")
+        self.assertEqual(credentials.mutual_authentication, "OPTIONAL")
+        self.assertEqual(credentials.force_preemptive, True)
+        self.assertEqual(credentials.delegate, True)
+        self.assertEqual(credentials.timezone, "UTC")
+        self.assertEqual(credentials.suppress_cert_warning, False)
+        import trino.auth
+        self.assertEqual(
+            credentials._resolve_mutual_authentication(),
+            trino.auth.GSSAPIAuthentication.MUTUAL_OPTIONAL,
+        )
+
+    def test_gssapi_authentication_default_mutual_authentication(self):
+        credentials = TrinoGssapiCredentials(
+            host="h", port=443, user="u", database="db", schema="s"
+        )
+        import trino.auth
+        self.assertEqual(
+            credentials._resolve_mutual_authentication(),
+            trino.auth.GSSAPIAuthentication.MUTUAL_DISABLED,
+        )
+
+    def test_gssapi_authentication_invalid_mutual_authentication(self):
+        credentials = TrinoGssapiCredentials(
+            host="h", port=443, user="u", database="db", schema="s",
+            mutual_authentication="bogus",
+        )
+        with self.assertRaises(DbtRuntimeError):
+            credentials._resolve_mutual_authentication()
 
     def test_certificate_authentication(self):
         connection = self.acquire_connection_with_profile(
