@@ -321,7 +321,6 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.timezone, "UTC")
         self.assertEqual(credentials.suppress_cert_warning, False)
 
-
     def test_gssapi_authentication(self):
         connection = self.acquire_connection_with_profile(
             {
@@ -400,12 +399,20 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         )
 
     def test_gssapi_authentication_invalid_mutual_authentication(self):
-        credentials = TrinoGssapiCredentials(
-            host="h", port=443, user="u", database="db", schema="s",
-            mutual_authentication="bogus",
+        connection = self.acquire_connection_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "gssapi",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+                "mutual_authentication": "bogus",
+            }
         )
         with self.assertRaises(DbtConfigError):
-            credentials._resolve_mutual_authentication()
+            connection.credentials._resolve_mutual_authentication()
 
     def test_certificate_authentication(self):
         connection = self.acquire_connection_with_profile(
