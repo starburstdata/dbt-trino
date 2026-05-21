@@ -9,7 +9,7 @@ import dbt.flags as flags
 import trino
 from dbt.adapters.exceptions.connection import FailedToConnectError
 from dbt_common.clients import agate_helper
-from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
+from dbt_common.exceptions import DbtConfigError, DbtDatabaseError, DbtRuntimeError
 
 from dbt.adapters.trino import TrinoAdapter
 from dbt.adapters.trino.column import TRINO_VARCHAR_MAX_LENGTH, TrinoColumn
@@ -364,17 +364,26 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.delegate, True)
         self.assertEqual(credentials.timezone, "UTC")
         self.assertEqual(credentials.suppress_cert_warning, False)
-        import trino.auth
         self.assertEqual(
             credentials._resolve_mutual_authentication(),
             trino.auth.GSSAPIAuthentication.MUTUAL_OPTIONAL,
         )
 
     def test_gssapi_authentication_default_mutual_authentication(self):
-        credentials = TrinoGssapiCredentials(
-            host="h", port=443, user="u", database="db", schema="s"
+        connection = self.acquire_connection_with_profile(
+            {
+                "type": "trino",
+                "catalog": "trinodb",
+                "host": "database",
+                "port": 5439,
+                "method": "gssapi",
+                "schema": "dbt_test_schema",
+                "user": "trino_user",
+            }
         )
-        import trino.auth
+        credentials = connection.credentials
+        self.assertIsInstance(credentials, TrinoGssapiCredentials)
+        self.assertEqual(credentials.mutual_authentication, "DISABLED")
         self.assertEqual(
             credentials._resolve_mutual_authentication(),
             trino.auth.GSSAPIAuthentication.MUTUAL_DISABLED,
@@ -385,7 +394,7 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
             host="h", port=443, user="u", database="db", schema="s",
             mutual_authentication="bogus",
         )
-        with self.assertRaises(DbtRuntimeError):
+        with self.assertRaises(DbtConfigError):
             credentials._resolve_mutual_authentication()
 
     def test_certificate_authentication(self):

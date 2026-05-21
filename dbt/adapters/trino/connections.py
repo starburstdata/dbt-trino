@@ -14,7 +14,7 @@ from dbt.adapters.contracts.connection import AdapterResponse, Credentials
 from dbt.adapters.events.logging import AdapterLogger
 from dbt.adapters.exceptions.connection import FailedToConnectError
 from dbt.adapters.sql import SQLConnectionManager
-from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
+from dbt_common.exceptions import DbtConfigError, DbtDatabaseError, DbtRuntimeError
 from dbt_common.helper_types import Port
 from trino.transaction import IsolationLevel
 
@@ -247,7 +247,7 @@ class TrinoGssapiCredentials(TrinoCredentials):
     service_name: Optional[str] = None
     # One of "REQUIRED", "OPTIONAL", "DISABLED" (case-insensitive). Defaults to
     # "DISABLED" to match trino-python-client's GSSAPIAuthentication default.
-    mutual_authentication: Optional[str] = "DISABLED"
+    mutual_authentication: str = "DISABLED"
     cert: Optional[Union[str, bool]] = None
     http_headers: Optional[Dict[str, str]] = None
     force_preemptive: Optional[bool] = False
@@ -282,15 +282,13 @@ class TrinoGssapiCredentials(TrinoCredentials):
         )
 
     def _resolve_mutual_authentication(self) -> int:
-        value = (self.mutual_authentication or "DISABLED").upper()
+        value = self.mutual_authentication.upper()
         try:
             return _GSSAPI_MUTUAL_AUTH_VALUES[value]
         except KeyError:
-            raise DbtRuntimeError(
-                "Invalid mutual_authentication value {!r}. "
-                "Expected one of: REQUIRED, OPTIONAL, DISABLED.".format(
-                    self.mutual_authentication
-                )
+            raise DbtConfigError(
+                f"Invalid mutual_authentication value {self.mutual_authentication!r}. "
+                "Expected one of: REQUIRED, OPTIONAL, DISABLED."
             )
 
 
