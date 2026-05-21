@@ -365,8 +365,18 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertEqual(credentials.timezone, "UTC")
         self.assertEqual(credentials.suppress_cert_warning, False)
         self.assertEqual(
-            credentials._resolve_mutual_authentication(),
-            trino.auth.GSSAPIAuthentication.MUTUAL_OPTIONAL,
+            credentials.trino_auth(),
+            trino.auth.GSSAPIAuthentication(
+                config="/etc/krb5.conf",
+                service_name="trino",
+                mutual_authentication=trino.auth.GSSAPIAuthentication.MUTUAL_OPTIONAL,
+                force_preemptive=True,
+                hostname_override="database.example.com",
+                sanitize_mutual_error_response=True,
+                principal="trino_user@EXAMPLE.COM",
+                delegate=True,
+                ca_bundle="/path/to/cert",
+            ),
         )
 
     def test_gssapi_authentication_default_mutual_authentication(self):
