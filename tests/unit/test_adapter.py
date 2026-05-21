@@ -385,8 +385,8 @@ class TestTrinoAdapterAuthenticationMethods(unittest.TestCase):
         self.assertIsInstance(credentials, TrinoGssapiCredentials)
         self.assertEqual(credentials.mutual_authentication, "DISABLED")
         self.assertEqual(
-            credentials._resolve_mutual_authentication(),
-            trino.auth.GSSAPIAuthentication.MUTUAL_DISABLED,
+            credentials.trino_auth(),
+            trino.auth.GSSAPIAuthentication(),
         )
 
     def test_gssapi_authentication_invalid_mutual_authentication(self):
