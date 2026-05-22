@@ -14,7 +14,7 @@ from dbt.adapters.contracts.connection import AdapterResponse, Credentials
 from dbt.adapters.events.logging import AdapterLogger
 from dbt.adapters.exceptions.connection import FailedToConnectError
 from dbt.adapters.sql import SQLConnectionManager
-from dbt_common.exceptions import DbtDatabaseError, DbtRuntimeError
+from dbt_common.exceptions import DbtConfigError, DbtDatabaseError, DbtRuntimeError
 from dbt_common.helper_types import Port
 from trino.transaction import IsolationLevel
 
@@ -40,6 +40,8 @@ class TrinoCredentialsFactory:
                 return TrinoCertificateCredentials
             elif method == "kerberos":
                 return TrinoKerberosCredentials
+            elif method == "gssapi":
+                return TrinoGssapiCredentials
             elif method == "jwt":
                 return TrinoJwtCredentials
             elif method == "oauth":
@@ -221,6 +223,73 @@ class TrinoKerberosCredentials(TrinoCredentials):
             sanitize_mutual_error_response=self.sanitize_mutual_error_response,
             delegate=self.delegate,
         )
+
+
+# Mapping from human-readable mutual-authentication mode (used in dbt profiles)
+# to trino-python-client's integer constants. Kept module-level so it's exposed
+# for tests and for any future auth methods that need the same translation.
+_GSSAPI_MUTUAL_AUTH_VALUES = {
+    "REQUIRED": trino.auth.GSSAPIAuthentication.MUTUAL_REQUIRED,
+    "OPTIONAL": trino.auth.GSSAPIAuthentication.MUTUAL_OPTIONAL,
+    "DISABLED": trino.auth.GSSAPIAuthentication.MUTUAL_DISABLED,
+}
+
+
+@dataclass
+class TrinoGssapiCredentials(TrinoCredentials):
+    host: str
+    port: Port
+    user: str
+    client_tags: Optional[List[str]] = None
+    roles: Optional[Dict[str, str]] = None
+    principal: Optional[str] = None
+    krb5_config: Optional[str] = None
+    service_name: Optional[str] = None
+    # One of "REQUIRED", "OPTIONAL", "DISABLED" (case-insensitive). Defaults to
+    # "DISABLED" to match trino-python-client's GSSAPIAuthentication default.
+    mutual_authentication: str = "DISABLED"
+    cert: Optional[Union[str, bool]] = None
+    http_headers: Optional[Dict[str, str]] = None
+    force_preemptive: Optional[bool] = False
+    hostname_override: Optional[str] = None
+    sanitize_mutual_error_response: Optional[bool] = True
+    delegate: Optional[bool] = False
+    session_properties: Dict[str, Any] = field(default_factory=dict)
+    prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
+    retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
+    timezone: Optional[str] = None
+    suppress_cert_warning: Optional[bool] = None
+
+    @property
+    def http_scheme(self):
+        return HttpScheme.HTTPS
+
+    @property
+    def method(self):
+        return "gssapi"
+
+    def trino_auth(self):
+        return trino.auth.GSSAPIAuthentication(
+            config=self.krb5_config,
+            service_name=self.service_name,
+            mutual_authentication=self._resolve_mutual_authentication(),
+            force_preemptive=self.force_preemptive,
+            hostname_override=self.hostname_override,
+            sanitize_mutual_error_response=self.sanitize_mutual_error_response,
+            principal=self.principal,
+            delegate=self.delegate,
+            ca_bundle=self.cert,
+        )
+
+    def _resolve_mutual_authentication(self) -> int:
+        value = self.mutual_authentication.upper()
+        try:
+            return _GSSAPI_MUTUAL_AUTH_VALUES[value]
+        except KeyError:
+            raise DbtConfigError(
+                f"Invalid mutual_authentication value {self.mutual_authentication!r}. "
+                "Expected one of: REQUIRED, OPTIONAL, DISABLED."
+            )
 
 
 @dataclass
