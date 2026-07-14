@@ -45,7 +45,10 @@ class TrinoCatalogIntegration(CatalogIntegration):
         )
 
     def _calculate_storage_uri(self, model: RelationConfig) -> Optional[str]:
-        if not model.config:
+        # Some node configs are typed, non-mapping objects (e.g. a saved-query
+        # export's ExportConfig, which has no `.get`); treat those as having no
+        # storage_uri rather than raising AttributeError.
+        if not model.config or not hasattr(model.config, "get"):
             return None
 
         if model_storage_uri := model.config.get("storage_uri"):

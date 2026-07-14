@@ -1,0 +1,7 @@
+kind: Fixes
+body: '`build_catalog_relation` no longer raises `AttributeError` for nodes whose config is not mapping-like'
+time: 2026-07-15T02:50:39.9444+05:30
+custom:
+    Author: ash2shukla
+    Issue: "1234"
+    PR: "1234"
