@@ -81,7 +81,7 @@ setup(
         "trino~=0.331",
         "requests>=2.32.5,<3.0",
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
-        "dbt-core>=1.8.0",
+        "dbt-core>=1.8.0,<2.0",
     ],
     zip_safe=False,
     classifiers=[

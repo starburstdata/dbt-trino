@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Add upper bound dbt-core>=1.8.0,<2.0
+time: 2026-07-21T19:48:02.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "520"
