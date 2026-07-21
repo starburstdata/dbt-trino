@@ -184,3 +184,24 @@ seeds:
         tests:
           - not_null
 """
+
+starburst_sync_model = """
+{{config(materialized = "table")}}
+select * from {{ ref('seed') }}
+"""
+
+STARBURST_SYNC_TABLE_DESCRIPTION = "Starburst sync table description"
+STARBURST_SYNC_ID_DESCRIPTION = "Starburst sync id column description"
+STARBURST_SYNC_NAME_DESCRIPTION = "Starburst sync name column description"
+
+starburst_sync_profile_yml = f"""
+version: 2
+models:
+  - name: starburst_sync_model
+    description: "{STARBURST_SYNC_TABLE_DESCRIPTION}"
+    columns:
+      - name: id
+        description: "{STARBURST_SYNC_ID_DESCRIPTION}"
+      - name: name
+        description: "{STARBURST_SYNC_NAME_DESCRIPTION}"
+"""

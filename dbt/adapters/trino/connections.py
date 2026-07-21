@@ -19,6 +19,7 @@ from dbt_common.helper_types import Port
 from trino.transaction import IsolationLevel
 
 from dbt.adapters.trino.__version__ import version
+from dbt.adapters.trino.starburst.catalog_sync import VALID_FAILURE_STRATEGIES
 
 logger = AdapterLogger("Trino")
 PREPARED_STATEMENTS_ENABLED_DEFAULT = True
@@ -27,6 +28,50 @@ PREPARED_STATEMENTS_ENABLED_DEFAULT = True
 class HttpScheme(Enum):
     HTTP = "http"
     HTTPS = "https"
+
+
+def with_starburst_fields(cls):
+    """Add the shared Starburst metadata-sync credential fields to a dataclass.
+
+    The fields are appended after the class's own fields so they never precede a
+    required field, keeping this compatible with Python 3.9 where dataclass
+    ``kw_only`` is unavailable.
+    """
+    cls.__annotations__ = {
+        **cls.__dict__.get("__annotations__", {}),
+        "starburst_url": Optional[str],
+        "starburst_client_id": Optional[str],
+        "starburst_secret_key": Optional[str],
+        "starburst_metadata_failure_strategy": Optional[str],
+        "starburst_max_column_batch_size": Optional[int],
+    }
+    cls.starburst_url = None
+    cls.starburst_client_id = None
+    cls.starburst_secret_key = field(default=None, repr=False)
+    cls.starburst_metadata_failure_strategy = "continue_on_error"
+    cls.starburst_max_column_batch_size = 100
+
+    def __post_init__(self) -> None:
+        if (
+            self.starburst_max_column_batch_size is not None
+            and self.starburst_max_column_batch_size < 1
+        ):
+            raise DbtConfigError(
+                "starburst_max_column_batch_size must be a positive integer, got "
+                f"{self.starburst_max_column_batch_size}"
+            )
+        if (
+            self.starburst_metadata_failure_strategy
+            and self.starburst_metadata_failure_strategy not in VALID_FAILURE_STRATEGIES
+        ):
+            raise DbtConfigError(
+                f"starburst_metadata_failure_strategy must be one of "
+                f"{sorted(VALID_FAILURE_STRATEGIES)}, got "
+                f"'{self.starburst_metadata_failure_strategy}'"
+            )
+
+    cls.__post_init__ = __post_init__
+    return dataclass(cls)
 
 
 class TrinoCredentialsFactory:
@@ -87,6 +132,9 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
             "schema",
             "cert",
             "prepared_statements_enabled",
+            "starburst_url",
+            "starburst_metadata_failure_strategy",
+            "starburst_max_column_batch_size",
         )
 
     @abstractmethod
@@ -94,7 +142,7 @@ class TrinoCredentials(Credentials, metaclass=ABCMeta):
         pass
 
 
-@dataclass
+@with_starburst_fields
 class TrinoNoneCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -118,7 +166,7 @@ class TrinoNoneCredentials(TrinoCredentials):
         return trino.constants.DEFAULT_AUTH
 
 
-@dataclass
+@with_starburst_fields
 class TrinoCertificateCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -149,7 +197,7 @@ class TrinoCertificateCredentials(TrinoCredentials):
         )
 
 
-@dataclass
+@with_starburst_fields
 class TrinoLdapCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -178,7 +226,7 @@ class TrinoLdapCredentials(TrinoCredentials):
         return trino.auth.BasicAuthentication(username=self.user, password=self.password)
 
 
-@dataclass
+@with_starburst_fields
 class TrinoKerberosCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -235,7 +283,7 @@ _GSSAPI_MUTUAL_AUTH_VALUES = {
 }
 
 
-@dataclass
+@with_starburst_fields
 class TrinoGssapiCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -292,7 +340,7 @@ class TrinoGssapiCredentials(TrinoCredentials):
             )
 
 
-@dataclass
+@with_starburst_fields
 class TrinoJwtCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -320,7 +368,7 @@ class TrinoJwtCredentials(TrinoCredentials):
         return trino.auth.JWTAuthentication(self.jwt_token)
 
 
-@dataclass
+@with_starburst_fields
 class TrinoOauthCredentials(TrinoCredentials):
     host: str
     port: Port
@@ -350,7 +398,7 @@ class TrinoOauthCredentials(TrinoCredentials):
         return self.OAUTH
 
 
-@dataclass
+@with_starburst_fields
 class TrinoOauthConsoleCredentials(TrinoCredentials):
     host: str
     port: Port
