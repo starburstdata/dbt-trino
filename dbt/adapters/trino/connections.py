@@ -381,8 +381,11 @@ class TrinoOauthCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    # trino-python-client types this param as CompositeRedirectHandler, but
+    # WebBrowserRedirectHandler is a sibling RedirectHandler subclass that works
+    # identically at runtime; the stub is just overly narrow.
     OAUTH = trino.auth.OAuth2Authentication(
-        redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()
+        redirect_auth_url_handler=trino.auth.WebBrowserRedirectHandler()  # type: ignore[arg-type]
     )
     suppress_cert_warning: Optional[bool] = None
 
@@ -411,8 +414,11 @@ class TrinoOauthConsoleCredentials(TrinoCredentials):
     prepared_statements_enabled: bool = PREPARED_STATEMENTS_ENABLED_DEFAULT
     retries: Optional[int] = trino.constants.DEFAULT_MAX_ATTEMPTS
     timezone: Optional[str] = None
+    # trino-python-client types this param as CompositeRedirectHandler, but
+    # ConsoleRedirectHandler is a sibling RedirectHandler subclass that works
+    # identically at runtime; the stub is just overly narrow.
     OAUTH = trino.auth.OAuth2Authentication(
-        redirect_auth_url_handler=trino.auth.ConsoleRedirectHandler()
+        redirect_auth_url_handler=trino.auth.ConsoleRedirectHandler()  # type: ignore[arg-type]
     )
     suppress_cert_warning: Optional[bool] = None
 
