@@ -48,10 +48,13 @@ class TrinoCatalogIntegration(CatalogIntegration):
         # Some node configs are typed, non-mapping objects (e.g. a saved-query
         # export's ExportConfig, which has no `.get`); treat those as having no
         # storage_uri rather than raising AttributeError.
-        if not model.config or not hasattr(model.config, "get"):
+        if not model.config:
+            return None
+        get = getattr(model.config, "get", None)
+        if not callable(get):
             return None
 
-        if model_storage_uri := model.config.get("storage_uri"):
+        if model_storage_uri := get("storage_uri"):
             return model_storage_uri
 
         if not self.external_volume:
@@ -60,12 +63,12 @@ class TrinoCatalogIntegration(CatalogIntegration):
         # Default dbt behavior is that if base_location_root is not specified, `_dbt` prefix is added.
         # Even if base_location_root is explicitly set to None, `_dbt` prefix is still added.
         # Allow omitting the prefix by setting omit_base_location_root to True.
-        omit_base_location_root = model.config.get("omit_base_location_root")
+        omit_base_location_root = get("omit_base_location_root")
         if omit_base_location_root:
             storage_uri = f"{self.external_volume}/{model.schema}/{model.name}"
         else:
-            prefix = model.config.get("base_location_root") or "_dbt"
+            prefix = get("base_location_root") or "_dbt"
             storage_uri = f"{self.external_volume}/{prefix}/{model.schema}/{model.name}"
-        if suffix := model.config.get("base_location_subpath"):
+        if suffix := get("base_location_subpath"):
             storage_uri = f"{storage_uri}/{suffix}"
         return storage_uri
