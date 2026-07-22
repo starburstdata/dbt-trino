@@ -3,5 +3,5 @@ body: '`build_catalog_relation` no longer raises `AttributeError` for nodes whos
 time: 2026-07-15T02:50:39.9444+05:30
 custom:
     Author: ash2shukla
-    Issue: "1234"
-    PR: "1234"
+    Issue: "521"
+    PR: "519"
