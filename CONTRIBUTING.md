@@ -84,6 +84,113 @@ make start-trino
 make start-starburst
 ```
 
+### Testing against Starburst Galaxy
+
+Some tests only run against a real Galaxy account: the `persist_docs` Data Discovery sync, and the
+query routing tests. They read their settings from `test.env`. Copy `test.env.example` to
+`test.env` (gitignored) and work through the steps below to fill it in.
+
+**Prerequisites:** a Starburst Galaxy account you can administer, with a running cluster and
+catalogs named `iceberg`, `delta`, and `hive`.
+
+#### 1. API credentials
+
+In the Galaxy UI, create an OAuth API token at
+`https://<account>.galaxy.starburst.io/api-auth-token`. The secret is shown once. Fill in:
+
+```
+DBT_TESTS_STARBURST_GALAXY_API_URL=https://<account>.galaxy.starburst.io
+DBT_TESTS_STARBURST_GALAXY_CLIENT_ID=<client id>
+DBT_TESTS_STARBURST_GALAXY_SECRET_KEY=<secret>
+```
+
+To check that the token works:
+
+```sh
+python scripts/galaxy_test_setup.py status
+```
+
+That lists the account's clusters, which is also where you get a cluster hostname for
+`DBT_TESTS_STARBURST_GALAXY_HOST` (pick a cluster attached to all 3 required catalogs).
+
+#### 2. Service account
+
+The tests connect as a service account, use the following scripts to create a service account or 
+create one manually using the UI.
+
+```sh
+python scripts/galaxy_test_setup.py create-service-account --name dbt-tests
+python scripts/galaxy_test_setup.py service-accounts        # list what already exists
+```
+
+It prints the two lines to paste into `test.env`. The password is only returned at creation; for an
+account that already exists, `issue-password --name <username>` issues a new one.
+
+Use the username exactly as Galaxy reports it - the `@<account>.galaxy.starburst.io` suffix is
+required, and it is not always what you typed when creating the account:
+
+```
+DBT_TESTS_STARBURST_GALAXY_USER=dbt-tests@<account>.galaxy.starburst.io/accountadmin
+DBT_TESTS_STARBURST_GALAXY_PASSWORD=<password>
+```
+
+The trailing `/accountadmin` is optional and selects the role to connect under, defaulting to the
+service account's default role. Whichever role ends up active needs full access to the `iceberg`
+catalog, since the tests create schemas and tables in it. The role also matters for routing - see
+step 3.
+
+#### 3. Query routing rules
+
+The routing tests prove that two models with different `client_tags` are executed by two different
+clusters, so the account has to be able to do that:
+
+- **Smart routing enabled** on the account. Its routing endpoint goes in
+  `..._ROUTING_HOST` as `<account>.routing.trino.galaxy.starburst.io`.
+- **Two clusters** besides the one handling everything else. Use
+  `python scripts/galaxy_test_setup.py clone-cluster --from <existing> --name <new>` to copy an
+  existing cluster's region, catalogs and sizing or use the UI to create the cluster(s). Every
+  cluster involved needs the `iceberg` catalog attached: the models are written from the
+  routed clusters and read back through the profile connection.
+- **Three routing rules**, created in the UI under Admin > Routing rules - they cannot be managed
+  through the public API. A rule matches when the query carries every tag the rule lists *and* the
+  connecting role matches, with the first match winning:
+
+  | Order | Role                 | Query tags | Cluster |
+  | --- |--- | --- | --- |
+  | 1 | the role from step 2 | value of `..._ROUTING_TAG_A` | one cluster |
+  | 2 | the role from step 2 | value of `..._ROUTING_TAG_B` | a *different* cluster |
+  | 3 | public | none | a third cluster |
+
+  Rules 1 and 2 must name the role the test user connects *as*, not merely one it holds. Connect
+  under a different role and neither matches, everything falls through to rule 3, and both models
+  end up on the same cluster.
+
+  Rule 3 is the catch-all, and its cluster must differ from the other two: the routing test runs a
+  model per tag plus one configuring no tags, and asserts three different clusters executed them,
+  which is what catches a model inheriting the routing of the model before it.
+
+```
+DBT_TESTS_STARBURST_GALAXY_ROUTING_HOST=<account>.routing.trino.galaxy.starburst.io
+DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_A=dbt-cluster-a
+DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_B=dbt-cluster-b
+```
+
+#### 4. Verify, then run
+
+```sh
+make galaxy-routing-probe
+```
+
+This runs a query per tag through the routing endpoint and reports which cluster served each,
+failing if two tags land on the same one. Rule changes can take a few minutes to take effect, and
+the first query against a suspended cluster has to start it. Once it passes:
+
+```sh
+make dbt-galaxy-tests                                                    # the whole suite
+python -m pytest tests/functional/adapter/test_query_routing.py \
+  --profile starburst_galaxy                                             # just the routing tests
+```
+
 ### Test commands
 
 There are a few methods for running tests locally.

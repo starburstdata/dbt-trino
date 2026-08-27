@@ -11,3 +11,4 @@ docker/dbt/.user.yml
 .vscode/
 logs/
 .venv/
+test.env
