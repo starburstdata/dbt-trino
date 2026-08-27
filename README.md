@@ -47,6 +47,22 @@ For information on installing and configuring your profile to authenticate to Tr
 
 For Trino- and Starburst-specific configuration, you can refer to [Starburst (Trino) configurations](https://docs.getdbt.com/reference/resource-configs/trino-configs) on the dbt docs site.
 
+### Query routing
+
+`client_tags` and `http_headers` can be set per model, for the statements that model runs: `client_tags` replaces the profile's list entirely, while `http_headers` is merged on top of the profile's, with the model's values winning on a name collision.
+
+```sql
+{{ config(materialized='table', client_tags=['fault-tolerant']) }}
+```
+
+Trino routers pick a cluster per statement from the request headers, so this lets a single dbt run send individual models to different clusters - a large incremental model to a fault-tolerant cluster, say, while the rest of the project stays on the default one. With [Starburst Galaxy](https://docs.starburst.io/starburst-galaxy/working-with-data/query-routing/user-role-based-routing.html) the routing decision is made from the client tags and the user's role.
+
+Two things to keep in mind:
+
+- A query whose tags match no routing rule is rejected, not sent to a default cluster (unless a default routing rule is configured). Give your profile tags that match a rule, since statements dbt runs outside a model - metadata queries, for instance - use the profile's. This includes dbt's own pre-run bookkeeping, such as listing and creating schemas and populating the relation cache for every database and schema touched by the run: those queries run once up front, before any model executes and without any per-model context, so they can never pick up a model's `client_tags`/`http_headers` - only your profile's.
+- `X-Trino-Client-Tags` cannot be set through `http_headers`; Trino builds that header itself from `client_tags`.
+- A model's tests are separate nodes with their own config, so they do not inherit the model's `client_tags`/`http_headers` and run with the profile's instead. Configure routing on the tests themselves - inline on each test's `config`, or path-scoped under `tests:`/`data_tests:` in `dbt_project.yml` - if they need to reach the same cluster as the model.
+
 ## Contributing
 
 - Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-starburst-and-trino](https://getdbt.slack.com/channels/db-starburst-and-trino) channel, or on [Trino slack](https://trino.io/slack.html) in the [#python](https://trinodb.slack.com/channels/python) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)

@@ -1,0 +1,14 @@
+kind: Features
+body: >-
+  Support `client_tags` and `http_headers` as model configs, overriding the profile's
+  values for the statements a model runs. Trino routers pick a cluster per statement
+  from the request headers, so a single run can send individual models to different
+  clusters - for example a large incremental model to a fault-tolerant cluster while
+  the rest of the project stays on the default one. With Starburst Galaxy, connect to
+  the account's routing endpoint and add a routing rule per tag; note that a query
+  matching no rule is rejected rather than routed to a default cluster.
+time: 2026-08-26T14:30:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: "525"
+  PR: "526"
