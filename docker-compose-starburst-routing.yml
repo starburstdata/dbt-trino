@@ -1,0 +1,81 @@
+services:
+  postgres-portal:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: starburst_portal
+      POSTGRES_USER: starburst_portal
+      POSTGRES_PASSWORD: dbt-trino
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U starburst_portal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Shared catalog storage for sep1 and sep2. They are two independent SEP
+  # processes with nothing else in common, so a model routed to one and a
+  # model routed to the other need a catalog backed by something outside
+  # either of them - the `memory` connector's per-process storage would make
+  # a schema created via sep1 invisible to sep2.
+  postgres-catalog:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: catalog
+      POSTGRES_USER: catalog
+      POSTGRES_PASSWORD: dbt-trino
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Starburst Control Plane: proxies to the two SEP clusters below and routes
+  # each query to one of them based on its X-Trino-Client-Tags header.
+  portal:
+    image: "harbor.starburstdata.net/starburstdata/starburst-portal:482-e.1"
+    ports:
+      - "127.0.0.1:8090:8080"
+    volumes:
+      - ./docker/starburst-routing/portal/etc:/etc/starburst
+      # gateway.enabled is a licensed feature; point this at a real license.
+      - ${STARBURST_LICENSE_PATH:?set STARBURST_LICENSE_PATH to your starburstdata.license path}:/etc/starburst/starburstdata.license:ro
+    depends_on:
+      postgres-portal:
+        condition: service_healthy
+
+  sep1:
+    image: "starburstdata/starburst-enterprise:482-e.1"
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./docker/starburst-routing/sep1/etc:/etc/starburst
+      # Portal's cluster-health check marks a backend unhealthy ("Elite
+      # version is required") without this, even though plain querying
+      # works fine unlicensed.
+      - ${STARBURST_LICENSE_PATH:?set STARBURST_LICENSE_PATH to your starburstdata.license path}:/etc/starburst/starburstdata.license:ro
+    environment:
+      - _JAVA_OPTIONS=-Dfile.encoding=UTF-8
+    depends_on:
+      portal:
+        condition: service_started
+      postgres-catalog:
+        condition: service_healthy
+
+  sep2:
+    image: "starburstdata/starburst-enterprise:482-e.1"
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./docker/starburst-routing/sep2/etc:/etc/starburst
+      - ${STARBURST_LICENSE_PATH:?set STARBURST_LICENSE_PATH to your starburstdata.license path}:/etc/starburst/starburstdata.license:ro
+    environment:
+      - _JAVA_OPTIONS=-Dfile.encoding=UTF-8
+    depends_on:
+      portal:
+        condition: service_started
+      postgres-catalog:
+        condition: service_healthy
+
+networks:
+  default:
+    name: dbt-net
+    external: true

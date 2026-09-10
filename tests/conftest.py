@@ -37,6 +37,8 @@ def dbt_profile_target(request):
         target = get_trino_starburst_target()
     elif profile_type == "starburst_galaxy":
         target = get_galaxy_target()
+    elif profile_type == "starburst_portal":
+        target = get_starburst_portal_target()
     else:
         raise ValueError(f"Invalid profile type '{profile_type}'")
 
@@ -48,7 +50,10 @@ def dbt_profile_target(request):
         target.update({"threads": 1})
 
     if request.node.get_closest_marker("query_routing"):
-        target.update(galaxy_routing_target())
+        if profile_type == "starburst_galaxy":
+            target.update(galaxy_routing_target())
+        elif profile_type == "starburst_portal":
+            target.update(portal_routing_target())
 
     postgresql = request.node.get_closest_marker("postgresql")
     iceberg = request.node.get_closest_marker("iceberg")
@@ -106,6 +111,41 @@ def get_galaxy_target():
         "schema": "default",
         "timezone": "UTC",
     }
+
+
+def get_starburst_portal_target():
+    return {
+        "type": "trino",
+        "method": "none",
+        "threads": 4,
+        "host": "localhost",
+        "port": 8090,
+        "user": "admin",
+        "catalog": "memory",
+        "schema": "default",
+        "timezone": "UTC",
+    }
+
+
+def portal_routing_target():
+    """Target overrides for the Starburst Control Plane (Portal) query routing tests.
+
+    Requires `docker-compose-starburst-routing.yml` to be running, with sep1 and
+    sep2 registered as backends in different routing groups and a CLIENT_TAGS
+    routing rule per tag pointing at the matching group - see
+    scripts/starburst_portal_test_setup.py and CONTRIBUTING.md.
+    """
+    tag_a = os.environ.get("DBT_TESTS_STARBURST_ROUTING_TAG_A")
+    tag_b = os.environ.get("DBT_TESTS_STARBURST_ROUTING_TAG_B")
+
+    if not all([tag_a, tag_b]):
+        pytest.skip(
+            "query routing tests need DBT_TESTS_STARBURST_ROUTING_TAG_A and "
+            "DBT_TESTS_STARBURST_ROUTING_TAG_B, pointing at a Portal with a "
+            "CLIENT_TAGS routing rule per tag"
+        )
+
+    return {}
 
 
 def galaxy_routing_target():

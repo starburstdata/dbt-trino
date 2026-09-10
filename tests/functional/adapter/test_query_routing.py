@@ -89,6 +89,11 @@ class TestModelQueryHeaders:
 
         beta = statements_for(recorded_statements, "beta")
         assert beta, "no statements recorded for the beta model"
+        # alpha and beta have no dependency between them, so this only proves
+        # header leakage is caught if alpha actually ran first.
+        assert recorded_statements.index(alpha[-1]) < recorded_statements.index(
+            beta[0]
+        ), "beta ran before alpha; header leakage would go undetected"
         for statement in beta:
             assert statement.headers[CLIENT_TAGS_HEADER] == "dbt-beta"
             # the header alpha set must not leak into another model
@@ -101,7 +106,7 @@ class TestModelQueryHeaders:
             assert statement.headers.get(CLIENT_TAGS_HEADER) not in ("dbt-alpha", "dbt-beta")
 
 
-@pytest.mark.skip_profile("trino_starburst")
+@pytest.mark.skip_profile("trino_starburst", "starburst_portal")
 @pytest.mark.query_routing
 class TestGalaxyQueryRouting:
     """Models with different client tags are run by different Galaxy clusters.
@@ -176,4 +181,70 @@ class TestGalaxyQueryRouting:
             f"expected three clusters, got {coordinators}. Tags '{tag_a}' and "
             f"'{tag_b}' must route to different clusters, and an untagged query "
             f"to a third. Dispatched to: {dispatched}"
+        )
+
+
+@pytest.mark.skip_profile("trino_starburst", "starburst_galaxy")
+@pytest.mark.query_routing
+class TestStarburstPortalQueryRouting:
+    """Models with different client tags are run by different SEP clusters.
+
+    Requires `docker-compose-starburst-routing.yml`: a Starburst Control Plane
+    (Portal) in front of two SEP clusters (sep1, sep2), registered as backends in
+    two different routing groups, with a routing rule per tag pointing at the
+    matching group, matching the client's literal X-Trino-Client-Tags header.
+    See scripts/starburst_portal_test_setup.py and CONTRIBUTING.md.
+
+    Each model records the coordinator that executed it, which is how the test
+    tells the two clusters apart. They target the `postgres` catalog rather
+    than the profile default (`memory`): sep1 and sep2 are independent
+    processes, and `memory`'s storage is per-process, so a schema created via
+    one would not exist on the other - `postgres` is a catalog they actually
+    share (see docker-compose-starburst-routing.yml).
+    """
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        first = """
+            {{ config(
+                materialized='table',
+                database='postgres',
+                client_tags=[env_var('DBT_TESTS_STARBURST_ROUTING_TAG_A')]
+            ) }}
+            select node_id from system.runtime.nodes where coordinator
+        """
+        second = """
+            {{ config(
+                materialized='table',
+                database='postgres',
+                client_tags=[env_var('DBT_TESTS_STARBURST_ROUTING_TAG_B')]
+            ) }}
+            select node_id from system.runtime.nodes where coordinator
+        """
+        return {"routed_first.sql": first, "routed_second.sql": second}
+
+    def test_models_are_routed_to_different_clusters(self, project, recorded_statements):
+        tag_a = os.environ["DBT_TESTS_STARBURST_ROUTING_TAG_A"]
+        tag_b = os.environ["DBT_TESTS_STARBURST_ROUTING_TAG_B"]
+
+        results = run_dbt(["run"])
+        assert len(results) == 2
+
+        # dbt sent each model's tag, which is what the Portal routes on
+        for model, tag in (("routed_first", tag_a), ("routed_second", tag_b)):
+            statements = statements_for(recorded_statements, model)
+            assert statements, f"no statements recorded for {model}"
+            for statement in statements:
+                assert statement.headers[CLIENT_TAGS_HEADER] == tag
+
+        # ...and the Portal dispatched them to different clusters
+        coordinators = {
+            model: project.run_sql(
+                f"select node_id from postgres.{project.test_schema}.{model}", fetch="one"
+            )[0]
+            for model in ("routed_first", "routed_second")
+        }
+        assert len(set(coordinators.values())) == 2, (
+            f"expected two clusters, got {coordinators}. Tags '{tag_a}' and "
+            f"'{tag_b}' must route to different SEP clusters (routing groups)."
         )

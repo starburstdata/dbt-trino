@@ -191,6 +191,54 @@ python -m pytest tests/functional/adapter/test_query_routing.py \
   --profile starburst_galaxy                                             # just the routing tests
 ```
 
+### Testing query routing against Starburst Enterprise (Portal)
+
+The query routing tests can also run against a real Starburst Control Plane (Portal)
+in front of two SEP clusters, using `docker-compose-starburst-routing.yml`. This is a
+separate, opt-in fixture only for those routing tests - `make start-starburst` and the
+regular test suite are unaffected and still need no license. Unlike the single-cluster
+setup above, the Portal and SEP images used here (`482-e.1`) are distributed through
+Starburst's private Harbor registry, not Docker Hub, so this needs a Harbor login:
+
+```sh
+docker login harbor.starburstdata.net
+```
+
+The Portal's gateway module is a licensed feature, so it also needs a Starburst
+Enterprise license file:
+
+```sh
+export STARBURST_LICENSE_PATH=/path/to/starburstdata.license
+```
+
+Set the two routing tags in `test.env` (copy from `test.env.example` if you haven't
+already):
+
+```
+DBT_TESTS_STARBURST_ROUTING_TAG_A=dbt-cluster-a
+DBT_TESTS_STARBURST_ROUTING_TAG_B=dbt-cluster-b
+```
+
+Then bring the environment up and register the two SEP clusters as Portal backends,
+each in its own routing group, with a routing rule per tag pointing at the matching
+group - both done through Portal's public API (`/public/api/v1/backend` and
+`/public/api/v1/routingRule`). `register` is safe to run more than once (it skips
+what already exists), and `make dbt-starburst-routing-tests` below always runs it
+again itself, so this manual run is only needed to get the environment ready to
+probe:
+
+```sh
+make start-starburst-routing
+python scripts/starburst_portal_test_setup.py register
+```
+
+Verify, then run:
+
+```sh
+make starburst-routing-probe                                            # confirms the two tags reach different clusters
+make dbt-starburst-routing-tests                                        # the routing tests, against the Portal profile
+```
+
 ### Test commands
 
 There are a few methods for running tests locally.
