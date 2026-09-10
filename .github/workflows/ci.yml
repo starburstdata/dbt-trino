@@ -37,6 +37,7 @@ jobs:
           - "trino"
           - "starburst"
           - "starburst_galaxy"
+          - "starburst_routing"
         python:
           - "3.9"
           - "3.10"
@@ -56,6 +57,20 @@ jobs:
           - engine: "starburst_galaxy"
             python: "3.10"
           - engine: "starburst_galaxy"
+            python: "3.9"
+          # Needs a Starburst Enterprise license and a Harbor login, so - like
+          # starburst_galaxy - it only runs for Starburst-authored branches,
+          # on a single python version.
+          - engine: "starburst_routing"
+            python: "3.13"
+            isStarburstBranch: false
+          - engine: "starburst_routing"
+            python: "3.12"
+          - engine: "starburst_routing"
+            python: "3.11"
+          - engine: "starburst_routing"
+            python: "3.10"
+          - engine: "starburst_routing"
             python: "3.9"
 
     steps:
@@ -79,12 +94,25 @@ jobs:
           DBT_TESTS_STARBURST_GALAXY_ROUTING_DEFAULT_TAG: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_ROUTING_DEFAULT_TAG }}
           DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_A: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_A }}
           DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_B: ${{ secrets.DBT_TESTS_STARBURST_GALAXY_ROUTING_TAG_B }}
+          DBT_TESTS_STARBURST_ROUTING_TAG_A: ${{ secrets.DBT_TESTS_STARBURST_ROUTING_TAG_A }}
+          DBT_TESTS_STARBURST_ROUTING_TAG_B: ${{ secrets.DBT_TESTS_STARBURST_ROUTING_TAG_B }}
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+          STARBURST_LICENSE: ${{ secrets.STARBURST_LICENSE }}
         run: |
           if [[ ${{ matrix.engine }} == "trino" || ${{ matrix.engine }} == "starburst" ]]; then
             make dbt-${{ matrix.engine }}-tests
           elif [[ ${{ matrix.engine }} == "starburst_galaxy" ]]; then
             python -m pip install -e . -r dev_requirements.txt
             python -m pytest tests/functional --profile starburst_galaxy
+          elif [[ ${{ matrix.engine }} == "starburst_routing" ]]; then
+            echo "$STARBURST_LICENSE" > "$RUNNER_TEMP/starburstdata.license"
+            export STARBURST_LICENSE_PATH="$RUNNER_TEMP/starburstdata.license"
+            echo "$HARBOR_PASSWORD" | docker login harbor.starburstdata.net -u "$HARBOR_USERNAME" --password-stdin
+            # make's test.env check just needs the file to exist - these
+            # vars are already in the environment, not read from it.
+            touch test.env
+            make dbt-starburst-routing-tests
           fi
 
       - name: Remove container on failure

@@ -24,4 +24,7 @@ def load_test_env(env_file=ENV_FILE):
         name = name.strip().removeprefix("export ").strip()
         if not name.isidentifier():
             continue
-        os.environ.setdefault(name, value.strip().strip("\"'"))
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        os.environ.setdefault(name, value)

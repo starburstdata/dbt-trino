@@ -12,3 +12,4 @@ docker/dbt/.user.yml
 logs/
 .venv/
 test.env
+starburstdata.license

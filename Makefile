@@ -30,5 +30,19 @@ galaxy-routing-probe:
 	@test -f test.env || { echo "Create test.env from test.env.example first"; exit 1; }
 	python scripts/galaxy_test_setup.py probe
 
+start-starburst-routing:
+	docker network create dbt-net || true
+	./docker/init_starburst_routing.bash
+
+dbt-starburst-routing-tests: start-starburst-routing
+	@test -f test.env || { echo "Create test.env from test.env.example first"; exit 1; }
+	pip install -e . -r dev_requirements.txt
+	python scripts/starburst_portal_test_setup.py register
+	python -m pytest tests/functional/adapter/test_query_routing.py --profile starburst_portal
+
+starburst-routing-probe:
+	@test -f test.env || { echo "Create test.env from test.env.example first"; exit 1; }
+	python scripts/starburst_portal_test_setup.py probe
+
 dev:
 	pre-commit install
