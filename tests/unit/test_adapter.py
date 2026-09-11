@@ -863,3 +863,43 @@ class TestQueryRouting(TestCase):
     def test_http_headers_reject_newlines_in_value(self):
         with self.assertRaises(DbtConfigError):
             self.adapter.pre_model_hook({"http_headers": {"X-Route": "value\r\nX-Injected: evil"}})
+
+    def test_overrides_do_not_leak_between_adapter_instances(self):
+        # A second adapter instance sharing this thread (e.g. a second profile
+        # handled by the same process) must not see the first adapter's override.
+        other_profile_cfg = {
+            "outputs": {
+                "test": {
+                    "type": "trino",
+                    "catalog": "trinodb",
+                    "host": "database",
+                    "port": 5439,
+                    "schema": "dbt_test_schema",
+                    "method": "none",
+                    "user": "trino_user",
+                    "http_scheme": "http",
+                    "client_tags": ["other-adapter-tag"],
+                }
+            },
+            "target": "test",
+        }
+        other_project_cfg = {
+            "name": "Y",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "config-version": 2,
+        }
+        other_config = config_from_parts_or_dicts(other_project_cfg, other_profile_cfg)
+        other_adapter = TrinoAdapter(other_config, get_context("spawn"))
+        try:
+            self.adapter.pre_model_hook({"client_tags": ["etl"]})
+
+            other_connection = other_adapter.acquire_connection("dummy")
+            other_connection.handle  # resolves the LazyHandle and opens the connection
+
+            headers = self.wire_headers(other_connection)
+            assert headers["X-Trino-Client-Tags"] == "other-adapter-tag"
+        finally:
+            other_adapter.connections.clear_query_overrides()
+            other_adapter.cleanup_connections()

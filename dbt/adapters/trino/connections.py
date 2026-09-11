@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import threading
+import weakref
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -51,8 +52,32 @@ RESERVED_HTTP_HEADERS = frozenset(
 
 # Per-model routing overrides live in thread-local storage: dbt gives each thread
 # its own connection and runs one node at a time on it, and the override has to
-# survive a reconnect in the middle of a model.
+# survive a reconnect in the middle of a model. Overrides are keyed by the id of
+# the credentials instance (credentials are dataclasses and not hashable) so that
+# multiple TrinoConnectionManager instances sharing a thread (e.g. multiple
+# profiles in one process) don't clobber each other's routing; a weakref finalizer
+# drops an adapter's entry once its credentials are garbage collected.
 _query_overrides = threading.local()
+
+
+def _get_query_override(credentials: "TrinoCredentials"):
+    overrides = getattr(_query_overrides, "value", None)
+    if overrides is None:
+        return None
+    return overrides.get(id(credentials))
+
+
+def _set_query_override(credentials: "TrinoCredentials", override) -> None:
+    overrides = getattr(_query_overrides, "value", None)
+    if overrides is None:
+        overrides = {}
+        _query_overrides.value = overrides
+    key = id(credentials)
+    if override is None:
+        overrides.pop(key, None)
+    else:
+        overrides[key] = override
+        weakref.finalize(credentials, overrides.pop, key, None)
 
 
 class HttpScheme(Enum):
@@ -705,7 +730,7 @@ class TrinoConnectionManager(SQLConnectionManager):
     def effective_routing(credentials: TrinoCredentials):
         """Client tags and HTTP headers to use now: the profile's, unless the model
         currently running on this thread overrode them."""
-        override = getattr(_query_overrides, "value", None)
+        override = _get_query_override(credentials)
         if override is None:
             return credentials.client_tags, credentials.http_headers
         return override
@@ -717,13 +742,14 @@ class TrinoConnectionManager(SQLConnectionManager):
         statement, so mutating the session re-routes subsequent queries without
         reopening the connection.
         """
-        _query_overrides.value = (client_tags, http_headers)
+        credentials = cast(TrinoCredentials, self.profile.credentials)
         self._apply_routing(client_tags, http_headers)
+        _set_query_override(credentials, (client_tags, http_headers))
 
     def clear_query_overrides(self) -> None:
         """Restore the profile's routing once a model is done."""
-        _query_overrides.value = None
         credentials = cast(TrinoCredentials, self.profile.credentials)
+        _set_query_override(credentials, None)
         self._apply_routing(credentials.client_tags, credentials.http_headers)
 
     def _apply_routing(self, client_tags, http_headers) -> None:
