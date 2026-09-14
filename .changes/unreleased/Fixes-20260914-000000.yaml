@@ -1,0 +1,12 @@
+kind: Fixes
+body: >-
+  Fix `with_starburst_fields` dropping a decorated class's own annotations (e.g.
+  `session_properties`) on Python 3.14, where `cls.__dict__` no longer eagerly
+  contains an `__annotations__` entry under PEP 649/749 deferred evaluation. This
+  previously raised `TypeError: '...' is a field but has no type annotation` on
+  import for every credentials class, breaking `dbt-trino` outright on 3.14.
+time: 2026-09-14T00:00:00.000000-04:00
+custom:
+  Author: blarghmatey
+  Issue: ""
+  PR: "529"
