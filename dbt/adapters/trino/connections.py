@@ -1,6 +1,7 @@
 import decimal
 import os
 import re
+import sys
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -30,6 +31,29 @@ class HttpScheme(Enum):
     HTTPS = "https"
 
 
+def _own_annotations(cls) -> Dict[str, Any]:
+    """Return a class's own (non-inherited) annotations, deferred-evaluation safe.
+
+    ``cls.__dict__.get("__annotations__", {})`` is how this used to be written, but
+    under PEP 649/749 lazy annotations (the default starting in Python 3.14) a class
+    that only has annotated assignments in its body no longer gets an
+    ``__annotations__`` entry in ``__dict__`` at all -- it's materialized on first
+    access instead. That made this always return ``{}`` on 3.14, silently dropping
+    every field the decorated class itself declared (e.g. ``session_properties``)
+    before they got overwritten below, which then made ``dataclass()`` reject the
+    class with "is a field but has no type annotation".
+
+    ``inspect.get_annotations(cls)`` is the version-safe replacement recommended for
+    exactly this case, but it isn't available before Python 3.10 -- the dict lookup
+    is kept as a fallback there since annotations are still eager that far back.
+    """
+    if sys.version_info >= (3, 10):
+        import inspect
+
+        return inspect.get_annotations(cls, eval_str=False)
+    return dict(cls.__dict__.get("__annotations__", {}))
+
+
 def with_starburst_fields(cls):
     """Add the shared Starburst metadata-sync credential fields to a dataclass.
 
@@ -38,7 +62,7 @@ def with_starburst_fields(cls):
     ``kw_only`` is unavailable.
     """
     cls.__annotations__ = {
-        **cls.__dict__.get("__annotations__", {}),
+        **_own_annotations(cls),
         "starburst_url": Optional[str],
         "starburst_client_id": Optional[str],
         "starburst_secret_key": Optional[str],
