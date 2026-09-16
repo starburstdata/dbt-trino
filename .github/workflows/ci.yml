@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: "Install Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
 
       - name: "Install dev requirements"
         run: pip install -e . -r dev_requirements.txt
@@ -75,10 +75,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 
