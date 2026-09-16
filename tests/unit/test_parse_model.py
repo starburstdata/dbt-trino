@@ -2,9 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from dbt.adapters.trino import constants, parse_model
-from dbt.adapters.trino.catalogs._trino_catalog_metastore import (
-    TrinoCatalogIntegration,
-)
+from dbt.adapters.trino.catalogs._trino_catalog_metastore import TrinoCatalogIntegration
 
 
 @dataclass
