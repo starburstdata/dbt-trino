@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Bump GitHub Actions and pre-commit hook versions
+time: 2026-09-16T13:39:41.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "531"
