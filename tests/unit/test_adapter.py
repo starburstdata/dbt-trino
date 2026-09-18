@@ -716,3 +716,190 @@ class TestTrinoColumn(unittest.TestCase):
         assert col.is_string() is True
         assert col.is_number() is False
         assert col.is_numeric() is False
+
+
+class TestQueryRouting(TestCase):
+    """Per-model `client_tags` / `http_headers`, as used for query routing.
+
+    Assertions are made against the headers trino-python-client would put on the
+    wire for the next statement, which is what a router such as Starburst Galaxy
+    makes its cluster decision on.
+    """
+
+    profile_http_headers = {"X-Trino-Client-Info": "dbt-trino"}
+
+    def setUp(self):
+        profile_cfg = {
+            "outputs": {
+                "test": {
+                    "type": "trino",
+                    "catalog": "trinodb",
+                    "host": "database",
+                    "port": 5439,
+                    "schema": "dbt_test_schema",
+                    "method": "none",
+                    "user": "trino_user",
+                    "http_scheme": "http",
+                    "client_tags": ["profile-tag"],
+                    "http_headers": dict(self.profile_http_headers),
+                }
+            },
+            "target": "test",
+        }
+        project_cfg = {
+            "name": "X",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "config-version": 2,
+        }
+        config = config_from_parts_or_dicts(project_cfg, profile_cfg)
+        self.adapter = TrinoAdapter(config, get_context("spawn"))
+
+    def tearDown(self):
+        # The override is thread-local, so it would otherwise leak between tests.
+        self.adapter.connections.clear_query_overrides()
+        self.adapter.cleanup_connections()
+
+    def open_connection(self):
+        connection = self.adapter.acquire_connection("dummy")
+        connection.handle  # resolves the LazyHandle and opens the connection
+        return connection
+
+    @staticmethod
+    def wire_headers(connection):
+        """Headers trino would send for the next statement on this connection."""
+        return dict(connection.handle.handle.cursor()._request.http_headers)
+
+    @staticmethod
+    def cached_headers(connection):
+        """Headers cached on the shared requests session, which are sent too."""
+        return dict(connection.handle.handle._http_session.headers)
+
+    def test_no_routing_config_leaves_profile_routing_alone(self):
+        connection = self.open_connection()
+
+        assert self.adapter.pre_model_hook({}) is None
+
+        headers = self.wire_headers(connection)
+        assert headers["X-Trino-Client-Tags"] == "profile-tag"
+        assert headers["X-Trino-Client-Info"] == "dbt-trino"
+
+    def test_client_tags_reroute_an_open_connection(self):
+        connection = self.open_connection()
+
+        self.adapter.pre_model_hook({"client_tags": ["etl"]})
+
+        assert self.wire_headers(connection)["X-Trino-Client-Tags"] == "etl"
+
+    def test_http_headers_merge_over_profile_headers(self):
+        connection = self.open_connection()
+
+        self.adapter.pre_model_hook({"http_headers": {"X-Route": "fault-tolerant"}})
+
+        headers = self.wire_headers(connection)
+        assert headers["X-Route"] == "fault-tolerant"
+        assert headers["X-Trino-Client-Info"] == "dbt-trino"
+        # client_tags was not configured on the model, so the profile's still apply
+        assert headers["X-Trino-Client-Tags"] == "profile-tag"
+
+    def test_routing_is_restored_after_the_model(self):
+        connection = self.open_connection()
+
+        context = self.adapter.pre_model_hook(
+            {"client_tags": ["etl"], "http_headers": {"X-Route": "fault-tolerant"}}
+        )
+        self.wire_headers(connection)  # a cursor caches the headers on the session
+        self.adapter.post_model_hook({}, context)
+
+        headers = self.wire_headers(connection)
+        assert headers["X-Trino-Client-Tags"] == "profile-tag"
+        assert headers["X-Trino-Client-Info"] == "dbt-trino"
+        assert "X-Route" not in headers
+        # requests keeps sending whatever is cached on the session, so the
+        # override has to be dropped there as well
+        assert "X-Route" not in self.cached_headers(connection)
+        assert self.cached_headers(connection).get("X-Trino-Client-Tags") != "etl"
+
+    def test_tags_are_dropped_when_the_profile_sets_none(self):
+        self.adapter.config.credentials.client_tags = None
+        connection = self.open_connection()
+
+        context = self.adapter.pre_model_hook({"client_tags": ["etl"]})
+        self.wire_headers(connection)
+        self.adapter.post_model_hook({}, context)
+
+        assert "X-Trino-Client-Tags" not in self.wire_headers(connection)
+        assert "X-Trino-Client-Tags" not in self.cached_headers(connection)
+
+    def test_override_survives_opening_the_connection_later(self):
+        # No connection yet: `open` has to pick the override up from the thread.
+        self.adapter.pre_model_hook({"client_tags": ["etl"]})
+        connection = self.open_connection()
+
+        assert self.wire_headers(connection)["X-Trino-Client-Tags"] == "etl"
+
+    def test_client_tags_must_be_a_list(self):
+        with self.assertRaises(DbtConfigError):
+            self.adapter.pre_model_hook({"client_tags": "etl"})
+
+    def test_client_tags_reject_commas(self):
+        with self.assertRaises(DbtConfigError):
+            self.adapter.pre_model_hook({"client_tags": ["batch,priority"]})
+
+    def test_client_tags_header_is_rejected(self):
+        with self.assertRaises(DbtConfigError) as error:
+            self.adapter.pre_model_hook({"http_headers": {"X-Trino-Client-Tags": "etl"}})
+        assert "client_tags" in str(error.exception)
+
+    def test_reserved_headers_are_rejected(self):
+        with self.assertRaises(DbtConfigError):
+            self.adapter.pre_model_hook({"http_headers": {"x-trino-user": "someone-else"}})
+
+    def test_http_headers_reject_newlines_in_name(self):
+        with self.assertRaises(DbtConfigError):
+            self.adapter.pre_model_hook({"http_headers": {"X-Route\r\nX-Injected": "value"}})
+
+    def test_http_headers_reject_newlines_in_value(self):
+        with self.assertRaises(DbtConfigError):
+            self.adapter.pre_model_hook({"http_headers": {"X-Route": "value\r\nX-Injected: evil"}})
+
+    def test_overrides_do_not_leak_between_adapter_instances(self):
+        # A second adapter instance sharing this thread (e.g. a second profile
+        # handled by the same process) must not see the first adapter's override.
+        other_profile_cfg = {
+            "outputs": {
+                "test": {
+                    "type": "trino",
+                    "catalog": "trinodb",
+                    "host": "database",
+                    "port": 5439,
+                    "schema": "dbt_test_schema",
+                    "method": "none",
+                    "user": "trino_user",
+                    "http_scheme": "http",
+                    "client_tags": ["other-adapter-tag"],
+                }
+            },
+            "target": "test",
+        }
+        other_project_cfg = {
+            "name": "Y",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "config-version": 2,
+        }
+        other_config = config_from_parts_or_dicts(other_project_cfg, other_profile_cfg)
+        other_adapter = TrinoAdapter(other_config, get_context("spawn"))
+        try:
+            self.adapter.pre_model_hook({"client_tags": ["etl"]})
+
+            other_connection = other_adapter.acquire_connection("dummy")
+            other_connection.handle  # resolves the LazyHandle and opens the connection
+
+            headers = self.wire_headers(other_connection)
+            assert headers["X-Trino-Client-Tags"] == "other-adapter-tag"
+        finally:
+            other_adapter.connections.clear_query_overrides()
+            other_adapter.cleanup_connections()

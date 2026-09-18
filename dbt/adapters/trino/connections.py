@@ -1,12 +1,15 @@
 import decimal
 import os
 import re
+import sys
+import threading
+import weakref
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import sqlparse
 import trino
@@ -24,10 +27,85 @@ from dbt.adapters.trino.starburst.catalog_sync import VALID_FAILURE_STRATEGIES
 logger = AdapterLogger("Trino")
 PREPARED_STATEMENTS_ENABLED_DEFAULT = True
 
+# Headers that trino-python-client builds from other connection settings on every
+# request. Passing any of them through `http_headers` makes the client raise, so
+# they are rejected up front with a message pointing at the setting to use instead.
+RESERVED_HTTP_HEADERS = frozenset(
+    [
+        trino.constants.HEADER_CATALOG,
+        trino.constants.HEADER_SCHEMA,
+        trino.constants.HEADER_SOURCE,
+        trino.constants.HEADER_USER,
+        trino.constants.HEADER_ORIGINAL_USER,
+        trino.constants.HEADER_TIMEZONE,
+        trino.constants.HEADER_ENCODING,
+        trino.constants.HEADER_CLIENT_CAPABILITIES,
+        trino.constants.HEADER_ROLE,
+        trino.constants.HEADER_CLIENT_TAGS,
+        trino.constants.HEADER_SESSION,
+        trino.constants.HEADER_PREPARED_STATEMENT,
+        trino.constants.HEADER_TRANSACTION,
+        trino.constants.HEADER_EXTRA_CREDENTIAL,
+        "user-agent",
+    ]
+)
+
+# Per-model routing overrides live in thread-local storage: dbt gives each thread
+# its own connection and runs one node at a time on it, and the override has to
+# survive a reconnect in the middle of a model. Overrides are keyed by the id of
+# the credentials instance (credentials are dataclasses and not hashable) so that
+# multiple TrinoConnectionManager instances sharing a thread (e.g. multiple
+# profiles in one process) don't clobber each other's routing; a weakref finalizer
+# drops an adapter's entry once its credentials are garbage collected.
+_query_overrides = threading.local()
+
+
+def _get_query_override(credentials: "TrinoCredentials"):
+    overrides = getattr(_query_overrides, "value", None)
+    if overrides is None:
+        return None
+    return overrides.get(id(credentials))
+
+
+def _set_query_override(credentials: "TrinoCredentials", override) -> None:
+    overrides = getattr(_query_overrides, "value", None)
+    if overrides is None:
+        overrides = {}
+        _query_overrides.value = overrides
+    key = id(credentials)
+    if override is None:
+        overrides.pop(key, None)
+    else:
+        overrides[key] = override
+        weakref.finalize(credentials, overrides.pop, key, None)
+
 
 class HttpScheme(Enum):
     HTTP = "http"
     HTTPS = "https"
+
+
+def _own_annotations(cls) -> Dict[str, Any]:
+    """Return a class's own (non-inherited) annotations, deferred-evaluation safe.
+
+    ``cls.__dict__.get("__annotations__", {})`` is how this used to be written, but
+    under PEP 649/749 lazy annotations (the default starting in Python 3.14) a class
+    that only has annotated assignments in its body no longer gets an
+    ``__annotations__`` entry in ``__dict__`` at all -- it's materialized on first
+    access instead. That made this always return ``{}`` on 3.14, silently dropping
+    every field the decorated class itself declared (e.g. ``session_properties``)
+    before they got overwritten below, which then made ``dataclass()`` reject the
+    class with "is a field but has no type annotation".
+
+    ``inspect.get_annotations(cls)`` is the version-safe replacement recommended for
+    exactly this case, but it isn't available before Python 3.10 -- the dict lookup
+    is kept as a fallback there since annotations are still eager that far back.
+    """
+    if sys.version_info >= (3, 10):
+        import inspect
+
+        return inspect.get_annotations(cls, eval_str=False)
+    return dict(cls.__dict__.get("__annotations__", {}))
 
 
 def with_starburst_fields(cls):
@@ -38,7 +116,7 @@ def with_starburst_fields(cls):
     ``kw_only`` is unavailable.
     """
     cls.__annotations__ = {
-        **cls.__dict__.get("__annotations__", {}),
+        **_own_annotations(cls),
         "starburst_url": Optional[str],
         "starburst_client_id": Optional[str],
         "starburst_secret_key": Optional[str],
@@ -113,6 +191,11 @@ class TrinoCredentialsFactory:
 
 class TrinoCredentials(Credentials, metaclass=ABCMeta):
     _ALIASES = {"catalog": "database"}
+
+    # Declared for the benefit of code that routes queries; every concrete
+    # credentials type below defines them as fields.
+    client_tags: Optional[List[str]]
+    http_headers: Optional[Dict[str, str]]
 
     @property
     def type(self):
@@ -613,6 +696,10 @@ class TrinoConnectionManager(SQLConnectionManager):
 
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+        # A model may have set routing overrides before the connection was opened,
+        # or the connection may be reopening in the middle of one.
+        client_tags, http_headers = cls.effective_routing(credentials)
+
         # it's impossible for trino to fail here as 'connections' are actually
         # just cursor factories.
         trino_conn = trino.dbapi.connect(
@@ -621,12 +708,12 @@ class TrinoConnectionManager(SQLConnectionManager):
             user=credentials.impersonation_user
             if getattr(credentials, "impersonation_user", None)
             else credentials.user,
-            client_tags=credentials.client_tags,
+            client_tags=client_tags,
             roles=credentials.roles,
             catalog=credentials.database,
             schema=credentials.schema,
             http_scheme=credentials.http_scheme.value,
-            http_headers=credentials.http_headers,
+            http_headers=http_headers,
             session_properties=credentials.session_properties,
             auth=credentials.trino_auth(),
             max_attempts=credentials.retries,
@@ -638,6 +725,53 @@ class TrinoConnectionManager(SQLConnectionManager):
         connection.state = "open"
         connection.handle = ConnectionWrapper(trino_conn, credentials.prepared_statements_enabled)
         return connection
+
+    @staticmethod
+    def effective_routing(credentials: TrinoCredentials):
+        """Client tags and HTTP headers to use now: the profile's, unless the model
+        currently running on this thread overrode them."""
+        override = _get_query_override(credentials)
+        if override is None:
+            return credentials.client_tags, credentials.http_headers
+        return override
+
+    def set_query_overrides(self, client_tags, http_headers) -> None:
+        """Route the statements of the model that is about to run.
+
+        Trino rebuilds the request headers from the client session for every
+        statement, so mutating the session re-routes subsequent queries without
+        reopening the connection.
+        """
+        credentials = cast(TrinoCredentials, self.profile.credentials)
+        self._apply_routing(client_tags, http_headers)
+        _set_query_override(credentials, (client_tags, http_headers))
+
+    def clear_query_overrides(self) -> None:
+        """Restore the profile's routing once a model is done."""
+        credentials = cast(TrinoCredentials, self.profile.credentials)
+        _set_query_override(credentials, None)
+        self._apply_routing(credentials.client_tags, credentials.http_headers)
+
+    def _apply_routing(self, client_tags, http_headers) -> None:
+        connection = self.get_if_exists()
+        if connection is None or connection.state != "open":
+            # Nothing to update; `open` picks the override up from the thread.
+            return
+
+        trino_connection = connection.handle.handle
+        session = trino_connection._client_session
+        cached_headers = trino_connection._http_session.headers
+
+        # trino-python-client copies the session headers into the shared
+        # requests session every time a cursor is created, and requests keeps
+        # sending them afterwards. Drop the ones we manage first, otherwise a
+        # model inherits the routing of the model that ran before it.
+        for header in set(session.headers) | {trino.constants.HEADER_CLIENT_TAGS}:
+            cached_headers.pop(header, None)
+
+        session.headers.clear()
+        session.headers.update(http_headers or {})
+        session.client_tags[:] = client_tags or []
 
     @classmethod
     def get_response(cls, cursor) -> TrinoAdapterResponse:

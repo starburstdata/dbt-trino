@@ -1,8 +1,9 @@
 import threading
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 import agate
+import trino.constants as trino_constants
 from dbt.adapters.base.impl import AdapterConfig, ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.capability import (
@@ -17,7 +18,7 @@ from dbt.adapters.events.logging import AdapterLogger
 from dbt.adapters.sql import SQLAdapter
 from dbt_common.behavior_flags import BehaviorFlag
 from dbt_common.contracts.constraints import ConstraintType
-from dbt_common.exceptions import DbtDatabaseError
+from dbt_common.exceptions import DbtConfigError, DbtDatabaseError
 
 from dbt.adapters.trino import (
     TrinoColumn,
@@ -27,6 +28,7 @@ from dbt.adapters.trino import (
     parse_model,
 )
 from dbt.adapters.trino.catalogs import TrinoCatalogIntegration
+from dbt.adapters.trino.connections import RESERVED_HTTP_HEADERS
 from dbt.adapters.trino.row_type_utils import (
     RowTypeDiff,
     diff_row_types,
@@ -44,12 +46,15 @@ class TrinoConfig(AdapterConfig):
     properties: Optional[Dict[str, str]] = None
     view_security: Optional[str] = "definer"
     sync_nested_columns: Optional[bool] = None
+    client_tags: Optional[List[str]] = None
+    http_headers: Optional[Dict[str, str]] = None
 
 
 class TrinoAdapter(SQLAdapter):
     Relation = TrinoRelation
     Column = TrinoColumn
     ConnectionManager = TrinoConnectionManager
+    connections: TrinoConnectionManager
     AdapterSpecificConfigs = TrinoConfig
 
     CATALOG_INTEGRATIONS = [
@@ -98,6 +103,71 @@ class TrinoAdapter(SQLAdapter):
                 ),
             }
         ]
+
+    def pre_model_hook(self, config: Mapping[str, Any]) -> Optional[bool]:
+        """Route this node's statements using its `client_tags` / `http_headers`.
+
+        Trino routers such as Starburst Galaxy pick a cluster per statement based
+        on the request headers, so overriding them for the duration of a node
+        sends it to a different cluster than the rest of the run.
+        """
+        client_tags = config.get("client_tags")
+        http_headers = config.get("http_headers")
+        if client_tags is None and http_headers is None:
+            return None
+
+        credentials = self.config.credentials
+        tags = self._validated_client_tags(client_tags, credentials)
+        headers = self._validated_http_headers(http_headers, credentials)
+
+        self.connections.set_query_overrides(tags, headers)
+        return True
+
+    def post_model_hook(self, config: Mapping[str, Any], context: Optional[bool]) -> None:
+        if context:
+            self.connections.clear_query_overrides()
+
+    @staticmethod
+    def _validated_client_tags(client_tags, credentials) -> List[str]:
+        if client_tags is None:
+            return list(credentials.client_tags or [])
+        if isinstance(client_tags, str) or not isinstance(client_tags, (list, tuple)):
+            raise DbtConfigError(f"client_tags must be a list of strings, got {client_tags!r}")
+        if not all(isinstance(tag, str) for tag in client_tags):
+            raise DbtConfigError(f"client_tags must be a list of strings, got {client_tags!r}")
+        if any("," in tag for tag in client_tags):
+            raise DbtConfigError(f"client_tags entries cannot contain commas, got {client_tags!r}")
+        return list(client_tags)
+
+    @staticmethod
+    def _validated_http_headers(http_headers, credentials) -> Dict[str, str]:
+        profile_headers = dict(credentials.http_headers or {})
+        if http_headers is None:
+            return profile_headers
+        if not isinstance(http_headers, dict):
+            raise DbtConfigError(
+                f"http_headers must be a mapping of header name to value, got {http_headers!r}"
+            )
+
+        reserved = {header.lower() for header in RESERVED_HTTP_HEADERS}
+        for name, value in http_headers.items():
+            if not isinstance(name, str) or not isinstance(value, str):
+                raise DbtConfigError(
+                    f"http_headers must be a mapping of header name to value, got {http_headers!r}"
+                )
+            if name.lower() == trino_constants.HEADER_CLIENT_TAGS.lower():
+                raise DbtConfigError(
+                    f"{name} is set by Trino itself; use the client_tags config instead"
+                )
+            if name.lower() in reserved:
+                raise DbtConfigError(f"{name} is a reserved Trino header and cannot be overridden")
+            if any(char in name or char in value for char in "\r\n"):
+                raise DbtConfigError(
+                    f"http_headers entries cannot contain newlines, got {name!r}: {value!r}"
+                )
+
+        profile_headers.update(http_headers)
+        return profile_headers
 
     @classmethod
     def date_function(cls):

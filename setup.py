@@ -78,7 +78,7 @@ setup(
     install_requires=[
         "dbt-common>=1.25.0,<2.0",
         "dbt-adapters>=1.16,<2.0",
-        "trino~=0.331",
+        "trino>=0.336,<1.0",
         "requests>=2.32.5,<3.0",
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
         "dbt-core>=1.8.0,<2.0",
