@@ -1,0 +1,7 @@
+kind: Features
+body: Add support for terminating running queries on Trino when dbt command is canceled
+time: 2025-07-17T18:54:56.96267+03:00
+custom:
+    Author: vstorona
+    Issue: "474"
+    PR: "494"
