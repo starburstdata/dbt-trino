@@ -1,0 +1,7 @@
+kind: Features
+body: Add opt-in sync_nested_columns config for nested ROW schema changes in incremental models
+time: 2026-05-28T12:00:00.000000+00:00
+custom:
+  Author: liorbaber
+  Issue: "517"
+  PR: "518"
