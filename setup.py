@@ -73,6 +73,7 @@ setup(
             "include/trino/macros/*.sql",
             "include/trino/macros/*/*.sql",
             "include/trino/macros/*/*/*.sql",
+            "include/trino/macros/*/*/*/*.sql",
         ]
     },
     install_requires=[
