@@ -368,6 +368,11 @@
 {% endmacro %}
 
 {% macro trino__alter_column_type(relation, column_name, new_column_type) %}
+  {%- if config.get('sync_nested_columns', false) and (new_column_type | lower).startswith('row(') -%}
+    {% call statement('alter_column_type') %}
+      alter table {{ relation }} alter column {{ adapter.quote(column_name) }} set data type {{ new_column_type }}
+    {% endcall %}
+  {%- else -%}
   {#
     1. Create a new column (w/ temp name and correct type)
     2. Copy data over to it
@@ -382,4 +387,5 @@
     alter table {{ relation }} drop column {{ adapter.quote(column_name) }};
     alter table {{ relation }} rename column {{ adapter.quote(tmp_column) }} to {{ adapter.quote(column_name) }}
   {% endcall %}
+  {%- endif -%}
 {% endmacro %}
