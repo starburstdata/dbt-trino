@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump actions/checkout from 4 to 5"
+time: 2025-08-25T07:03:06.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 498
