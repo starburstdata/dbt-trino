@@ -57,29 +57,38 @@ services:
     depends_on:
       - metastore_db
 
-  minio:
-    hostname: minio
-    image: 'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z'
-    container_name: minio
+  # S3-compatible object storage. MinIO no longer publishes public images, so
+  # this runs RustFS under the "minio" alias the catalogs already point at.
+  rustfs:
+    image: 'rustfs/rustfs:1.0.0'
+    container_name: rustfs
     ports:
       - '9000:9000'
-      - '9001:9001'
     environment:
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
-    command: server /data --console-address ":9001"
+      RUSTFS_ACCESS_KEY: minio
+      RUSTFS_SECRET_KEY: minio123
+    networks:
+      default:
+        aliases:
+          - minio
 
-  # This job will create the "datalake" bucket on Minio
-  mc-job:
-    image: 'quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z'
+  # This job will create the "datalake" bucket
+  create-bucket:
+    image: 'amazon/aws-cli:2.37.5'
+    environment:
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio123
+      AWS_DEFAULT_REGION: us-east-1
     entrypoint: |
       /bin/bash -c "
-      sleep 5;
-      /usr/bin/mc config --quiet host add myminio http://minio:9000 minio minio123;
-      /usr/bin/mc mb --quiet myminio/datalake
+      for i in $$(seq 30); do
+        aws --endpoint-url http://minio:9000 s3 mb s3://datalake && exit 0;
+        sleep 1;
+      done;
+      exit 1
       "
     depends_on:
-      - minio
+      - rustfs
 
 networks:
   default:

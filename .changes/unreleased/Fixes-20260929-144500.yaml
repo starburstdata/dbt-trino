@@ -1,0 +1,7 @@
+kind: Fixes
+body: Replace MinIO with RustFS in the local test stack, since MinIO images are no longer publicly available
+time: 2026-09-29T14:45:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "541"
