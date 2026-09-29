@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump mypy from 1.19.1 to 2.3.1"
+time: 2026-09-29T04:22:50.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 534
