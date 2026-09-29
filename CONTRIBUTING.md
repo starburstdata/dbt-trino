@@ -20,7 +20,7 @@ There are some tools that will be helpful to you in developing locally. While th
 
 These are the tools used in `dbt-trino` development and testing:
 
-- [`tox`](https://tox.readthedocs.io/en/latest/) to manage virtualenvs across python versions. We currently target the latest patch releases for Python 3.9, 3.10, 3.11, 3.12, and 3.13
+- [`tox`](https://tox.readthedocs.io/en/latest/) to manage virtualenvs across python versions. We currently target the latest patch releases for Python 3.9, 3.10, 3.11, 3.12, 3.13, and 3.14
 - [`pytest`](https://docs.pytest.org/en/latest/) to define, discover, and run tests
 - [`flake8`](https://flake8.pycqa.org/en/latest/) for code linting
 - [`black`](https://github.com/psf/black) for code formatting
@@ -262,7 +262,7 @@ make dbt-starburst-tests
 
 #### `tox`
 
-[`tox`](https://tox.readthedocs.io/en/latest/) takes care of managing virtualenvs and install dependencies in order to run tests. You can also run tests in parallel, for example, you can run unit tests for Python 3.9, 3.10, 3.11, 3.12, and 3.13 checks in parallel with `tox -p`. Also, you can run unit tests for specific python versions with `tox -e py39`. The configuration for these tests in located in `tox.ini`.
+[`tox`](https://tox.readthedocs.io/en/latest/) takes care of managing virtualenvs and install dependencies in order to run tests. You can run the configured `unit` and `integration` environments in parallel with `tox -p`. The configuration for these environments is located in `tox.ini`.
 
 #### `pytest`
 
