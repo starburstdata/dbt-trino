@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update dbt-tests-adapter requirement from ~=1.19.1 to ~=1.20.0"
+time: 2026-09-29T04:23:12.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 538
