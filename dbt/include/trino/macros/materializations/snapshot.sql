@@ -48,3 +48,25 @@
             {%- endfor %})
 
 {% endmacro %}
+
+/*
+    Overridden macro which builds a staging table for snapshot.
+
+    As there is no such thing as a temporary table in Trino, such staging table is removed
+    on cleanup (see trino__post_snapshot macro above). But it may happen that something goes
+    wrong (like in `merge` statement), dbt fails and this 'temporary' table still exists.
+    This macro takes care of it.
+ */
+{% macro build_snapshot_staging_table(strategy, sql, target_relation) %}
+    {% set temp_relation = make_temp_relation(target_relation) %}
+
+    {{ drop_relation_if_exists(temp_relation) }}
+
+    {% set select = snapshot_staging_table(strategy, sql, target_relation) %}
+
+    {% call statement('build_snapshot_staging_relation') %}
+        {{ create_table_as(True, temp_relation, select) }}
+    {% endcall %}
+
+    {% do return(temp_relation) %}
+{% endmacro %}
