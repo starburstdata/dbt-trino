@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Bump EndBug/add-and-commit from 9 to 11"
+time: 2026-10-05T04:36:40.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 545
