@@ -55,17 +55,21 @@
 
 
 {% macro trino__reset_csv_table(model, full_refresh, old_relation, agate_table) %}
+    {%- if model['config'].get('on_table_exists') == 'replace' -%}
+        {{ return(trino__create_csv_table(model, agate_table, on_exists='replace')) }}
+    {%- endif -%}
     {{ adapter.drop_relation(old_relation) }}
     {{ return(create_csv_table(model, agate_table)) }}
 {% endmacro %}
 
 
-{% macro trino__create_csv_table(model, agate_table) %}
+{% macro trino__create_csv_table(model, agate_table, on_exists=None) %}
   {%- set column_override = model['config'].get('column_types', {}) -%}
   {%- set quote_seed_column = model['config'].get('quote_columns', None) -%}
+  {%- set or_replace = ' or replace' if on_exists == 'replace' else '' -%}
 
   {% set sql %}
-    create table {{ this.render() }} (
+    create{{ or_replace }} table {{ this.render() }} (
         {%- for col_name in agate_table.column_names -%}
             {%- set inferred_type = adapter.convert_type(agate_table, loop.index0) -%}
             {%- set type = column_override.get(col_name, inferred_type) -%}
