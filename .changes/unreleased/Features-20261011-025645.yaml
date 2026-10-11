@@ -1,7 +1,7 @@
 kind: Features
-body: Seeds honor `on_table_exists='replace'` and rebuild with `CREATE OR REPLACE TABLE` instead of dropping the existing table
+body: Support `on_table_exists='replace'` for seeds, rebuilding them with `CREATE OR REPLACE TABLE` instead of dropping the existing table
 time: 2026-10-11T02:56:45.000000+00:00
 custom:
-    Author: i-yuki23
-    Issue: "547"
-    PR: "548"
+  Author: i-yuki23
+  Issue: "547"
+  PR: "548"
