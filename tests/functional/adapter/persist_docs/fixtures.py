@@ -205,3 +205,18 @@ models:
       - name: name
         description: "{STARBURST_SYNC_NAME_DESCRIPTION}"
 """
+
+quoted_mixed_case_model = """
+{{ config(materialized='table') }}
+select 1 as "MyCol"
+"""
+
+quoted_mixed_case_yml = """
+version: 2
+models:
+  - name: quoted_mixed_case
+    columns:
+      - name: MyCol
+        quote: true
+        description: "quoted mixed-case column description"
+"""
