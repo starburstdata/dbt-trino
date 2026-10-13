@@ -321,18 +321,18 @@ class TestIncrementalNestedRowOnSchemaChange:
         }
 
     def test_incremental_append_nested_row_fields(self, project):
-        run_dbt(["run", "--models", "incremental_row_append"])
-        run_dbt(["run", "--models", "incremental_row_append"])
-        run_dbt(["run", "--models", "incremental_row_append_expected"])
+        run_dbt(["run", "--select", "incremental_row_append"])
+        run_dbt(["run", "--select", "incremental_row_append"])
+        run_dbt(["run", "--select", "incremental_row_append_expected"])
         check_relations_equal(
             project.adapter,
             ["incremental_row_append", "incremental_row_append_expected"],
         )
 
     def test_incremental_sync_nested_row_fields(self, project):
-        run_dbt(["run", "--models", "incremental_row_sync"])
-        run_dbt(["run", "--models", "incremental_row_sync"])
-        run_dbt(["run", "--models", "incremental_row_sync_expected"])
+        run_dbt(["run", "--select", "incremental_row_sync"])
+        run_dbt(["run", "--select", "incremental_row_sync"])
+        run_dbt(["run", "--select", "incremental_row_sync_expected"])
         check_relations_equal(
             project.adapter,
             ["incremental_row_sync", "incremental_row_sync_expected"],
@@ -359,9 +359,9 @@ class TestIncrementalDeeplyNestedRowOnSchemaChange:
         }
 
     def test_incremental_append_deeply_nested_row_fields(self, project):
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_append"])
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_append"])
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_append_expected"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_append"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_append"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_append_expected"])
         check_relations_equal(
             project.adapter,
             [
@@ -387,9 +387,9 @@ class TestIncrementalNestedRowDefaultBehavior:
         }
 
     def test_nested_row_schema_change_skipped_by_default(self, project):
-        run_dbt(["run", "--models", "incremental_row_append"])
+        run_dbt(["run", "--select", "incremental_row_append"])
         results = run_dbt(
-            ["run", "--models", "incremental_row_append"],
+            ["run", "--select", "incremental_row_append"],
             expect_pass=False,
         )
         failed_results = [result for result in results if result.status == "error"]
@@ -685,9 +685,9 @@ class TestIncrementalNestedRowTypeChange:
         }
 
     def test_incremental_sync_nested_row_type_change(self, project):
-        run_dbt(["run", "--models", "incremental_row_type_change"])
-        run_dbt(["run", "--models", "incremental_row_type_change"])
-        run_dbt(["run", "--models", "incremental_row_type_change_expected"])
+        run_dbt(["run", "--select", "incremental_row_type_change"])
+        run_dbt(["run", "--select", "incremental_row_type_change"])
+        run_dbt(["run", "--select", "incremental_row_type_change_expected"])
         check_relations_equal(
             project.adapter,
             ["incremental_row_type_change", "incremental_row_type_change_expected"],
@@ -714,9 +714,9 @@ class TestIncrementalNestedRowAppendKeepsRemovedField:
         }
 
     def test_append_mode_does_not_drop_removed_nested_field(self, project):
-        run_dbt(["run", "--models", "incremental_row_append_keeps_removed"])
+        run_dbt(["run", "--select", "incremental_row_append_keeps_removed"])
         results = run_dbt(
-            ["run", "--models", "incremental_row_append_keeps_removed"],
+            ["run", "--select", "incremental_row_append_keeps_removed"],
             expect_pass=False,
         )
         failed_results = [result for result in results if result.status == "error"]
@@ -753,9 +753,9 @@ class TestIncrementalQuotedNestedRowField:
         }
 
     def test_incremental_append_quoted_nested_row_field(self, project):
-        run_dbt(["run", "--models", "incremental_quoted_row_field"])
-        run_dbt(["run", "--models", "incremental_quoted_row_field"])
-        run_dbt(["run", "--models", "incremental_quoted_row_field_expected"])
+        run_dbt(["run", "--select", "incremental_quoted_row_field"])
+        run_dbt(["run", "--select", "incremental_quoted_row_field"])
+        run_dbt(["run", "--select", "incremental_quoted_row_field_expected"])
         check_relations_equal(
             project.adapter,
             ["incremental_quoted_row_field", "incremental_quoted_row_field_expected"],
@@ -782,9 +782,9 @@ class TestIncrementalDeeplyNestedRowSync:
         }
 
     def test_incremental_sync_deeply_nested_row_removals(self, project):
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_sync"])
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_sync"])
-        run_dbt(["run", "--models", "incremental_deeply_nested_row_sync_expected"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_sync"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_sync"])
+        run_dbt(["run", "--select", "incremental_deeply_nested_row_sync_expected"])
         check_relations_equal(
             project.adapter,
             [
@@ -810,8 +810,8 @@ class TestIncrementalNestedRowDefaultTypeChange:
         }
 
     def test_nested_row_type_change_without_nested_sync_opt_in(self, project):
-        run_dbt(["run", "--models", "incremental_row_type_change_default"])
-        run_dbt(["run", "--models", "incremental_row_type_change_default"])
+        run_dbt(["run", "--select", "incremental_row_type_change_default"])
+        run_dbt(["run", "--select", "incremental_row_type_change_default"])
 
         payload_type = next(
             column[1]

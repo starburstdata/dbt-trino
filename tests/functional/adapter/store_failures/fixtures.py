@@ -24,12 +24,13 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values:
-                - 1
-                - 2
-                - 3
-                - 4
-              quote: false
+              arguments:
+                values:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                quote: false
 
 seeds:
   - name: seed
