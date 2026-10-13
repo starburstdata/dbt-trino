@@ -1,0 +1,7 @@
+kind: Fixes
+body: Stop unit test string fixture values from being truncated to the upstream column's varchar(n) length
+time: 2026-10-13T12:00:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "549"

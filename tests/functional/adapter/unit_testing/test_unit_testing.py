@@ -3,7 +3,10 @@ from dbt.tests.adapter.unit_testing.test_case_insensitivity import (
     BaseUnitTestCaseInsensivity,
 )
 from dbt.tests.adapter.unit_testing.test_invalid_input import BaseUnitTestInvalidInput
-from dbt.tests.adapter.unit_testing.test_types import BaseUnitTestingTypes
+from dbt.tests.adapter.unit_testing.test_types import (
+    BaseUnitTestingTypes,
+    BaseUnitTestingVarcharFixtureNoTruncation,
+)
 
 
 @pytest.mark.skip_profile("starburst_galaxy")
@@ -48,4 +51,8 @@ class TestTrinoUnitTestCaseInsensitivity(BaseUnitTestCaseInsensivity):
 
 
 class TestTrinoUnitTestInvalidInput(BaseUnitTestInvalidInput):
+    pass
+
+
+class TestTrinoUnitTestingVarcharFixtureNoTruncation(BaseUnitTestingVarcharFixtureNoTruncation):
     pass
