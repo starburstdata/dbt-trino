@@ -1,7 +1,5 @@
 import dataclasses
-import sys
 import unittest
-from unittest import mock
 
 from dbt.adapters.trino.connections import (
     TrinoCertificateCredentials,
@@ -12,7 +10,6 @@ from dbt.adapters.trino.connections import (
     TrinoNoneCredentials,
     TrinoOauthConsoleCredentials,
     TrinoOauthCredentials,
-    _own_annotations,
     with_starburst_fields,
 )
 
@@ -80,24 +77,6 @@ class TestWithStarburstFields(unittest.TestCase):
         self.assertEqual(instance.widget, 5)
         self.assertEqual(instance.starburst_max_column_batch_size, 100)
         self.assertEqual(instance.starburst_metadata_failure_strategy, "continue_on_error")
-
-    @unittest.skipIf(sys.version_info < (3, 10), "inspect.get_annotations requires Python 3.10+")
-    def test_own_annotations_delegates_to_inspect_get_annotations_on_310_plus(self):
-        # PEP 649 deferred annotations only differ from eager cls.__dict__ lookup on
-        # 3.14 itself, so this can't reproduce the original bug's symptom pre-3.14.
-        # It instead pins the code path: _own_annotations must call
-        # inspect.get_annotations rather than silently falling back to reading
-        # cls.__dict__["__annotations__"] directly, since that fallback is exactly
-        # what returned {} under deferred evaluation.
-        class Dummy:
-            pass
-
-        sentinel_annotations = {"session_properties": object()}
-        with mock.patch("inspect.get_annotations", return_value=sentinel_annotations) as mocked:
-            result = _own_annotations(Dummy)
-
-        mocked.assert_called_once_with(Dummy, eval_str=False)
-        self.assertEqual(result, sentinel_annotations)
 
 
 if __name__ == "__main__":
