@@ -1,0 +1,7 @@
+kind: Fixes
+body: Warn when persist_docs documents columns that don't exist in the database, and match documented column names case-insensitively so quoted mixed-case columns get their comments
+time: 2026-10-13T13:00:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "549"

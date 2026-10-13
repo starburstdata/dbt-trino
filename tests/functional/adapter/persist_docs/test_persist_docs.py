@@ -1,15 +1,20 @@
 import pytest
 from dbt.tests.adapter.persist_docs.test_persist_docs import (
     BasePersistDocs,
+    BasePersistDocsAllColumnsMissing,
     BasePersistDocsBase,
     BasePersistDocsColumnMissing,
     BasePersistDocsCommentOnQuotedColumn,
+    BasePersistDocsQuotedColumnCaseSensitive,
+    BasePersistDocsQuotedDescriptionNotAppliedOnMismatch,
 )
-from dbt.tests.util import run_dbt, run_sql_with_adapter
+from dbt.tests.util import run_dbt, run_dbt_and_capture, run_sql_with_adapter
 
 from tests.functional.adapter.persist_docs.fixtures import (
     incremental_model,
     incremental_profile_yml,
+    quoted_mixed_case_model,
+    quoted_mixed_case_yml,
     seed_csv,
     table_model,
     table_profile_yml,
@@ -142,6 +147,66 @@ class TestPersistDocs(BasePersistDocs):
 
 class TestPersistDocsColumnMissing(BasePersistDocsColumnMissing):
     pass
+
+
+class TestPersistDocsAllColumnsMissing(BasePersistDocsAllColumnsMissing):
+    pass
+
+
+# Trino lowercases quoted identifiers too, so a quoted "MyCol" and mycol are the same
+# column and the two upstream case-sensitivity tests below don't apply.
+class TestPersistDocsQuotedColumnCaseSensitive(BasePersistDocsQuotedColumnCaseSensitive):
+    @pytest.mark.skip(reason="Trino identifiers are case-insensitive, even when quoted")
+    def test_quoted_column_case_sensitive_warning(self, project):
+        pass
+
+
+class TestPersistDocsQuotedDescriptionNotAppliedOnMismatch(
+    BasePersistDocsQuotedDescriptionNotAppliedOnMismatch
+):
+    @pytest.mark.skip(reason="Trino identifiers are case-insensitive, even when quoted")
+    def test_quoted_description_not_applied_on_case_mismatch(self, project):
+        pass
+
+
+class TestPersistDocsQuotedMixedCaseColumn(BasePersistDocsBase):
+    """A quoted mixed-case column still gets its comment, since Trino stores it lowercased."""
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {"models": {"test": {"+persist_docs": {"columns": True}}}}
+
+    @pytest.fixture(scope="class")
+    def seeds(self):
+        return {}
+
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"quoted_mixed_case.sql": quoted_mixed_case_model}
+
+    @pytest.fixture(scope="class")
+    def properties(self):
+        return {"schema.yml": quoted_mixed_case_yml}
+
+    @pytest.fixture(scope="class", autouse=True)
+    def setUp(self, project):
+        pass
+
+    def test_quoted_mixed_case_column_comment_applied(self, project):
+        _, logs = run_dbt_and_capture(["run"])
+        assert "are not present in the database" not in logs
+
+        result = run_sql_with_adapter(
+            project.adapter,
+            f"""
+            select comment from {project.database}.information_schema.columns
+            where table_schema = '{project.test_schema}'
+              and table_name = 'quoted_mixed_case'
+              and column_name = 'mycol'
+            """,
+            fetch="one",
+        )
+        assert result[0] == "quoted mixed-case column description"
 
 
 class TestPersistDocsCommentOnQuotedColumn(BasePersistDocsCommentOnQuotedColumn):
