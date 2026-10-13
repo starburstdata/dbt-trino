@@ -3,10 +3,10 @@ import os
 import re
 import sys
 
-# require python 3.9 or newer
-if sys.version_info < (3, 9):
+# require python 3.10 or newer
+if sys.version_info < (3, 10):
     print("Error: dbt does not support this version of Python.")
-    print("Please upgrade to Python 3.9 or higher.")
+    print("Please upgrade to Python 3.10 or higher.")
     sys.exit(1)
 
 
@@ -77,12 +77,12 @@ setup(
         ]
     },
     install_requires=[
-        "dbt-common>=1.25.0,<2.0",
-        "dbt-adapters>=1.16,<2.0",
+        "dbt-common>=1.37.3,<2.0",
+        "dbt-adapters>=1.24.5,<2.0",
         "trino>=0.336,<1.0",
         "requests>=2.32.5,<3.0",
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
-        "dbt-core>=1.8.0,<2.0",
+        "dbt-core>=1.11.2,<2.0",
     ],
     zip_safe=False,
     classifiers=[
@@ -91,12 +91,11 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3.14",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.10",
 )

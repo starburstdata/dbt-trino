@@ -39,7 +39,6 @@ jobs:
           - "starburst_galaxy"
           - "starburst_routing"
         python:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -59,8 +58,6 @@ jobs:
             python: "3.11"
           - engine: "starburst_galaxy"
             python: "3.10"
-          - engine: "starburst_galaxy"
-            python: "3.9"
           # Needs a Starburst Enterprise license and a Harbor login, so - like
           # starburst_galaxy - it only runs for Starburst-authored branches,
           # on a single python version.
@@ -75,8 +72,6 @@ jobs:
             python: "3.11"
           - engine: "starburst_routing"
             python: "3.10"
-          - engine: "starburst_routing"
-            python: "3.9"
 
     steps:
       - name: Checkout

@@ -1,0 +1,7 @@
+kind: Breaking Changes
+body: Support dbt-core 1.11 and drop support for Python 3.9
+time: 2026-10-13T12:00:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "549"
