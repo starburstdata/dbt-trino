@@ -95,7 +95,7 @@ class OnSchemaChangeBase:
     ):
         run_args = ["run"]
         if include:
-            run_args.extend(("--models", include))
+            run_args.extend(("--select", include))
         results_one = run_dbt(run_args)
         results_two = run_dbt(run_args)
 
@@ -104,7 +104,7 @@ class OnSchemaChangeBase:
 
         test_args = ["test"]
         if include:
-            test_args.extend(("--models", include))
+            test_args.extend(("--select", include))
         if exclude:
             test_args.extend(("--exclude", exclude))
 
@@ -224,8 +224,8 @@ class OnSchemaChangeBase:
 
     def run_incremental_fail_on_schema_change(self, _):
         select = "model_a incremental_fail"
-        run_dbt(["run", "--models", select, "--full-refresh"])
-        results_two = run_dbt(["run", "--models", select], expect_pass=False)
+        run_dbt(["run", "--select", select, "--full-refresh"])
+        results_two = run_dbt(["run", "--select", select], expect_pass=False)
         assert "Compilation Error" in results_two[1].message
 
     def test_run_incremental_ignore(self, project):

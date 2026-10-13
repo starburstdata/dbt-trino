@@ -19,16 +19,17 @@ models:
   - name: model
     tests:
       - is_type:
-          column_map:
-            tinyint_col: ['integer', 'number']
-            smallint_col: ['integer', 'number']
-            integer_col: ['integer', 'number']
-            int_col: ['integer', 'number']
-            bigint_col: ['integer', 'number']
-            real_col: ['float', 'number']
-            double_col: ['float', 'number']
-            double_precision_col: ['float', 'number']
-            decimal_col: ['numeric', 'number']
-            char_col: ['string', 'not number']
-            varchar_col: ['string', 'not number']
+          arguments:
+            column_map:
+              tinyint_col: ['integer', 'number']
+              smallint_col: ['integer', 'number']
+              integer_col: ['integer', 'number']
+              int_col: ['integer', 'number']
+              bigint_col: ['integer', 'number']
+              real_col: ['float', 'number']
+              double_col: ['float', 'number']
+              double_precision_col: ['float', 'number']
+              decimal_col: ['numeric', 'number']
+              char_col: ['string', 'not number']
+              varchar_col: ['string', 'not number']
 """

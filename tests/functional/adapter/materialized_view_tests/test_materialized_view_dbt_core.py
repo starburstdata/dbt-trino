@@ -33,7 +33,7 @@ class TestTrinoMaterializedViewsBasic(MaterializedViewBasic):
     @pytest.fixture(scope="function", autouse=True)
     def setup(self, project, my_materialized_view):
         run_dbt(["seed"])
-        run_dbt(["run", "--models", my_materialized_view.identifier, "--full-refresh"])
+        run_dbt(["run", "--select", my_materialized_view.identifier, "--full-refresh"])
 
         # the tests touch these files, store their contents in memory
         initial_model = get_model_file(project, my_materialized_view)
