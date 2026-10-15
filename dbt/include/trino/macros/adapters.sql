@@ -242,6 +242,38 @@
 {%- endmacro %}
 
 
+{# One row per function overload: (name, return type, argument types, ...) #}
+{% macro list_functions_in_schema(relation) %}
+  {% call statement('list_functions_in_schema', fetch_result=True) -%}
+    show functions from {{ relation.without_identifier() }}
+  {%- endcall %}
+  {{ return(load_result('list_functions_in_schema').table) }}
+{% endmacro %}
+
+
+{#
+  Starburst Galaxy keeps catalog functions in the built-in galaxy.functions schema. It always
+  exists, no role can create it, and it is shared by the whole account.
+#}
+{% macro is_galaxy_functions_schema(relation) %}
+  {{ return(relation.database | lower == 'galaxy' and relation.schema | lower == 'functions') }}
+{% endmacro %}
+
+
+{#
+  Keep the custom schema name unprefixed for galaxy.functions, since that is the only schema Galaxy
+  can store functions in. Everything else uses dbt's default of <target schema>_<custom schema>.
+#}
+{% macro trino__generate_schema_name(custom_schema_name, node) -%}
+  {%- if custom_schema_name is not none and node is not none
+      and node.database | lower == 'galaxy' and custom_schema_name | trim | lower == 'functions' -%}
+    {{ custom_schema_name | trim }}
+  {%- else -%}
+    {{ dbt.default__generate_schema_name(custom_schema_name, node) }}
+  {%- endif -%}
+{%- endmacro %}
+
+
 {# On Trino, 'cascade' is not supported so we have to manually cascade. #}
 {% macro trino__drop_schema(relation) -%}
   {% for row in list_relations_without_caching(relation) %}
@@ -251,6 +283,12 @@
     {% set rel_type = api.Relation.get_relation_type(row[3]) %}
     {% set existing = api.Relation.create(database=rel_db, schema=rel_schema, identifier=rel_identifier, type=rel_type) %}
     {% do drop_relation(existing) %}
+  {% endfor %}
+  {# SHOW FUNCTIONS returns names unquoted, so quote them to drop names that are not plain identifiers #}
+  {% for function in list_functions_in_schema(relation) %}
+    {% call statement('drop_function') -%}
+      drop function if exists {{ relation.without_identifier() }}."{{ function[0] | replace('"', '""') }}"({{ function[2] }})
+    {%- endcall %}
   {% endfor %}
   {%- call statement('drop_schema') -%}
     drop schema if exists {{ relation }}
@@ -281,6 +319,21 @@
       comment on column {{ relation }}.{{ adapter.quote(column_name) if column_dict[column_name]['quote'] else column_name }} is null;
     {%- endif -%}
   {% endfor %}
+{% endmacro %}
+
+
+{#
+  Skip creating galaxy.functions instead of failing on permissions. The adapter commits after
+  this macro, which needs a transaction, hence the no-op query.
+#}
+{% macro trino__create_schema(relation) -%}
+  {%- call statement('create_schema') -%}
+    {%- if is_galaxy_functions_schema(relation) -%}
+      select 1
+    {%- else -%}
+      create schema if not exists {{ relation.without_identifier() }}
+    {%- endif -%}
+  {%- endcall -%}
 {% endmacro %}
 
 

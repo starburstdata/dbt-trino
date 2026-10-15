@@ -63,6 +63,41 @@ Two things to keep in mind:
 - `X-Trino-Client-Tags` cannot be set through `http_headers`; Trino builds that header itself from `client_tags`.
 - A model's tests are separate nodes with their own config, so they do not inherit the model's `client_tags`/`http_headers` and run with the profile's instead. Configure routing on the tests themselves - inline on each test's `config`, or path-scoped under `tests:`/`data_tests:` in `dbt_project.yml` - if they need to reach the same cluster as the model.
 
+### User-defined functions (SQL UDFs)
+
+dbt-trino supports scalar SQL [user-defined functions](https://docs.getdbt.com/docs/build/udfs): put the function body in `functions/<name>.sql` and its signature in a YAML file. Python, JavaScript and aggregate functions are not supported.
+
+```sql
+-- functions/price_for_xlarge.sql
+price * 2
+```
+
+```yaml
+# functions/price_for_xlarge.yml
+functions:
+  - name: price_for_xlarge
+    description: Calculate the price for the xlarge version of a standard item
+    config:
+      database: memory
+      schema: functions
+      volatility: deterministic
+    arguments:
+      - name: price
+        data_type: double
+    returns:
+      data_type: double
+```
+
+The function is called with `{{ function('price_for_xlarge') }}(price)`. Things to keep in mind:
+
+- **Where a function can live**: Only catalogs whose connector stores functions work.
+- **The body is a single expression**: dbt-trino generates `RETURN <body>`, and Trino does not allow queries in functions, so `SELECT ...` is rejected by Trino when the function is created.
+- **Types are passed to Trino as written**: Use `double` or `real` rather than `float`.
+- **Volatility**: `deterministic` and `non-deterministic` become `DETERMINISTIC` and `NOT DETERMINISTIC`. `stable` is not supported and is ignored with a warning. Trino assumes `DETERMINISTIC` when it is unset and rejects a declaration that contradicts the body, so a body that calls `random()` needs `volatility: non-deterministic`.
+- **Not supported by Trino**: argument `default_value`, `grants` (a warning is logged) and `persist_docs`. The function `description` is stored as the function's `COMMENT`.
+- **Overloads**: Trino identifies a function by its name and argument types. Changing an argument type creates a second function and leaves the old one in place. The old function must be dropped manually.
+- **Starburst Galaxy**: Functions can only be created in the built-in `galaxy.functions` schema. Any other catalog fails with `functions can only be created in the built-in 'galaxy.functions' catalog and schema`. Set `database: galaxy` and `schema: functions` on the function.
+
 ## Contributing
 
 - Want to report a bug or request a feature? Let us know on [Slack](http://community.getdbt.com/) in the [#db-starburst-and-trino](https://getdbt.slack.com/channels/db-starburst-and-trino) channel, or on [Trino slack](https://trino.io/slack.html) in the [#python](https://trinodb.slack.com/channels/python) channel, or open [an issue](https://github.com/starburstdata/dbt-trino/issues/new)
