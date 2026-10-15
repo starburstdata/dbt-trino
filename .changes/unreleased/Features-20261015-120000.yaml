@@ -1,0 +1,7 @@
+kind: Features
+body: Support scalar SQL user-defined functions
+time: 2026-10-15T12:00:00.000000-04:00
+custom:
+  Author: bberk
+  Issue: ""
+  PR: "550"
