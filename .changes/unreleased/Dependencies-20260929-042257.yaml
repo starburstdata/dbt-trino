@@ -1,0 +1,7 @@
+kind: Dependencies
+body: "Update pytest requirement from ~=8.4 to ~=9.1"
+time: 2026-09-29T04:22:57.00000Z
+custom:
+  Author: dependabot[bot]
+  Issue: ''
+  PR: 535
