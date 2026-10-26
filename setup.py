@@ -77,12 +77,12 @@ setup(
         ]
     },
     install_requires=[
-        "dbt-common>=1.37.3,<2.0",
+        "dbt-common>=1.37.5,<2.0",
         "dbt-adapters>=1.24.5,<2.0",
         "trino>=0.336,<1.0",
         "requests>=2.32.5,<3.0",
         # add dbt-core to ensure backwards compatibility of installation, this is not a functional dependency
-        "dbt-core>=1.11.2,<2.0",
+        "dbt-core>=1.12.0,<2.0",
     ],
     zip_safe=False,
     classifiers=[
