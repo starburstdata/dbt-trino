@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import agate
 import dbt.flags as flags
 import trino
+from dbt.adapters.capability import Capability
 from dbt.adapters.exceptions.connection import FailedToConnectError
 from dbt_common.clients import agate_helper
 from dbt_common.exceptions import DbtConfigError, DbtDatabaseError, DbtRuntimeError
@@ -903,3 +904,43 @@ class TestQueryRouting(TestCase):
         finally:
             other_adapter.connections.clear_query_overrides()
             other_adapter.cleanup_connections()
+
+
+class TestMicrobatchConcurrency(TestCase):
+    def make_adapter(self, flags=None):
+        profile_cfg = {
+            "outputs": {
+                "test": {
+                    "type": "trino",
+                    "catalog": "trinodb",
+                    "host": "database",
+                    "port": 5439,
+                    "schema": "dbt_test_schema",
+                    "method": "none",
+                    "user": "trino_user",
+                }
+            },
+            "target": "test",
+        }
+        project_cfg = {
+            "name": "X",
+            "version": "0.1",
+            "profile": "test",
+            "project-root": "/tmp/dbt/does-not-exist",
+            "config-version": 2,
+        }
+        if flags is not None:
+            project_cfg["flags"] = flags
+        config = config_from_parts_or_dicts(project_cfg, profile_cfg)
+        return TrinoAdapter(config, get_context("spawn"))
+
+    def test_supported_by_default(self):
+        assert self.make_adapter().supports(Capability.MicrobatchConcurrency)
+
+    def test_flag_disables(self):
+        adapter = self.make_adapter({"use_concurrent_microbatch": False})
+        assert not adapter.supports(Capability.MicrobatchConcurrency)
+
+    def test_other_capabilities_unaffected(self):
+        adapter = self.make_adapter({"use_concurrent_microbatch": False})
+        assert adapter.supports(Capability.SchemaMetadataByRelations)

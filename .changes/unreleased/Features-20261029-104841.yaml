@@ -1,0 +1,6 @@
+kind: Features
+body: Add the use_concurrent_microbatch behavior flag and give concurrent microbatch batches unique temporary table locations
+time: 2026-10-29T10:48:41.929714-04:00
+custom:
+    Author: bberk
+    PR: "556"
