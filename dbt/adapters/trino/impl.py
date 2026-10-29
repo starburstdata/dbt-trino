@@ -110,8 +110,23 @@ class TrinoAdapter(SQLAdapter):
                     "or explicitly set `cert` configuration to `True` for security reasons. "
                     "You may receive an error after that if your SSL setup is incorrect."
                 ),
-            }
+            },
+            {  # type: ignore
+                "name": "use_concurrent_microbatch",
+                "default": False,
+                "description": (
+                    "Run microbatch batches concurrently across threads. "
+                    "Concurrent batches all write to the same table, and on some "
+                    "connectors, such as Iceberg, parallel commits can intermittently fail. "
+                    "Batches run sequentially unless this flag is enabled."
+                ),
+            },
         ]
+
+    def supports(self, capability: Capability) -> bool:  # type: ignore[override]
+        if capability == Capability.MicrobatchConcurrency:
+            return self.behavior.use_concurrent_microbatch.no_warn  # type: ignore[attr-defined]
+        return super().supports(capability)
 
     def pre_model_hook(self, config: Mapping[str, Any]) -> Optional[bool]:
         """Route this node's statements using its `client_tags` / `http_headers`.
