@@ -1,0 +1,6 @@
+kind: Features
+body: Support catalogs.yml v2
+time: 2026-10-29T10:04:11.223299-04:00
+custom:
+    Author: bberk
+    PR: "555"
