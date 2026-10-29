@@ -149,7 +149,9 @@
   {%- if temporary -%}
     {%- if _properties -%}
       {%- if _properties.location -%}
-          {%- do _properties.update({'location': _properties.location[:-1] ~ "__dbt_tmp'"}) -%}
+          {#-- Concurrent microbatch batches need distinct temp locations --#}
+          {%- set tmp_suffix = '__dbt_tmp_' ~ model.batch.id if model.batch else '__dbt_tmp' -%}
+          {%- do _properties.update({'location': _properties.location[:-1] ~ tmp_suffix ~ "'"}) -%}
       {%- endif -%}
     {%- endif -%}
   {%- endif -%}
