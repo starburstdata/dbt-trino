@@ -14,3 +14,4 @@ class TrinoCatalogRelation(CatalogRelation):
     file_format: Optional[str] = None
     external_volume: Optional[str] = None
     storage_uri: Optional[str] = None
+    catalog_database: Optional[str] = None
