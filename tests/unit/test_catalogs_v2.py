@@ -20,7 +20,10 @@ def _v2_catalog(name, catalog_type, table_format_value, config=None):
 
 
 def test_catalogs_v2_capability_supported():
-    assert TrinoAdapter.supports(Capability.CatalogsV2)
+    # `supports` is overridden as an instance method on TrinoAdapter (to gate
+    # MicrobatchConcurrency behind a behavior flag), so call it on an instance.
+    adapter = object.__new__(TrinoAdapter)
+    assert adapter.supports(Capability.CatalogsV2)
 
 
 class TestTrinoV2ToV1Type:
