@@ -30,11 +30,11 @@ jobs:
           echo The version_number: ${{ github.event.inputs.version_number }}
 
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.8"
+          python-version: "3.13"
 
       - name: Install brew
         run: |
@@ -87,7 +87,7 @@ jobs:
           git status
 
       - name: Commit version bump to branch
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v11
         with:
           author_name: 'Github Build Bot'
           author_email: 'automation@starburstdata.com'
@@ -96,7 +96,7 @@ jobs:
           push: 'origin origin/${{ steps.variables.outputs.BRANCH_NAME }}'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           author: 'Github Build Bot <automation@starburstdata.com>'
           base: ${{github.ref}}

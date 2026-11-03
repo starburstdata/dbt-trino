@@ -40,13 +40,13 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
       - name: Create and commit changelog on bot PR
         id: bot_changelog
-        uses: emmyoop/changie_bot@v1.0
+        uses: emmyoop/changie_bot@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           commit_author_name: "starburstdata-automation"
