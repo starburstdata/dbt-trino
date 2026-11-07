@@ -821,3 +821,161 @@ class TestIncrementalNestedRowDefaultTypeChange:
             if column[0] == "payload"
         )
         assert "bigint" in payload_type.lower()
+
+
+_MODELS__INCREMENTAL_NEW_NESTED_ROW_APPEND = """
+{{
+    config(
+        materialized='incremental',
+        unique_key='id',
+        on_schema_change='append_new_columns',
+        incremental_strategy='merge'
+    )
+}}
+
+with source_data as (
+    select 1 as id,
+        cast(
+            row('foo', row('red', 1))
+            as row(nested_field varchar, details row(color varchar, size integer))
+        ) as payload
+    union all
+    select 2 as id,
+        cast(
+            row('bar', row('blue', 2))
+            as row(nested_field varchar, details row(color varchar, size integer))
+        ) as payload
+    union all
+    select 3 as id,
+        cast(
+            row('baz', row('green', 3))
+            as row(nested_field varchar, details row(color varchar, size integer))
+        ) as payload
+)
+
+{% if is_incremental() %}
+    select * from source_data
+{% else %}
+    select
+        id,
+        cast(row(payload.nested_field) as row(nested_field varchar)) as payload
+    from source_data
+    where id <= 2
+{% endif %}
+"""
+
+_MODELS__INCREMENTAL_NEW_NESTED_ROW_APPEND_EXPECTED = """
+{{
+    config(materialized='table')
+}}
+
+select 1 as id,
+    cast(
+        row('foo', row('red', 1))
+        as row(nested_field varchar, details row(color varchar, size integer))
+    ) as payload
+union all
+select 2 as id,
+    cast(
+        row('bar', row('blue', 2))
+        as row(nested_field varchar, details row(color varchar, size integer))
+    ) as payload
+union all
+select 3 as id,
+    cast(
+        row('baz', row('green', 3))
+        as row(nested_field varchar, details row(color varchar, size integer))
+    ) as payload
+order by id
+"""
+
+_MODELS__INCREMENTAL_NESTED_ROW_DROP_SYNC = """
+{{
+    config(
+        materialized='incremental',
+        unique_key='id',
+        on_schema_change='sync_all_columns',
+        incremental_strategy='merge'
+    )
+}}
+
+with source_data as (
+    select 1 as id,
+        cast(
+            row('foo', row('red', 1))
+            as row(nested_field varchar, details row(color varchar, size integer))
+        ) as payload
+    union all
+    select 2 as id,
+        cast(
+            row('bar', row('blue', 2))
+            as row(nested_field varchar, details row(color varchar, size integer))
+        ) as payload
+)
+
+{% if is_incremental() %}
+    select
+        id,
+        cast(row(payload.nested_field) as row(nested_field varchar)) as payload
+    from source_data
+{% else %}
+    select * from source_data
+{% endif %}
+"""
+
+_MODELS__INCREMENTAL_NESTED_ROW_DROP_SYNC_EXPECTED = """
+{{
+    config(materialized='table')
+}}
+
+select 1 as id, cast(row('foo') as row(nested_field varchar)) as payload
+union all
+select 2 as id, cast(row('bar') as row(nested_field varchar)) as payload
+order by id
+"""
+
+
+@pytest.mark.iceberg
+class TestIncrementalWholeNestedRowField:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "incremental_new_nested_row_append.sql": _MODELS__INCREMENTAL_NEW_NESTED_ROW_APPEND,
+            "incremental_new_nested_row_append_expected.sql": _MODELS__INCREMENTAL_NEW_NESTED_ROW_APPEND_EXPECTED,
+            "incremental_nested_row_drop_sync.sql": _MODELS__INCREMENTAL_NESTED_ROW_DROP_SYNC,
+            "incremental_nested_row_drop_sync_expected.sql": _MODELS__INCREMENTAL_NESTED_ROW_DROP_SYNC_EXPECTED,
+        }
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "name": "incremental_whole_nested_row_field",
+            "models": {
+                "+incremental_strategy": "merge",
+                "+sync_nested_columns": True,
+            },
+        }
+
+    def test_incremental_append_adds_new_nested_row_whole(self, project):
+        run_dbt(["run", "--select", "incremental_new_nested_row_append"])
+        run_dbt(["run", "--select", "incremental_new_nested_row_append"])
+        run_dbt(["run", "--select", "incremental_new_nested_row_append_expected"])
+        check_relations_equal(
+            project.adapter,
+            [
+                "incremental_new_nested_row_append",
+                "incremental_new_nested_row_append_expected",
+            ],
+        )
+
+    def test_incremental_sync_drops_nested_row_whole(self, project):
+        run_dbt(["run", "--select", "incremental_nested_row_drop_sync"])
+        run_dbt(["run", "--select", "incremental_nested_row_drop_sync"])
+        run_dbt(["run", "--select", "incremental_nested_row_drop_sync_expected"])
+        check_relations_equal(
+            project.adapter,
+            [
+                "incremental_nested_row_drop_sync",
+                "incremental_nested_row_drop_sync_expected",
+            ],
+        )

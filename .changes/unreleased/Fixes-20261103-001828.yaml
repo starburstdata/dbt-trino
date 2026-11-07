@@ -1,0 +1,7 @@
+kind: Fixes
+body: Add or drop a new nested ROW field as a whole when syncing ROW columns, instead of one statement per leaf that Trino rejects
+time: 2026-11-03T00:18:28.000000-05:00
+custom:
+  Author: Mohith26
+  Issue: "557"
+  PR: "558"
