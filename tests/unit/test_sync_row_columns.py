@@ -98,6 +98,49 @@ class TestSyncRowColumns(unittest.TestCase):
         mock_execute.assert_not_called()
         self.assertIs(result, schema_changes_dict)
 
+    def test_new_nested_row_field_is_added_in_one_statement(self):
+        schema_changes_dict = {
+            "source_columns": [
+                Column("payload", "row(id varchar, meta row(a varchar, b integer))"),
+            ],
+            "target_columns": [
+                Column("payload", "row(id varchar)"),
+            ],
+            "new_target_types": [
+                {
+                    "column_name": "payload",
+                    "new_type": "row(id varchar, meta row(a varchar, b integer))",
+                }
+            ],
+            "source_not_in_target": [],
+            "target_not_in_source": [],
+        }
+        relation = TrinoRelation.create(
+            database="iceberg",
+            schema="dbt_test_schema",
+            identifier="test_model",
+            type="table",
+        )
+
+        with (
+            patch.object(self.adapter, "execute") as mock_execute,
+            patch.object(self.adapter, "get_columns_in_relation", return_value=[]),
+        ):
+            self.adapter.sync_row_columns(
+                "append_new_columns",
+                relation,
+                schema_changes_dict,
+            )
+
+        # Trino requires every parent field of a nested ADD COLUMN path to exist,
+        # so the new ROW field has to be added as a whole, not leaf by leaf.
+        self.assertEqual(mock_execute.call_count, 1)
+        sql = mock_execute.call_args[0][0]
+        self.assertTrue(
+            sql.endswith('add column "payload"."meta" row(a varchar, b integer)'),
+            sql,
+        )
+
     def test_format_nested_column_path_quotes_mixed_case_segment(self):
         formatted = self.adapter._format_nested_column_path("payload.Order")
         self.assertIn('"order"', formatted.lower())
