@@ -1,7 +1,6 @@
 import unittest
 
 from dbt.adapters.trino.row_type_utils import (
-    collect_field_paths,
     diff_row_types,
     filter_handled_type_changes,
     is_row_type,
@@ -36,20 +35,6 @@ class TestRowTypeUtils(unittest.TestCase):
         self.assertEqual(fields["l1"], "varchar")
         self.assertEqual(fields["level2"], "row(l2 varchar, level3 row(l3 varchar))")
 
-    def test_collect_field_paths(self):
-        paths = collect_field_paths(
-            "row(l1 varchar, level2 row(l2 varchar, level3 row(l3 varchar)))",
-            "payload",
-        )
-        self.assertEqual(
-            paths,
-            {
-                "payload.l1": "varchar",
-                "payload.level2.l2": "varchar",
-                "payload.level2.level3.l3": "varchar",
-            },
-        )
-
     def test_diff_row_types_additions(self):
         source = "row(nested_field varchar, extra_field varchar)"
         target = "row(nested_field varchar)"
@@ -81,6 +66,24 @@ class TestRowTypeUtils(unittest.TestCase):
         self.assertEqual(diff.additions, (("record.payload.added_field", "varchar"),))
         self.assertEqual(diff.removals, (("record.payload.removed_field", "boolean"),))
         self.assertEqual(diff.type_changes, (("record.payload.nested_field", "bigint"),))
+
+    def test_diff_row_types_new_nested_row_is_added_whole(self):
+        source = "row(id varchar, meta row(a varchar, b integer))"
+        target = "row(id varchar)"
+        diff = diff_row_types(source, target, "payload")
+
+        self.assertEqual(diff.additions, (("payload.meta", "row(a varchar, b integer)"),))
+        self.assertEqual(diff.removals, ())
+        self.assertEqual(diff.type_changes, ())
+
+    def test_diff_row_types_removed_nested_row_is_dropped_whole(self):
+        source = "row(id varchar)"
+        target = "row(id varchar, meta row(a varchar, b integer))"
+        diff = diff_row_types(source, target, "payload")
+
+        self.assertEqual(diff.additions, ())
+        self.assertEqual(diff.removals, (("payload.meta", "row(a varchar, b integer)"),))
+        self.assertEqual(diff.type_changes, ())
 
     def test_row_columns_from_type_changes(self):
         changes = [

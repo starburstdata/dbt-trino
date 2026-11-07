@@ -109,23 +109,6 @@ def parse_row_fields(row_type: str) -> Dict[str, str]:
     return fields
 
 
-def collect_field_paths(type_str: str, prefix: str = "") -> Dict[str, str]:
-    collected: Dict[str, str] = {}
-    if not is_row_type(type_str):
-        if prefix:
-            collected[prefix] = type_str.strip()
-        return collected
-
-    for field_name, field_type in parse_row_fields(type_str).items():
-        path = f"{prefix}.{field_name}" if prefix else field_name
-        if is_row_type(field_type):
-            collected.update(collect_field_paths(field_type, path))
-        else:
-            collected[path] = field_type.strip()
-
-    return collected
-
-
 @dataclass(frozen=True)
 class RowTypeDiff:
     additions: Tuple[Tuple[str, str], ...]
@@ -138,26 +121,36 @@ def diff_row_types(
     target_type: str,
     column_prefix: str,
 ) -> RowTypeDiff:
-    source_paths = collect_field_paths(source_type, column_prefix)
-    target_paths = collect_field_paths(target_type, column_prefix)
+    source_fields = parse_row_fields(source_type)
+    target_fields = parse_row_fields(target_type)
 
-    additions = sorted(
-        (path, source_paths[path]) for path in source_paths if path not in target_paths
-    )
-    removals = sorted(
-        (path, target_paths[path]) for path in target_paths if path not in source_paths
-    )
-    type_changes = sorted(
-        (path, source_paths[path])
-        for path in source_paths
-        if path in target_paths
-        and normalize_type(source_paths[path]) != normalize_type(target_paths[path])
-    )
+    additions: List[Tuple[str, str]] = []
+    removals: List[Tuple[str, str]] = []
+    type_changes: List[Tuple[str, str]] = []
+
+    for field_name, source_field_type in source_fields.items():
+        path = f"{column_prefix}.{field_name}"
+        target_field_type = target_fields.get(field_name)
+        if target_field_type is None:
+            # Trino needs every parent of a nested ADD COLUMN path to exist, so a
+            # new ROW field is added as a whole rather than one leaf at a time.
+            additions.append((path, source_field_type.strip()))
+        elif is_row_type(source_field_type) and is_row_type(target_field_type):
+            nested_diff = diff_row_types(source_field_type, target_field_type, path)
+            additions.extend(nested_diff.additions)
+            removals.extend(nested_diff.removals)
+            type_changes.extend(nested_diff.type_changes)
+        elif normalize_type(source_field_type) != normalize_type(target_field_type):
+            type_changes.append((path, source_field_type.strip()))
+
+    for field_name, target_field_type in target_fields.items():
+        if field_name not in source_fields:
+            removals.append((f"{column_prefix}.{field_name}", target_field_type.strip()))
 
     return RowTypeDiff(
-        additions=tuple(additions),
-        removals=tuple(removals),
-        type_changes=tuple(type_changes),
+        additions=tuple(sorted(additions)),
+        removals=tuple(sorted(removals)),
+        type_changes=tuple(sorted(type_changes)),
     )
 
 
